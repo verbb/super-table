@@ -1,0 +1,23 @@
+<div class="content">
+	<div class="main">
+		<div class="elements">
+			<form>
+
+				{# Namespaced due to issues with JS (mostly EditableTables) either not firing, or binding multiple times #}
+
+				{% if fieldType %}
+					{% namespace 'types['~fieldType.getClassHandle()~'_SuperTable]' %}
+						{{ fieldType.getSettingsHtml() | raw }}
+					{% endnamespace %}
+				{% else %}
+					
+				{% endif %}
+				
+			</form>
+		</div>
+
+		<div class="centeralign">
+			<div class="spinner loadingmore hidden"></div>
+		</div>
+	</div>
+</div>

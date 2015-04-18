@@ -1,0 +1,15 @@
+{% import "_includes/forms" as forms %}
+
+<tr data-id="{{ rowId }}">
+    {% for colId, col in cols %}
+        {% set cellName = name~'['~rowId~']['~colId~']' %}
+        {% set value = null %}
+
+        <td class="{% if col.class is defined %}{{ col.class }}{% endif %} type-{{ col.type }}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+            {% include ['supertable/_fields/' ~ col.type|lower, 'supertable/_fields/blank'] %}
+        </td>
+    {% endfor %}
+
+    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+    <td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+</tr>

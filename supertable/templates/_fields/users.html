@@ -1,0 +1,6 @@
+{% set value = value ? craft.users.id(value) : null %}
+
+{% if col.fieldType %}
+	{{ col.fieldType.getInputHtml(cellName, value) | raw }}
+{% endif %}
+

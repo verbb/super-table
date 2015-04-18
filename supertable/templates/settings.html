@@ -1,0 +1,31 @@
+{%- set id = (id is defined ? id : null) %}
+{%- set label = (label is defined and label != '__blank__' ? label : null) %}
+{%- set locale = ((craft.isLocalized() and locale is defined) ? locale : null) %}
+{%- set instructions = (instructions is defined ? instructions : null) %}
+{%- set warning = (warning is defined ? warning : null) %}
+{%- set errors = (errors is defined ? errors : null) -%}
+
+<div class="field{% if first is defined and first %} first{% endif %}"{% if id %} id="{{ id }}-field"{% endif %}>
+	{% if label or instructions %}
+		<div class="heading">
+			{% if label %}
+				<label{% if required is defined and required %} class="required"{% endif %}{% if id %} for="{{ id }}"{% endif %}>
+					{{- label|raw -}}
+				</label>
+				{% if locale %}
+					<span class="locale">{{ locale }}</span>
+				{% endif %}
+			{% endif %}
+			{% if instructions %}
+				<div class="instructions">{{ instructions|md }}</div>
+			{% endif %}
+		</div>
+	{% endif %}
+	<div class="input{% if errors %} errors{% endif %}">
+		{% include 'supertable/settings-table' %}
+	</div>
+	{% if warning %}
+		<p class="warning">{{ warning }}</p>
+	{% endif %}
+	{% include "_includes/forms/errorList" with { errors: errors } %}
+</div>
