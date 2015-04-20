@@ -51,6 +51,13 @@ To edit the settings of a particular field, click on the small 'cog' icon on the
 ...and many more. Super Table can handle just about any FieldType, the above are simply those that have been tested.
 
 
+## Early Matrix Support
+
+There is early Matrix support for Super Table, in that a Super Table can be used inside your Matrix blocks as below. Currently, you cannot add a Matrix field as a field to your Super Table. Instead, you'll need to put your Super Table field inside Matrix blocks.
+
+<img src="https://raw.githubusercontent.com/engram-design/SuperTable/master/screenshots/matrix.png" />
+
+
 ## Roadmap
 
 - Fix Matrix rendering issue.
