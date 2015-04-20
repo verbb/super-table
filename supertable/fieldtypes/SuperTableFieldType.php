@@ -3,52 +3,35 @@ namespace Craft;
 
 class SuperTableFieldType extends BaseFieldType
 {
-    public function getName()
-    {
-        return Craft::t('Super Table');
-    }
+	// Public Methods
+	// =========================================================================
 
-    public function defineContentAttribute()
-    {
-        return AttributeType::Mixed;
-        //return false;
-    }
+	public function getName()
+	{
+		return Craft::t('Super Table');
+	}
 
-    public function getSettingsHtml()
-    {
-        $columns = $this->getSettings()->columns;
-        $defaults = $this->getSettings()->defaults;
+	public function defineContentAttribute()
+	{
+		return false;
+	}
 
-        //if (!$columns) {
-            //$columns = array('col1' => array('heading' => '', 'handle' => '', 'type' => 'SuperTable_Label'));
+	public function getSettingsHtml()
+	{
+		// Get the available field types data
+		$fieldTypeInfo = $this->_getFieldTypeInfoForConfigurator();
 
-            // Update the actual settings model for getInputHtml()
-            //$this->getSettings()->columns = $columns;
-        //} else {
+		$fieldTypeOptions = array();
 
-        if ($columns) {
-            // Each column in the SuperTable's settings contains a fieldId and width value.
-            // Before going on, grab a FieldModel of this field, so we can display its details.
-            foreach ($columns as &$column) {
-                // Attach the individual field information
-                if ($this->model) {
-                    $column = craft()->superTable_table->getFieldForColumn($this->model->id, $column);
-                }
-            }
-        }
-
-        if ($defaults === null) {
-            $defaults = array('row1' => array());
-        }
-
-        $fieldTypeOptions = array();
-
-        foreach (craft()->fields->getAllFieldTypes() as $fieldType) {
-            $fieldTypeOptions[] = array('label' => $fieldType->getName(), 'value' => $fieldType->getClassHandle());
-        }
+		foreach (craft()->fields->getAllFieldTypes() as $fieldType) {
+			// No SuperTable-Inception, sorry buddy.
+			if ($fieldType->getClassHandle() != 'SuperTable') {
+				$fieldTypeOptions[] = array('label' => $fieldType->getName(), 'value' => $fieldType->getClassHandle());
+			}
+		}
 
         $columnSettings = array(
-            'heading' => array(
+            'name' => array(
                 'heading' => Craft::t('Column Heading'),
                 'type' => 'singleline',
                 'autopopulate' => 'handle'
@@ -58,12 +41,6 @@ class SuperTableFieldType extends BaseFieldType
                 'class' => 'code',
                 'type' => 'singleline'
             ),
-            'width' => array(
-                'heading' => Craft::t('Width'),
-                'class' => 'code',
-                'type' => 'singleline',
-                'width' => 50
-            ),
             'type' => array(
                 'heading' => Craft::t('Type'),
                 'class' => 'thin',
@@ -72,160 +49,495 @@ class SuperTableFieldType extends BaseFieldType
             ),
         );
 
-        craft()->templates->includeCssResource('supertable/css/supertable.css');
-        craft()->templates->includeJsResource('supertable/js/supertable.js');
-        craft()->templates->includeJsResource('supertable/js/supertable-settings.js');
-
-        craft()->templates->includeJsResource('supertable/js/SuperTableFieldSettings.js');
-        craft()->templates->includeJs('new Craft.SuperTableFieldSettings(' .
-            '"'.craft()->templates->namespaceInputName('columns').'", ' .
-            '"'.craft()->templates->namespaceInputName('defaults').'", ' .
-            JsonHelper::encode($columns).', ' .
-            JsonHelper::encode($defaults).', ' .
-            JsonHelper::encode($columnSettings) .
+        craft()->templates->includeJsResource('supertable/js/SuperTableSettingsModal.js');
+        craft()->templates->includeJs('new Craft.SuperTableSettingsModals(' .
+            JsonHelper::encode($fieldTypeInfo). ', ' .
+            JsonHelper::encode($this->getSettings()->getBlockTypes()) . 
         ');');
 
-        $columnsField = craft()->templates->render('supertable/settings', array(
-            'label'        => Craft::t('Table Columns'),
-            'instructions' => Craft::t('Define the columns your Super Table should have.'),
-            'id'           => 'columns',
-            'name'         => 'columns',
-            'cols'         => $columnSettings,
-            'rows'         => $columns,
-            'addRowLabel'  => Craft::t('Add a column'),
-            'tableId'       => $this->model['id'],
-        ));
+        craft()->templates->includeJsResource('supertable/js/SuperTableConfigurator.js');
+        craft()->templates->includeJs('new Craft.SuperTableConfigurator(' .
+            '"'.craft()->templates->getNamespace().'", ' .
+            JsonHelper::encode('').', ' .
+            JsonHelper::encode($this->getSettings()->getBlockTypes()).', ' .
+            JsonHelper::encode($columnSettings).', ' .
+            JsonHelper::encode($fieldTypeInfo) .
+        ');');
 
-        /*$defaultsField = craft()->templates->render('supertable/field', array(
-            'label'        => Craft::t('Default Values'),
-            'instructions' => Craft::t('Define the default values for the field.'),
-            'id'           => 'defaults',
-            'name'         => 'defaults',
-            'cols'         => $columns,
-            'rows'         => $defaults,
-        ));*/
+		return craft()->templates->render('supertable/settings', array(
+			'settings'   => $this->getSettings(),
+			'fieldTypes' => $fieldTypeOptions
+		));
+	}
 
-        return $columnsField;//.$defaultsField;
-    }
+	public function prepSettings($settings)
+	{
+		if ($settings instanceof SuperTable_SettingsModel) {
+			return $settings;
+		}
 
-    public function getInputHtml($name, $value)
-    {
-        $columns = $this->getSettings()->columns;
-        $defaults = $this->getSettings()->defaults;
+		$superTableSettings = new SuperTable_SettingsModel($this->model);
+		$blockTypes = array();
 
-        $input = '<input type="hidden" name="'.$name.'" value="">';
+		if (!empty($settings['blockTypes'])) {
+			foreach ($settings['blockTypes'] as $blockTypeId => $blockTypeSettings) {
+				$blockType = new SuperTable_BlockTypeModel();
+				$blockType->id      = $blockTypeId;
+				$blockType->fieldId = $this->model->id;
 
-        if ($columns) {
-            foreach ($columns as &$column) {
-                // Attach the individual field information
-                $column = craft()->superTable_table->getFieldForColumn($this->model->id, $column);
+				$fields = array();
 
-                // Translate the column headings
-                if (!empty($column['heading'])) {
-                    $column['heading'] = Craft::t($column['heading']);
-                }
-            }
+				if (!empty($blockTypeSettings['fields'])) {
+					foreach ($blockTypeSettings['fields'] as $fieldId => $fieldSettings) {
+						$field = new FieldModel();
+						$field->id           = $fieldId;
+						$field->name         = $fieldSettings['name'];
+						$field->handle       = $fieldSettings['handle'];
+						$field->type         = $fieldSettings['type'];
 
-            if (!$value) {
-                if (is_array($defaults)) {
-                    $value = array_values($defaults);
-                }
-            }
+						if (isset($fieldSettings['typesettings'])) {
+							$field->settings = $fieldSettings['typesettings'];
+						}
 
-            $id = craft()->templates->formatInputId($name);
+						$fields[] = $field;
+					}
+				}
 
-            $input .= craft()->templates->render('supertable/input-table', array(
-                'id'        => $id,
-                'tableId'   => $this->model->id,
-                'name'      => $name,
-                'cols'      => $columns,
-                'rows'      => $value,
-            ));
-        }
+				$blockType->setFields($fields);
+				$blockTypes[] = $blockType;
+			}
+		}
 
-        return $input;
-    }
+		$superTableSettings->setBlockTypes($blockTypes);
 
-    public function prepValueFromPost($value)
-    {
-        if (is_array($value)) {
-            // Drop the string row keys
-            return array_values($value);
-        }
-    }
+		return $superTableSettings;
+	}
 
-    public function prepValue($value)
-    {
-        if (is_array($value) && ($columns = $this->getSettings()->columns)) {
-            // Make the values accessible from both the col IDs and the handles
-            foreach ($value as &$row) {
-                foreach ($columns as $colId => $col) {
-                    $col = craft()->superTable_table->getFieldForColumn($this->model->id, $col);
+	public function onAfterSave()
+	{
+		craft()->superTable->saveSettings($this->getSettings(), false);
+	}
 
-                    if ($col['handle']) {
-                        $row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
-                    }
-                }
-            }
+	public function onBeforeDelete()
+	{
+		craft()->superTable->deleteSuperTableField($this->model);
+	}
 
-            return $value;
-        }
-    }
+	public function prepValue($value)
+	{
+		$criteria = craft()->elements->getCriteria('SuperTable_Block');
 
-    protected function defineSettings()
-    {
-        return array(
-            'columns' => AttributeType::Mixed,
-            'defaults' => AttributeType::Mixed,
-        );
-    }
+        //var_dump($value);
 
-    public function onAfterSave() {
-        // Create the contents table to store field values in - if doesnt exist
-        craft()->superTable_table->createContentTable($this->model->id);
+		// Existing element?
+		if (!empty($this->element->id)) {
+			$criteria->ownerId = $this->element->id;
+		} else {
+			$criteria->id = false;
+		}
 
-        // Now that the SuperTable field has been saved, we can use it's ID to link things together.
-        $settings = $this->getSettings();
-        $columns = $settings->columns;
-        $fieldSettings = $columns;
+		$criteria->fieldId = $this->model->id;
+		$criteria->locale = $this->element->locale;
 
-        // We only want to store a reference to the fieldId in this SuperTable's settings object
-        unset($settings['columns']);
+		// Set the initially matched elements if $value is already set, which is the case if there was a validation
+		// error or we're loading an entry revision.
+		if (is_array($value) || $value === '') {
+			$criteria->status = null;
+			$criteria->localeEnabled = null;
+			$criteria->limit = null;
 
-        // First, we have to loop through all fields for this SuperTable as stored in the DB.
-        // If they're not contained in the $fields object, they need to be deleted
-        craft()->superTable_table->checkForFieldsToDelete($this->model->id, $fieldSettings);
+			if (is_array($value)) {
+				$prevElement = null;
 
-        // Loop through each column in the table, and save/update it's corresponding external field
-        if ($fieldSettings) {
-            foreach ($fieldSettings as $colKey => $column) {
-                $saveResponse = craft()->superTable_table->saveFields($this->model->id, $column);
+				foreach ($value as $element) {
+					if ($prevElement) {
+						$prevElement->setNext($element);
+						$element->setPrev($prevElement);
+					}
 
-                // If there was an error saving the field - don't save it in the field's settings
-                if (array_key_exists('error', $saveResponse)) {
+					$prevElement = $element;
+				}
 
-                    return false;
-                } else {
-                    // These are the only values we store in the SuperTable settings
-                    $columns[$colKey] = array(
-                        'fieldId'   => $saveResponse['fieldId'],
-                        'width'     => $column['width'],
-                    );
-                }
-            }
-        }
+				$criteria->setMatchedElements($value);
 
-        // Then, save the linked fieldId's for each column back to this SuperTable's settings.
-        // But this needs to be a direct DB Query - otherwise will create a nasty infinite save loop (this is onAfterSave after all).
-        $settings->columns = $columns;
-        craft()->superTable_table->saveSettings($this->model->id, $settings);
-    }
+			} else if ($value === '') {
+				// Means there were no blocks
+				$criteria->setMatchedElements(array());
+			}
+		}
 
-    public function onBeforeDelete() {
-        // Before we delete this SuperTable field, we need to:
-        // - Delete all fields attached to this SuperTable
-        // - Delete the contentTable for this SuperTable
-        // - Delete the actual SuperTable field (done automatically after this)
-        craft()->superTable_table->deleteTable($this->model->id);
-    }
+		return $criteria;
+	}
+
+	public function getInputHtml($name, $value)
+	{
+		$id = craft()->templates->formatInputId($name);
+		$settings = $this->getSettings();
+
+		// Get the block types data
+		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
+
+		craft()->templates->includeJsResource('supertable/js/SuperTableInput.js');
+
+		craft()->templates->includeJs('new Craft.SuperTableInput(' .
+			'"'.craft()->templates->namespaceInputId($id).'", ' .
+			JsonHelper::encode($blockTypeInfo).', ' .
+			'"'.craft()->templates->namespaceInputName($name).'"' .
+		');');
+
+		if ($value instanceof ElementCriteriaModel) {
+			$value->limit = null;
+			$value->status = null;
+			$value->localeEnabled = null;
+		}
+
+		return craft()->templates->render('supertable/input', array(
+			'id' => $id,
+			'name' => $name,
+            'table' => $settings->getBlockTypes()[0],
+			'blocks' => $value,
+			'static' => false
+		));
+	}
+
+	public function prepValueFromPost($data)
+	{
+		// Get the possible block types for this field
+		$blockTypes = craft()->superTable->getBlockTypesByFieldId($this->model->id, 'id');
+
+		if (!is_array($data)) {
+			return array();
+		}
+
+		$oldBlocksById = array();
+
+		// Get the old blocks that are still around
+		if (!empty($this->element->id)) {
+			$ownerId = $this->element->id;
+
+			$ids = array();
+
+			foreach (array_keys($data) as $blockId) {
+				if (is_numeric($blockId) && $blockId != 0) {
+					$ids[] = $blockId;
+				}
+			}
+
+			if ($ids) {
+				$criteria = craft()->elements->getCriteria('SuperTable_Block');
+				$criteria->fieldId = $this->model->id;
+				$criteria->ownerId = $ownerId;
+				$criteria->id = $ids;
+				$criteria->limit = null;
+				$criteria->status = null;
+				$criteria->localeEnabled = null;
+				$criteria->locale = $this->element->locale;
+				$oldBlocks = $criteria->find();
+
+				// Index them by ID
+				foreach ($oldBlocks as $oldBlock) {
+					$oldBlocksById[$oldBlock->id] = $oldBlock;
+				}
+			}
+		} else {
+			$ownerId = null;
+		}
+
+		$blocks = array();
+		$sortOrder = 0;
+
+		foreach ($data as $blockId => $blockData) {
+			if (!isset($blockData['type']) || !isset($blockTypes[$blockData['type']])) {
+				continue;
+			}
+
+			$blockType = $blockTypes[$blockData['type']];
+
+			// Is this new? (Or has it been deleted?)
+			if (strncmp($blockId, 'new', 3) === 0 || !isset($oldBlocksById[$blockId])) {
+				$block = new SuperTable_BlockModel();
+				$block->fieldId = $this->model->id;
+				$block->typeId  = $blockType->id;
+				$block->ownerId = $ownerId;
+				$block->locale  = $this->element->locale;
+			} else {
+				$block = $oldBlocksById[$blockId];
+			}
+
+			$block->setOwner($this->element);
+			$block->enabled = (isset($blockData['enabled']) ? (bool) $blockData['enabled'] : true);
+
+			// Set the content post location on the block if we can
+			$ownerContentPostLocation = $this->element->getContentPostLocation();
+
+			if ($ownerContentPostLocation) {
+				$block->setContentPostLocation("{$ownerContentPostLocation}.{$this->model->handle}.{$blockId}.fields");
+			}
+
+			if (isset($blockData['fields'])) {
+				$block->setContentFromPost($blockData['fields']);
+			}
+
+			$sortOrder++;
+			$block->sortOrder = $sortOrder;
+
+			$blocks[] = $block;
+		}
+
+		return $blocks;
+	}
+
+	public function validate($blocks)
+	{
+		$errors = array();
+		$blocksValidate = true;
+
+		foreach ($blocks as $block) {
+			if (!craft()->superTable->validateBlock($block)) {
+				$blocksValidate = false;
+			}
+		}
+
+		if (!$blocksValidate) {
+			$errors[] = Craft::t('Correct the errors listed above.');
+		}
+
+		if ($errors) {
+			return $errors;
+		} else {
+			return true;
+		}
+	}
+
+	public function getSearchKeywords($value)
+	{
+		$keywords = array();
+		$contentService = craft()->content;
+
+		foreach ($value as $block) {
+			$originalContentTable      = $contentService->contentTable;
+			$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+			$originalFieldContext      = $contentService->fieldContext;
+
+			$contentService->contentTable      = $block->getContentTable();
+			$contentService->fieldColumnPrefix = $block->getFieldColumnPrefix();
+			$contentService->fieldContext      = $block->getFieldContext();
+
+			foreach (craft()->fields->getAllFields() as $field) {
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType) {
+					$fieldType->element = $block;
+					$handle = $field->handle;
+					$keywords[] = $fieldType->getSearchKeywords($block->getFieldValue($handle));
+				}
+			}
+
+			$contentService->contentTable      = $originalContentTable;
+			$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+			$contentService->fieldContext      = $originalFieldContext;
+		}
+
+		return parent::getSearchKeywords($keywords);
+	}
+
+	public function onAfterElementSave()
+	{
+		craft()->superTable->saveField($this);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	protected function getSettingsModel()
+	{
+		return new SuperTable_SettingsModel($this->model);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	private function _getFieldTypeInfoForConfigurator()
+	{
+		$fieldTypes = array();
+
+		// Set a temporary namespace for these
+		$originalNamespace = craft()->templates->getNamespace();
+		$namespace = craft()->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
+		craft()->templates->setNamespace($namespace);
+
+		foreach (craft()->fields->getAllFieldTypes() as $fieldType) {
+			$fieldTypeClass = $fieldType->getClassHandle();
+
+			// No SuperTable-Inception, sorry buddy.
+			if ($fieldTypeClass == 'SuperTable') {
+				continue;
+			}
+
+			craft()->templates->startJsBuffer();
+
+			// A Matrix field will fetch all available fields, grabbing their Settings HTML. Then Super Table will do the same,
+			// causing an infinite loop - extract some methods from MatrixFieldType
+			if ($fieldTypeClass == 'Matrix') {
+				$settingsBodyHtml = craft()->templates->namespaceInputs($this->getMatrixSettingsHtml());
+			} else {
+				$settingsBodyHtml = craft()->templates->namespaceInputs($fieldType->getSettingsHtml());
+			}
+
+			$settingsFootHtml = craft()->templates->clearJsBuffer();
+
+			$fieldTypes[] = array(
+				'type'             => $fieldTypeClass,
+				'name'             => $fieldType->getName(),
+				'settingsBodyHtml' => $settingsBodyHtml,
+				'settingsFootHtml' => $settingsFootHtml,
+			);
+		}
+
+		craft()->templates->setNamespace($originalNamespace);
+
+		return $fieldTypes;
+	}
+
+	private function _getBlockTypeInfoForInput($name)
+	{
+		$blockType = array();
+
+		// Set a temporary namespace for these
+		$originalNamespace = craft()->templates->getNamespace();
+		$namespace = craft()->templates->namespaceInputName($name.'[__BLOCK__][fields]', $originalNamespace);
+		craft()->templates->setNamespace($namespace);
+
+		foreach ($this->getSettings()->getBlockTypes() as $blockType) {
+			// Create a fake SuperTable_BlockModel so the field types have a way to get at the owner element, if there is one
+			$block = new SuperTable_BlockModel();
+			$block->fieldId = $this->model->id;
+			$block->typeId = $blockType->id;
+
+			if ($this->element) {
+				$block->setOwner($this->element);
+			}
+
+			$fieldLayoutFields = $blockType->getFieldLayout()->getFields();
+
+			foreach ($fieldLayoutFields as $fieldLayoutField) {
+				$fieldType = $fieldLayoutField->getField()->getFieldType();
+
+				if ($fieldType) {
+					$fieldType->element = $block;
+					$fieldType->setIsFresh(true);
+				}
+			}
+
+			craft()->templates->startJsBuffer();
+
+			$bodyHtml = craft()->templates->namespaceInputs(craft()->templates->render('supertable/fields', array(
+				'namespace' => null,
+				'fields'    => $fieldLayoutFields
+			)));
+
+			// Reset $_isFresh's
+			foreach ($fieldLayoutFields as $fieldLayoutField) {
+				$fieldType = $fieldLayoutField->getField()->getFieldType();
+
+				if ($fieldType) {
+					$fieldType->setIsFresh(null);
+				}
+			}
+
+			$footHtml = craft()->templates->clearJsBuffer();
+
+			$blockType = array(
+				'type' => $blockType->id,
+				'bodyHtml' => $bodyHtml,
+				'footHtml' => $footHtml,
+			);
+		}
+
+		craft()->templates->setNamespace($originalNamespace);
+
+		return $blockType;
+	}
+
+
+
+
+	//
+	// Extracted from MatrixFieldType - must be modified otherwise will create infinite loop
+	//
+
+	public function getMatrixSettingsHtml()
+	{
+		$matrixFieldType = craft()->fields->getFieldType('Matrix');
+
+		// Get the available field types data
+		$fieldTypeInfo = $this->_getMatrixFieldTypeInfoForConfigurator();
+
+		craft()->templates->includeJsResource('js/MatrixConfigurator.js');
+		craft()->templates->includeJs('new Craft.MatrixConfigurator('.JsonHelper::encode($fieldTypeInfo).', "'.craft()->templates->getNamespace().'");');
+
+		craft()->templates->includeTranslations(
+			'What this block type will be called in the CP.',
+			'How you’ll refer to this block type in the templates.',
+			'Are you sure you want to delete this block type?',
+			'This field is required',
+			'This field is translatable',
+			'Field Type',
+			'Are you sure you want to delete this field?'
+		);
+
+		$fieldTypeOptions = array();
+
+		foreach (craft()->fields->getAllFieldTypes() as $fieldType)
+		{
+			// No Matrix-Inception, sorry buddy.
+			if ($fieldType->getClassHandle() != 'Matrix' && $fieldType->getClassHandle() != 'SuperTable')
+			{
+				$fieldTypeOptions[] = array('label' => $fieldType->getName(), 'value' => $fieldType->getClassHandle());
+			}
+		}
+
+		return craft()->templates->render('_components/fieldtypes/Matrix/settings', array(
+			'settings'   => $matrixFieldType->getSettings(),
+			'fieldTypes' => $fieldTypeOptions
+		));
+	}
+
+	private function _getMatrixFieldTypeInfoForConfigurator()
+	{
+		$fieldTypes = array();
+
+		// Set a temporary namespace for these
+		$originalNamespace = craft()->templates->getNamespace();
+		$namespace = craft()->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
+		craft()->templates->setNamespace($namespace);
+
+		foreach (craft()->fields->getAllFieldTypes() as $fieldType)
+		{
+			$fieldTypeClass = $fieldType->getClassHandle();
+
+			// No Matrix-Inception, sorry buddy.
+			if ($fieldTypeClass == 'Matrix' || $fieldTypeClass == 'SuperTable')
+			{
+				continue;
+			}
+
+			craft()->templates->startJsBuffer();
+			$settingsBodyHtml = craft()->templates->namespaceInputs($fieldType->getSettingsHtml());
+			$settingsFootHtml = craft()->templates->clearJsBuffer();
+
+			$fieldTypes[] = array(
+				'type'             => $fieldTypeClass,
+				'name'             => $fieldType->getName(),
+				'settingsBodyHtml' => $settingsBodyHtml,
+				'settingsFootHtml' => $settingsFootHtml,
+			);
+		}
+
+		craft()->templates->setNamespace($originalNamespace);
+
+		return $fieldTypes;
+	}
+
+
 }

@@ -1,31 +1,69 @@
-{%- set id = (id is defined ? id : null) %}
-{%- set label = (label is defined and label != '__blank__' ? label : null) %}
-{%- set locale = ((craft.isLocalized() and locale is defined) ? locale : null) %}
-{%- set instructions = (instructions is defined ? instructions : null) %}
-{%- set warning = (warning is defined ? warning : null) %}
-{%- set errors = (errors is defined ? errors : null) -%}
+{% import "_includes/forms" as forms %}
 
-<div class="field{% if first is defined and first %} first{% endif %}"{% if id %} id="{{ id }}-field"{% endif %}>
-	{% if label or instructions %}
-		<div class="heading">
-			{% if label %}
-				<label{% if required is defined and required %} class="required"{% endif %}{% if id %} for="{{ id }}"{% endif %}>
-					{{- label|raw -}}
-				</label>
-				{% if locale %}
-					<span class="locale">{{ locale }}</span>
-				{% endif %}
-			{% endif %}
-			{% if instructions %}
-				<div class="instructions">{{ instructions|md }}</div>
-			{% endif %}
-		</div>
-	{% endif %}
-	<div class="input{% if errors %} errors{% endif %}">
-		{% include 'supertable/settings-table' %}
-	</div>
-	{% if warning %}
-		<p class="warning">{{ warning }}</p>
-	{% endif %}
-	{% include "_includes/forms/errorList" with { errors: errors } %}
+{% includeCssResource 'supertable/css/SuperTableConfigurator.css' %}
+
+{% set blockTypeInput %}
+	<table class="shadow-box editable">
+		<thead>
+			<tr>
+				<th scope="col" class="header">{{ 'Column Heading'|t }}</th>
+				<th scope="col" class="header">{{ 'Handle'|t }}</th>
+				<th scope="col" class="header">{{ 'Type'|t }}</th>
+				<th class="header" colspan="3"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for blockType in settings.getBlockTypes() %}
+				{% for field in blockType.getFields() %}
+					{% set fieldId = field.id %}
+					{% set fieldType = field.getFieldType() %}
+
+					<tr data-id="{{ fieldId }}" data-blockType="{{ blockType.id }}">
+						<td class="textual">
+							<textarea name="{{ 'blockTypes['~blockType.id~'][fields]['~fieldId~'][name]' }}" rows="1">{{ field.name }}</textarea>
+						</td>
+
+						<td class="textual code">
+							<textarea name="{{ 'blockTypes['~blockType.id~'][fields]['~fieldId~'][handle]' }}" rows="1">{{ field.handle }}</textarea>
+						</td>
+
+						<td class="thin">
+							{% include "_includes/forms/select" with {
+								class: 'small',
+								id: fieldId~'-type',
+								name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][type]',
+								options: fieldTypes,
+								value: fieldType.getClassHandle(),
+							} only %}
+						</td>
+
+						<td class="settings-col hidden">
+							<div class="fieldtype-settings">
+								<div>
+									{% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~'][typesettings]' %}
+										{{ fieldType.getSettingsHtml()|raw  }}
+									{% endnamespace %}
+								</div>
+							</div>
+						</td>
+
+						<td class="thin action"><a class="settings icon" title="{{ 'Settings' | t }}"></a></td>
+						<td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+						<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+					</tr>
+				{% endfor %}
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<div class="btn add icon">{{ "Add a column"|t }}</div>
+
+{% endset %}
+
+<div class="supertable-configurator">
+	{{ forms.field({
+		label: "Configuration"|t,
+		instructions: "Define the columns your Super Table should have."|t,
+		name: 'config'
+	}, blockTypeInput) }}
 </div>

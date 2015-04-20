@@ -1,0 +1,45 @@
+table.editable.superTable {
+	margin-top: 10px;
+}
+
+table.editable.superTable tbody tr td {
+	background: #f9fafa;
+	text-align: left;
+}
+
+table.editable.superTable tbody tr td .field .heading {
+	display: none;
+}
+
+table.editable.superTable tbody tr td.action {
+	background: #ebedef;
+}
+
+.superTableContainer {
+	position: relative;
+}
+
+.superTableContainer .row-spinner {
+	height: 22px;
+	position: absolute;
+	bottom: 4px;
+}
+
+body.ltr table.editable.superTable tbody tr td:nth-child(2) {
+	border-left: none;
+}
+
+/* Strange issue for Categories and button alignment */
+.elements.structure li {
+	display: inline-block;
+	float: left;
+}
+
+body.ltr .structure li:first-child {
+	padding-left: 0;
+}
+
+.categoriesfield .btn {
+	margin-left: 10px;
+}
+
