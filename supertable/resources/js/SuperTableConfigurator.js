@@ -78,7 +78,7 @@ Craft.EditableColumnTable = Garnish.Base.extend(
 
 	addRow: function()
 	{
-		var rowId = this.settings.rowIdPrefix+(this.biggestId+1);
+		var rowId = this.settings.rowIdPrefix+(this.biggestId+2);
 
 		if (this.blockTypes.length > 0) {
 			var blockId = this.blockTypes[0].id;
