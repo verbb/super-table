@@ -48,7 +48,7 @@ To edit the settings of a particular field, click on the small 'cog' icon on the
 
 * Matrix
 
-...and many more. Field Manager can handle just about any FieldType, the above are simply those that have been tested.
+...and many more. Super Table can handle just about any FieldType, the above are simply those that have been tested.
 
 
 ## Roadmap
@@ -63,9 +63,7 @@ To edit the settings of a particular field, click on the small 'cog' icon on the
 
 ## Thanks / Contributions
 
-Thanks go to 
-
-A massive thanks to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](https://github.com/benparizek) for their input, ideas and suggestions.
+Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](https://github.com/benparizek) for their input, ideas and suggestions.
 
 
 ## Changelog
