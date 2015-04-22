@@ -14,7 +14,7 @@ Craft.SuperTableInput = Garnish.Base.extend(
 	$tbody: null,
 	$addRowBtn: null,
 
-	init: function(id, blockType, inputNamePrefix)
+	init: function(id, blockType, inputNamePrefix, settings)
 	{
 		this.id = id
 		this.blockType = blockType;
