@@ -43,3 +43,10 @@ body.ltr .structure li:first-child {
 	margin-left: 10px;
 }
 
+
+
+/* Provide special formatting for some third-party field types. Just to make things clean */
+
+.superTableContainer .field .linkit .linkit-type {
+	margin: 5px 0;
+}

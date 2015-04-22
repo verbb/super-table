@@ -36,13 +36,10 @@ To edit the settings of a particular field, click on the small 'cog' icon on the
 * Tags
 * Users
 
-**ButtonBox by [Supercool](https://github.com/supercool/Button-Box)**
+**Third-Party**
 
-* Buttons
-* Colours
-* Text Size
-* Stars
-* Width
+* [ButtonBox](https://github.com/supercool/Button-Box)
+* [Linkit](https://github.com/fruitstudios/LinkIt)
 
 **Planned support**
 
