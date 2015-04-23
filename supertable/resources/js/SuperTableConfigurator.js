@@ -2,24 +2,11 @@
 
 Craft.SuperTableConfigurator = Garnish.Base.extend(
 {
-	columnsTableName: null,
-	columnsTableId: null,
-	columnsTableInputPath: null,
-	columnSettings: null,
-	columnsTable: null,
-	blockTypes: null,
-
-	fieldTypeInfo: null,
-
-	init: function(columnsTableName, columns, blockTypes, columnSettings, fieldTypeInfo)
+	init: function(columnsTableName, columns, blockTypes, columnSettings, fieldTypeInfo, tableId)
 	{
-		this.columnsTableName = columnsTableName;
-		this.columnsTableId = Craft.formatInputId(this.columnsTableName);
-		this.columnSettings = columnSettings;
-		this.fieldTypeInfo = fieldTypeInfo;
-		this.blockTypes = blockTypes;
+		var columnsTableId = Craft.formatInputId(columnsTableName);
 
-		this.columnsTable = new Craft.EditableColumnTable(this.columnsTableId, this.columnsTableName, this.blockTypes, this.fieldTypeInfo, this.columnSettings, {
+		new Craft.EditableColumnTable(columnsTableId, columnsTableName, blockTypes, fieldTypeInfo, tableId, columnSettings, {
 			rowIdPrefix: 'new',
 			onAddRow: $.proxy(this, 'onAddColumn'),
 		});
@@ -43,22 +30,24 @@ Craft.EditableColumnTable = Garnish.Base.extend(
 	fieldTypeInfo: null,
 	blockTypes: null,
 	fieldName: null,
+	tableId: null,
 
 	$table: null,
 	$tbody: null,
 	$addRowBtn: null,
 
-	init: function(id, baseName, blockTypes, fieldTypeInfo, columns, settings)
+	init: function(id, baseName, blockTypes, fieldTypeInfo, tableId, columns, settings)
 	{
 		this.id = id;
 		this.baseName = baseName;
 		this.columns = columns;
 		this.fieldTypeInfo = fieldTypeInfo;
 		this.blockTypes = blockTypes;
+		this.tableId = tableId;
 
 		this.setSettings(settings, Craft.EditableColumnTable.defaults);
 
-		this.$table = $('.supertable-configurator:first .input:first table:first');
+		this.$table = $('#' + tableId);
 		this.$tbody = this.$table.children('tbody');
 
 		this.sorter = new Craft.DataTableSorter(this.$table, {

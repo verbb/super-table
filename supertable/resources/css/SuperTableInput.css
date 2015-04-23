@@ -50,3 +50,7 @@ body.ltr .structure li:first-child {
 .superTableContainer .field .linkit .linkit-type {
 	margin: 5px 0;
 }
+
+.superTableContainer .field .linkit .linkit-type-option {
+	margin-bottom: 0;
+}

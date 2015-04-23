@@ -8,9 +8,11 @@
     <table id="{{ id }}" class="shadow-box editable superTable">
         <thead>
             <tr>
-				{% for field in table.getFields() %}
-					<th scope="col" class="header">{{ field.name }}</th>
-				{% endfor %}
+				{% if table %}
+					{% for field in table.getFields() %}
+						<th scope="col" class="header">{{ field.name }}</th>
+					{% endfor %}
+				{% endif %}
 
                 <th class="header" colspan="2"></th>
             </tr>

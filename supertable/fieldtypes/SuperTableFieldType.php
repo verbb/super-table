@@ -49,24 +49,29 @@ class SuperTableFieldType extends BaseFieldType
             ),
         );
 
+		$settings = $this->getSettings();
+		$tableId = ($settings->getBlockTypes()) ? $settings->getBlockTypes()[0]->id : 'new';
+
         craft()->templates->includeJsResource('supertable/js/SuperTableSettingsModal.js');
         craft()->templates->includeJs('new Craft.SuperTableSettingsModals(' .
             JsonHelper::encode($fieldTypeInfo). ', ' .
-            JsonHelper::encode($this->getSettings()->getBlockTypes()) . 
+            JsonHelper::encode($settings) . 
         ');');
 
         craft()->templates->includeJsResource('supertable/js/SuperTableConfigurator.js');
         craft()->templates->includeJs('new Craft.SuperTableConfigurator(' .
             '"'.craft()->templates->getNamespace().'", ' .
             JsonHelper::encode('').', ' .
-            JsonHelper::encode($this->getSettings()->getBlockTypes()).', ' .
+            JsonHelper::encode($settings->getBlockTypes()).', ' .
             JsonHelper::encode($columnSettings).', ' .
-            JsonHelper::encode($fieldTypeInfo) .
+            JsonHelper::encode($fieldTypeInfo).', ' .
+            '"'.craft()->templates->namespaceInputId($tableId).'"' .
         ');');
 
 		return craft()->templates->render('supertable/settings', array(
-			'settings'   => $this->getSettings(),
-			'fieldTypes' => $fieldTypeOptions
+			'id'			=> $tableId,
+			'settings'		=> $settings,
+			'fieldTypes'	=> $fieldTypeOptions
 		));
 	}
 
@@ -191,10 +196,12 @@ class SuperTableFieldType extends BaseFieldType
 			$value->localeEnabled = null;
 		}
 
+		$table = ($settings->getBlockTypes()) ? $settings->getBlockTypes()[0] : null;
+
 		return craft()->templates->render('supertable/input', array(
 			'id' => $id,
 			'name' => $name,
-            'table' => $settings->getBlockTypes()[0],
+            'table' => $table,
 			'blocks' => $value,
 			'static' => false
 		));
@@ -491,15 +498,14 @@ class SuperTableFieldType extends BaseFieldType
 		foreach (craft()->fields->getAllFieldTypes() as $fieldType)
 		{
 			// No Matrix-Inception, sorry buddy.
-			if ($fieldType->getClassHandle() != 'Matrix' && $fieldType->getClassHandle() != 'SuperTable')
-			{
+			if ($fieldType->getClassHandle() != 'Matrix' && $fieldType->getClassHandle() != 'SuperTable') {
 				$fieldTypeOptions[] = array('label' => $fieldType->getName(), 'value' => $fieldType->getClassHandle());
 			}
 		}
 
 		return craft()->templates->render('_components/fieldtypes/Matrix/settings', array(
-			'settings'   => $matrixFieldType->getSettings(),
-			'fieldTypes' => $fieldTypeOptions
+			'settings'		=> $matrixFieldType->getSettings(),
+			'fieldTypes'	=> $fieldTypeOptions
 		));
 	}
 
