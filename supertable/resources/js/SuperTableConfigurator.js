@@ -229,7 +229,7 @@ SuperTableField = Garnish.Base.extend({
 					html += '</select>' + 
 				'</div>' + 
 			'</td>' +
-			'<td class="settings-col">' +
+			'<td class="settings-col hidden">' +
 				'<div class="fieldtype-settings"></div>' +
 			'</td>' +
 			'<td class="thin action"><a class="settings icon" title="'+Craft.t('Settings')+'"></a></td>' +
