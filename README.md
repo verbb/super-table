@@ -72,6 +72,10 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 ## Changelog
 
+#### 0.2
+
+- Major refactor of field settings JS. Caused namespacing issues for certain field types.
+
 #### 0.1
 
 - Initial release.

@@ -1,7 +1,6 @@
 (function($){
 
-Craft.SuperTableInput = Garnish.Base.extend(
-{
+Craft.SuperTableInput = Garnish.Base.extend({
 	id: null,
 	blockType: null,
 	inputNamePrefix: null,
@@ -14,8 +13,7 @@ Craft.SuperTableInput = Garnish.Base.extend(
 	$tbody: null,
 	$addRowBtn: null,
 
-	init: function(id, blockType, inputNamePrefix, settings)
-	{
+	init: function(id, blockType, inputNamePrefix, settings) {
 		this.id = id
 		this.blockType = blockType;
 		this.inputNamePrefix = inputNamePrefix;
@@ -39,8 +37,7 @@ Craft.SuperTableInput = Garnish.Base.extend(
 		}
 	},
 
-	addRow: function()
-	{
+	addRow: function() {
 		var type = this.blockType.type;
 
 		this.totalNewBlocks++;
@@ -67,8 +64,7 @@ Craft.SuperTableInput = Garnish.Base.extend(
 		this.sorter.addItems($tr);
 	},
 
-	getParsedBlockHtml: function(html, id)
-	{
+	getParsedBlockHtml: function(html, id) {
 		if (typeof html == 'string') {
 			return html.replace(/__BLOCK__/g, id);
 		} else {

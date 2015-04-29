@@ -50,23 +50,16 @@ class SuperTableFieldType extends BaseFieldType
         );
 
 		$settings = $this->getSettings();
-		$tableId = ($settings->getBlockTypes()) ? $settings->getBlockTypes()[0]->id : 'new';
+		$blockTypes = $settings->getBlockTypes();
+		$tableId = ($blockTypes) ? $blockTypes[0]->id : 'new';
 
-        craft()->templates->includeJsResource('supertable/js/SuperTableSettingsModal.js');
-        craft()->templates->includeJs('new Craft.SuperTableSettingsModals(' .
-            JsonHelper::encode($fieldTypeInfo). ', ' .
-            JsonHelper::encode($settings) . 
-        ');');
-
-        craft()->templates->includeJsResource('supertable/js/SuperTableConfigurator.js');
-        craft()->templates->includeJs('new Craft.SuperTableConfigurator(' .
-            '"'.craft()->templates->getNamespace().'", ' .
-            JsonHelper::encode('').', ' .
-            JsonHelper::encode($settings->getBlockTypes()).', ' .
-            JsonHelper::encode($columnSettings).', ' .
-            JsonHelper::encode($fieldTypeInfo).', ' .
-            '"'.craft()->templates->namespaceInputId($tableId).'"' .
-        ');');
+		craft()->templates->includeJsResource('supertable/js/SuperTableConfigurator.js');
+		craft()->templates->includeJs('new Craft.SuperTableConfigurator(' . 
+            '"'.$tableId.'", ' .
+            '"'.craft()->templates->namespaceInputId($tableId).'", ' .
+			JsonHelper::encode($fieldTypeInfo).', ' . 
+			'"'.craft()->templates->getNamespace().'"' .
+		');');
 
 		return craft()->templates->render('supertable/settings', array(
 			'id'			=> $tableId,
@@ -196,7 +189,8 @@ class SuperTableFieldType extends BaseFieldType
 			$value->localeEnabled = null;
 		}
 
-		$table = ($settings->getBlockTypes()) ? $settings->getBlockTypes()[0] : null;
+		$blockTypes = $settings->getBlockTypes();
+		$table = ($blockTypes) ? $blockTypes[0] : null;
 
 		return craft()->templates->render('supertable/input', array(
 			'id' => $id,
@@ -370,7 +364,7 @@ class SuperTableFieldType extends BaseFieldType
 
 		// Set a temporary namespace for these
 		$originalNamespace = craft()->templates->getNamespace();
-		$namespace = craft()->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
+		$namespace = craft()->templates->namespaceInputName('blockTypes[__BLOCK_TYPE_ST__][fields][__FIELD_ST__][typesettings]', $originalNamespace);
 		craft()->templates->setNamespace($namespace);
 
 		foreach (craft()->fields->getAllFieldTypes() as $fieldType) {
