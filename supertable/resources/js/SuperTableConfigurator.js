@@ -143,13 +143,8 @@ SuperTableField = Garnish.Base.extend({
 			new Craft.HandleGenerator(this.$nameInput, this.$handleInput);
 		}
 
-		this.addListener(this.$handleInput, 'textchange', 'updateHandleLabel');
 		this.addListener(this.$typeSelect, 'change', 'onTypeSelectChange');
 		this.addListener(this.$typeSettingsButton, 'click', 'onTypeSettingsClick');
-	},
-
-	updateHandleLabel: function() {
-		this.$handleLabel.html(Craft.escapeHtml(this.$handleInput.val())+'&nbsp;');
 	},
 
 	onTypeSelectChange: function() {
@@ -218,6 +213,9 @@ SuperTableField = Garnish.Base.extend({
 			'</td>' +
 			'<td class="textual code">' +
 				'<textarea name="'+this.inputNamePrefix+'[handle]" rows="1"></textarea>' +
+			'</td>' +
+			'<td class="textual code" width="50">' +
+				'<textarea name="'+this.inputNamePrefix+'[width]" rows="1"></textarea>' +
 			'</td>' +
 			'<td class="thin">' +
 				'<div class="select small">' + 

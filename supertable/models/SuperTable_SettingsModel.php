@@ -58,7 +58,7 @@ class SuperTable_SettingsModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'width' => AttributeType::Number,
+			'columns' => AttributeType::Mixed,
 		);
 	}
 }

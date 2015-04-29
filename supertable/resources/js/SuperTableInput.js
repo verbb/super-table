@@ -66,7 +66,7 @@ Craft.SuperTableInput = Garnish.Base.extend({
 
 	getParsedBlockHtml: function(html, id) {
 		if (typeof html == 'string') {
-			return html.replace(/__BLOCK__/g, id);
+			return html.replace(/__BLOCK_ST__/g, id);
 		} else {
 			return '';
 		}

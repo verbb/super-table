@@ -58,10 +58,8 @@ There is early Matrix support for Super Table, in that a Super Table can be used
 ## Roadmap
 
 - Fix Matrix rendering issue.
-- Add column width support.
 - Allow layout option to display columns vertically (Table) or horizontally (Matrix). 
 - Integrate options for static, non-repeatable table - ie [Set Table](https://github.com/engram-design/SetTable).
-- Add Label Fieldtype.
 - Test more third-party fieldtypes, purely for a complete list.
 
 
@@ -71,6 +69,13 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 
 ## Changelog
+
+#### 0.2.5
+
+- Added width option to each column.
+- Added Label field type.
+- Fixed some minor validation bugs.
+- Fixed namespacing issues for element-selects and some other fields inside Matrix blocks. 
 
 #### 0.2
 

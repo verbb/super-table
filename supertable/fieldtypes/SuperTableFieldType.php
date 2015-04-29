@@ -30,26 +30,11 @@ class SuperTableFieldType extends BaseFieldType
 			}
 		}
 
-        $columnSettings = array(
-            'name' => array(
-                'heading' => Craft::t('Column Heading'),
-                'type' => 'singleline',
-                'autopopulate' => 'handle'
-            ),
-            'handle' => array(
-                'heading' => Craft::t('Handle'),
-                'class' => 'code',
-                'type' => 'singleline'
-            ),
-            'type' => array(
-                'heading' => Craft::t('Type'),
-                'class' => 'thin',
-                'type' => 'select',
-                'options' => $fieldTypeOptions,
-            ),
-        );
-
 		$settings = $this->getSettings();
+
+		// Grab any additional settings for each field - latch it on
+
+
 		$blockTypes = $settings->getBlockTypes();
 		$tableId = ($blockTypes) ? $blockTypes[0]->id : 'new';
 
@@ -76,6 +61,7 @@ class SuperTableFieldType extends BaseFieldType
 
 		$superTableSettings = new SuperTable_SettingsModel($this->model);
 		$blockTypes = array();
+		$columns = array();
 
 		if (!empty($settings['blockTypes'])) {
 			foreach ($settings['blockTypes'] as $blockTypeId => $blockTypeSettings) {
@@ -93,6 +79,10 @@ class SuperTableFieldType extends BaseFieldType
 						$field->handle       = $fieldSettings['handle'];
 						$field->type         = $fieldSettings['type'];
 
+						$columns[$field->id] = array(
+							'width' => $fieldSettings['width']
+						);
+
 						if (isset($fieldSettings['typesettings'])) {
 							$field->settings = $fieldSettings['typesettings'];
 						}
@@ -107,6 +97,9 @@ class SuperTableFieldType extends BaseFieldType
 		}
 
 		$superTableSettings->setBlockTypes($blockTypes);
+
+		// Save additional field column data - but in the SuperTable field
+		$superTableSettings->columns = $columns;
 
 		return $superTableSettings;
 	}
@@ -197,7 +190,8 @@ class SuperTableFieldType extends BaseFieldType
 			'name' => $name,
             'table' => $table,
 			'blocks' => $value,
-			'static' => false
+			'static' => false,
+			'settings' => $settings->columns,
 		));
 	}
 
@@ -406,7 +400,7 @@ class SuperTableFieldType extends BaseFieldType
 
 		// Set a temporary namespace for these
 		$originalNamespace = craft()->templates->getNamespace();
-		$namespace = craft()->templates->namespaceInputName($name.'[__BLOCK__][fields]', $originalNamespace);
+		$namespace = craft()->templates->namespaceInputName($name.'[__BLOCK_ST__][fields]', $originalNamespace);
 		craft()->templates->setNamespace($namespace);
 
 		foreach ($this->getSettings()->getBlockTypes() as $blockType) {

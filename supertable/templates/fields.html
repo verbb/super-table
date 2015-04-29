@@ -3,7 +3,17 @@
 
 {% namespace namespace %}
 	{% for field in fields %}
-		<td>
+
+		{# Additional field settings #}
+		{% if settings is defined and settings %}
+			{% set fieldId = field.getField().id %}
+			
+			{% if settings[fieldId] is defined %}
+				{% set width = settings[fieldId].width %}
+			{% endif %}
+		{% endif %}
+
+		<td {% if width is defined %}width="{{ width }}"{% endif %}>
 			{% include "_includes/field" with {
 				field:    field.getField(),
 				required: field.required,
