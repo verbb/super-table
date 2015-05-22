@@ -71,6 +71,15 @@
 
 {% endset %}
 
+{{ forms.selectField({
+	label: "Field Layout"|t,
+	instructions: "Set how you want your fields to appear when editing. Table Layout displays fields vertically, while Row Layout displays fields horizontally."|t,
+	id: 'fieldLayout',
+	name: 'fieldLayout',
+	options: {table: 'Table Layout', row: "Row Layout"},
+	value: settings.fieldLayout,
+}) }}
+
 <div class="supertable-configurator">
 	{{ forms.field({
 		label: "Configuration"|t,

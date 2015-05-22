@@ -59,6 +59,7 @@ class SuperTable_SettingsModel extends BaseModel
 	{
 		return array(
 			'columns' => AttributeType::Mixed,
+			'fieldLayout' => AttributeType::String,
 		);
 	}
 }

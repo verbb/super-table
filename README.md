@@ -41,24 +41,39 @@ To edit the settings of a particular field, click on the small 'cog' icon on the
 * [ButtonBox](https://github.com/supercool/Button-Box)
 * [Linkit](https://github.com/fruitstudios/LinkIt)
 
-**Planned support**
+**Partial support**
 
 * Matrix
 
 ...and many more. Super Table can handle just about any FieldType, the above are simply those that have been tested.
 
 
-## Early Matrix Support
+## Matrix Support
 
-There is early Matrix support for Super Table, in that a Super Table can be used inside your Matrix blocks as below. Currently, you cannot add a Matrix field as a field to your Super Table. Instead, you'll need to put your Super Table field inside Matrix blocks.
+Currently, a Super Table can be used inside your Matrix blocks as below. However, Matrix blocks cannot be added as a field to your Super Table.
 
 <img src="https://raw.githubusercontent.com/engram-design/SuperTable/master/screenshots/matrix.png" />
 
 
+## Layout
+
+For any Super Table, you can choose between two layout options - Row and Table. This is an option when creating your Super Table field. The Table layout will present fields vertically and in a tabular format - exactly as you'd expect from a Table field. Row on the other hand will present fields horizontally, similar to how a Matrix field works.
+
+Which layout you choose will likely depend on what sort of fields you have in your Super Table, and the number of fields. For a Super Table containing 4 or more fields, your best option is to use the Row Layout.
+
+To illustrate the different layout options, refer to the below, which are the same field using both Table and Row layouts.
+
+<img src="https://raw.githubusercontent.com/engram-design/SuperTable/master/screenshots/layouts.png" />
+
+The Row Layout also shines brightest when using inside a Matrix field as below.
+
+<img src="https://raw.githubusercontent.com/engram-design/SuperTable/master/screenshots/rowLayout.png" />
+
+
 ## Roadmap
 
-- Fix Matrix rendering issue.
-- Allow layout option to display columns vertically (Table) or horizontally (Matrix). 
+- Better error-handling when saving field.
+- Fix Matrix-in-SuperTable rendering issue.
 - Integrate options for static, non-repeatable table - ie [Set Table](https://github.com/engram-design/SetTable).
 - Test more third-party fieldtypes, purely for a complete list.
 
@@ -69,6 +84,11 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 
 ## Changelog
+
+#### 0.2.6
+
+- Added Row layout option [see example](https://github.com/engram-design/SuperTable#Layout)
+- Removed background colouring for cells.
 
 #### 0.2.5
 

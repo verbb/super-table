@@ -34,7 +34,6 @@ class SuperTableFieldType extends BaseFieldType
 
 		// Grab any additional settings for each field - latch it on
 
-
 		$blockTypes = $settings->getBlockTypes();
 		$tableId = ($blockTypes) ? $blockTypes[0]->id : 'new';
 
@@ -101,6 +100,10 @@ class SuperTableFieldType extends BaseFieldType
 		// Save additional field column data - but in the SuperTable field
 		$superTableSettings->columns = $columns;
 
+		if (!empty($settings['fieldLayout'])) {
+			$superTableSettings->fieldLayout = $settings['fieldLayout'];
+		}
+
 		return $superTableSettings;
 	}
 
@@ -164,13 +167,14 @@ class SuperTableFieldType extends BaseFieldType
 	{
 		$id = craft()->templates->formatInputId($name);
 		$settings = $this->getSettings();
+		$layout = (!empty($settings->fieldLayout)) ? $settings->fieldLayout : 'table';
 
 		// Get the block types data
 		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
 
 		craft()->templates->includeJsResource('supertable/js/SuperTableInput.js');
 
-		craft()->templates->includeJs('new Craft.SuperTableInput(' .
+		craft()->templates->includeJs('new Craft.SuperTableInput'.ucfirst($layout).'(' .
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($blockTypeInfo).', ' .
 			'"'.craft()->templates->namespaceInputName($name).'"' .
@@ -185,13 +189,14 @@ class SuperTableFieldType extends BaseFieldType
 		$blockTypes = $settings->getBlockTypes();
 		$table = ($blockTypes) ? $blockTypes[0] : null;
 
-		return craft()->templates->render('supertable/input', array(
+		return craft()->templates->render('supertable/'.$layout.'Input', array(
 			'id' => $id,
 			'name' => $name,
             'table' => $table,
 			'blocks' => $value,
 			'static' => false,
 			'settings' => $settings->columns,
+			'fieldLayout'	=> $layout,
 		));
 	}
 
@@ -396,6 +401,9 @@ class SuperTableFieldType extends BaseFieldType
 
 	private function _getBlockTypeInfoForInput($name)
 	{
+		$settings = $this->getSettings();
+		$layout = (!empty($settings->fieldLayout)) ? $settings->fieldLayout : 'table';
+
 		$blockType = array();
 
 		// Set a temporary namespace for these
@@ -403,7 +411,7 @@ class SuperTableFieldType extends BaseFieldType
 		$namespace = craft()->templates->namespaceInputName($name.'[__BLOCK_ST__][fields]', $originalNamespace);
 		craft()->templates->setNamespace($namespace);
 
-		foreach ($this->getSettings()->getBlockTypes() as $blockType) {
+		foreach ($settings->getBlockTypes() as $blockType) {
 			// Create a fake SuperTable_BlockModel so the field types have a way to get at the owner element, if there is one
 			$block = new SuperTable_BlockModel();
 			$block->fieldId = $this->model->id;
@@ -427,8 +435,9 @@ class SuperTableFieldType extends BaseFieldType
 			craft()->templates->startJsBuffer();
 
 			$bodyHtml = craft()->templates->namespaceInputs(craft()->templates->render('supertable/fields', array(
-				'namespace' => null,
-				'fields'    => $fieldLayoutFields
+				'namespace' 	=> null,
+				'fields'    	=> $fieldLayoutFields,
+				'fieldLayout'	=> $layout,
 			)));
 
 			// Reset $_isFresh's

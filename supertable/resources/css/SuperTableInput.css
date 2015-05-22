@@ -3,7 +3,7 @@ table.editable.superTable {
 }
 
 table.editable.superTable tbody tr td {
-	background: #f9fafa;
+	/*background: #f9fafa;*/
 	text-align: left;
 }
 
@@ -54,3 +54,99 @@ body.ltr .structure li:first-child {
 .superTableContainer .field .linkit .linkit-type-option {
 	margin-bottom: 0;
 }
+
+
+
+
+.superTableRow {
+	margin: 10px 0;
+}
+
+.superTableRow table.editable.superTable {
+	margin: 0;
+}
+
+.superTableRow .rowHeader {
+	font-weight: bold;
+	vertical-align: top;
+	font-size: 11px;
+	line-height: 1.2;
+	color: rgba(0, 0, 0, 0.5);
+	border-radius: 3px 3px 0 0;
+	padding: 16px 7px !important;
+	text-align: left;
+	white-space: nowrap;
+	background: #f9fafa;
+	-webkit-box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+	-moz-box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+}
+
+.superTableRow .placeholder {
+	width: 25px !important;
+}
+
+.superTableRow table {
+	position: relative;
+}
+
+.superTableRow table.editable + .btn.add {
+	margin-top: 10px;
+	
+	display: inline-block;
+	padding: 6px 12px;
+	border: none;
+	text-align: center;
+	white-space: nowrap;
+	cursor: pointer;
+
+	-webkit-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+	-moz-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+
+	color: #29323d;
+	background-image: -webkit-linear-gradient(white, #fafafa);
+	background-image: -moz-linear-gradient(white, #fafafa);
+	background-image: -ms-linear-gradient(white, #fafafa);
+	background-image: -o-linear-gradient(white, #fafafa);
+	background-image: linear-gradient(white, #fafafa);
+
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-appearance: none;
+}
+
+.superTableRow tfoot tr {
+	right: 0;
+	width: 45px;
+	position: absolute;
+	top: 0;
+	height: 100%;
+	text-align: center;
+	background: #ebedef;
+	opacity: 1;
+
+	border-left: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.superTableRow .floating .icon.move:before {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin: -7px 0 0 -17px;
+}
+
+.superTableRow .floating .icon.delete:before {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin: -7px 0 0 3px;
+}
+
+
+

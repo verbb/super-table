@@ -13,13 +13,33 @@
 			{% endif %}
 		{% endif %}
 
-		<td {% if width is defined %}width="{{ width }}"{% endif %}>
-			{% include "_includes/field" with {
-				field:    field.getField(),
-				required: field.required,
-				element:  element,
-				static:   (static is defined ? static : null)
-			} only %}
-		</td>
+		{% if fieldLayout == 'row' %}
+
+			<tr data-id="">
+            	<td class="thin rowHeader">{{ field.getField().name }}</td>
+
+        		<td>
+					{% include "_includes/field" with {
+						field:    field.getField(),
+						required: field.required,
+						element:  element,
+						static:   (static is defined ? static : null)
+					} only %}
+				</td>
+
+            	<td class="thin placeholder"></td>
+            </tr>
+
+		{% else %}
+			<td {% if width is defined %}width="{{ width }}"{% endif %}>
+				{% include "_includes/field" with {
+					field:    field.getField(),
+					required: field.required,
+					element:  element,
+					static:   (static is defined ? static : null)
+				} only %}
+			</td>
+		{% endif %}
 	{% endfor %}
 {% endnamespace %}
+

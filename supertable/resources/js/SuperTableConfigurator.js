@@ -273,6 +273,8 @@ Craft.SuperTableSettingsModal = Garnish.Modal.extend({
 		Craft.initUiElements(this.$fieldSettings);
 		Garnish.$bod.append(this.fieldTypeFootHtml);
 
+		//this.$fieldSettings.find('.matrix-configurator:first > .field > .input').height('400');
+
 		this.addListener(this.$closeBtn, 'activate', 'closeModal');
 	},
 
