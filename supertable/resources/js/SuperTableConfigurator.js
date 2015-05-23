@@ -129,7 +129,7 @@ SuperTableField = Garnish.Base.extend({
 		this.$handleInput = this.$fieldSettingsContainer.find('textarea[name$="[handle]"]:first');
 		this.$typeSelect = this.$fieldSettingsContainer.find('select[name$="[type]"]:first');
 		this.$typeSettingsContainer = this.$fieldSettingsContainer.find('.fieldtype-settings:first');
-		this.$typeSettingsButton = this.$fieldSettingsContainer.find('a.settings.icon:first');
+		this.$typeSettingsButton = this.$fieldSettingsContainer.find('td.action a.settings.icon:first');
 		this.$typeSettingsCol = this.$fieldSettingsContainer.find('td.settings-col:first');
 
 		if (isNew) {
@@ -228,7 +228,7 @@ SuperTableField = Garnish.Base.extend({
 				'</div>' + 
 			'</td>' +
 			'<td class="settings-col hidden">' +
-				'<div class="fieldtype-settings"></div>' +
+				'<div class="fieldtype-settings" name="'+this.inputNamePrefix+'[typesettings]"></div>' +
 			'</td>' +
 			'<td class="thin action"><a class="settings icon" title="'+Craft.t('Settings')+'"></a></td>' +
 			'<td class="thin action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
@@ -273,8 +273,6 @@ Craft.SuperTableSettingsModal = Garnish.Modal.extend({
 		Craft.initUiElements(this.$fieldSettings);
 		Garnish.$bod.append(this.fieldTypeFootHtml);
 
-		//this.$fieldSettings.find('.matrix-configurator:first > .field > .input').height('400');
-
 		this.addListener(this.$closeBtn, 'activate', 'closeModal');
 	},
 
@@ -305,6 +303,7 @@ Craft.SuperTableSettingsModal = Garnish.Modal.extend({
 		this.base();
 	},
 });
+
 
 
 })(jQuery);

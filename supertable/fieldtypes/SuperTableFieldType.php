@@ -477,8 +477,17 @@ class SuperTableFieldType extends BaseFieldType
 		// Get the available field types data
 		$fieldTypeInfo = $this->_getMatrixFieldTypeInfoForConfigurator();
 
-		craft()->templates->includeJsResource('js/MatrixConfigurator.js');
-		craft()->templates->includeJs('new Craft.MatrixConfigurator('.JsonHelper::encode($fieldTypeInfo).', "'.craft()->templates->getNamespace().'");');
+		$settings = $this->getSettings();
+		$blockTypes = $settings->getBlockTypes();
+		$tableId = ($blockTypes) ? $blockTypes[0]->id : 'new';
+
+		craft()->templates->includeJsResource('supertable/js/MatrixConfiguratorAlt.js');
+		craft()->templates->includeJs('new Craft.MatrixConfiguratorAlt(' . 
+            '"'.$tableId.'", ' .
+            '"'.craft()->templates->namespaceInputId($tableId).'", ' .
+			JsonHelper::encode($fieldTypeInfo).', ' . 
+			'"'.craft()->templates->getNamespace().'"' .
+		');');
 
 		craft()->templates->includeTranslations(
 			'What this block type will be called in the CP.',
