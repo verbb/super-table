@@ -31,7 +31,7 @@
             </tr>
 
 		{% else %}
-			<td {% if width is defined %}width="{{ width }}"{% endif %}>
+			<td {% if width is defined and width %}style="width: {{ width }}px"{% endif %}>
 				{% include "_includes/field" with {
 					field:    field.getField(),
 					required: field.required,
