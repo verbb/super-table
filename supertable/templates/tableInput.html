@@ -8,6 +8,7 @@
     <table id="{{ id }}" class="shadow-box editable superTable">
         <thead>
             <tr>
+            	<th class="hidden"></th>
 				{% if table %}
 					{% for field in table.getFields() %}
 						<th scope="col" class="header">{{ field.name }}</th>
@@ -29,7 +30,9 @@
 				{% endif %}
 
         		<tr data-id="{{ blockId }}">
-					<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
+					<td class="hidden">
+						<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
+					</td>
 					
 					{% include "supertable/fields" with {
 						namespace: name~'['~blockId~'][fields]',
