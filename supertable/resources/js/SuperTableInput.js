@@ -179,7 +179,7 @@ Craft.SuperTableInputRow.Row = Garnish.Base.extend({
 		this.table = table;
 		this.$tr = $(tr);
 
-		var $deleteBtn = this.$tr.children().last().find('.delete');
+		var $deleteBtn = this.$tr.children().last().find('tfoot .delete');
 		this.addListener($deleteBtn, 'click', 'deleteRow');
 	},
 

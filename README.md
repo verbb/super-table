@@ -74,6 +74,10 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 ## Changelog
 
+#### 0.2.8
+
+- Minor fix for Row Layout and Element Selection fields. Clicking delete on an element select would remove the entire row.
+
 #### 0.2.7
 
 - Full support for Matrix.
