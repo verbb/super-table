@@ -65,6 +65,10 @@ The Row Layout also shines brightest when using inside a Matrix field as below.
 - Better error-handling when saving field.
 - Integrate options for static, non-repeatable table - ie [Set Table](https://github.com/engram-design/SetTable).
 - Test more third-party fieldtypes, purely for a complete list.
+- Add selection label field for new rows/columns
+- Add limit field.
+- Add required field.
+- Add ability to collapse rows.
 
 
 ## Thanks / Contributions
