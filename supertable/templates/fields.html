@@ -13,10 +13,14 @@
 			{% endif %}
 		{% endif %}
 
-		{% if fieldLayout == 'row' %}
+		{% if settings is defined and settings.fieldLayout == 'row' %}
 
 			<tr data-id="">
-            	<td class="thin rowHeader">{{ field.getField().name }}</td>
+            	<td class="thin rowHeader">
+            		<span class="heading-text {% if field.required %}required{% endif %}">
+            			{{ field.getField().name }}
+            		</span>
+            	</td>
 
         		<td>
 					{% include "_includes/field" with {
@@ -27,7 +31,9 @@
 					} only %}
 				</td>
 
-            	<td class="thin placeholder"></td>
+				{% if settings.staticField is defined and not settings.staticField %}
+	            	<td class="thin placeholder"></td>
+            	{% endif %}
             </tr>
 
 		{% else %}

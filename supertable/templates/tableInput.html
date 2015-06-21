@@ -11,11 +11,15 @@
             	<th class="hidden"></th>
 				{% if table %}
 					{% for field in table.getFields() %}
-						<th scope="col" class="header">{{ field.name }}</th>
+						<th scope="col" class="header">
+							<span class="heading-text {% if field.required %}required{% endif %}">{{ field.name }}</span>
+						</th>
 					{% endfor %}
 				{% endif %}
 
-                <th class="header" colspan="2"></th>
+				{% if not settings.staticField %}
+	                <th class="header" colspan="2"></th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -38,18 +42,19 @@
 						namespace: name~'['~blockId~'][fields]',
 						element: block,
 						fields: block.getType().getFieldLayout().getFields(),
-						static: static,
 						settings: settings,
 					} %}
 
-                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
-                    <td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+					{% if not settings.staticField %}
+	                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+	                    <td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+	                {% endif %}
                 </tr>
 			{% endfor %}
         </tbody>
     </table>
 
-    <div class="btn add icon">{{ "Add a row"|t }}</div>
+    <div class="btn add icon" {% if settings.staticField %}style="display: none;"{% endif %}>{{ settings.selectionLabel | default("Add a row") | t }}</div>
 </div>
 
 

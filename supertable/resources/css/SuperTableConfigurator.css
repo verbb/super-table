@@ -16,6 +16,18 @@ table.editable .icon.settings:hover:before {
 	color: #0d78f2;
 }
 
+table.editable tbody textarea {
+	border: 1px solid transparent;
+}
+
+table.editable tbody textarea:focus {
+	padding: 7px 10px;
+}
+
+td.errors textarea {
+	border: 1px solid #da5a47 !important;
+}
+
 
 
 /* Settings Field Settings Modal */

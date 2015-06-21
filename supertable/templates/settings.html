@@ -9,6 +9,7 @@
 				<th scope="col" class="header">{{ 'Column Heading'|t }}</th>
 				<th scope="col" class="header">{{ 'Handle'|t }}</th>
 				<th scope="col" class="header">{{ 'Width'|t }}</th>
+				<th scope="col" class="header">{{ 'Required'|t }}</th>
 				<th scope="col" class="header">{{ 'Type'|t }}</th>
 				<th class="header" colspan="3"></th>
 			</tr>
@@ -22,20 +23,28 @@
 
 					{# Additional field settings #}
 					{% if settings.columns is defined %}
-						{% set width = (settings.columns[fieldId] is defined) ? settings.columns[fieldId].width : '' %}
+						{% if settings.columns[fieldId] is defined %}
+							{% set width = (settings.columns[fieldId].width is defined) ? settings.columns[fieldId].width : '' %}
+							{% set required = (settings.columns[fieldId].required is defined) ? settings.columns[fieldId].required : '' %}
+						{% endif %}
 					{% endif %}
 
-					<tr data-id="{{ fieldId }}" data-blockType="{{ blockType.id }}">
-						<td class="textual">
-							<textarea name="{{ fieldName }}[name]" rows="1">{{ field.name }}</textarea>
+					<tr class="" data-id="{{ fieldId }}" data-blockType="{{ blockType.id }}">
+						<td class="textual input {% if field.getErrors('name') %}errors{% endif %}">
+							<textarea class="fullwidth" name="{{ fieldName }}[name]" rows="1">{{ field.name }}</textarea>
 						</td>
 
-						<td class="textual code">
-							<textarea name="{{ fieldName }}[handle]" rows="1">{{ field.handle }}</textarea>
+						<td class="textual code input {% if field.getErrors('handle') %}errors{% endif %}">
+							<textarea class="code" name="{{ fieldName }}[handle]" rows="1">{{ field.handle }}</textarea>
 						</td>
 
 						<td class="textual code" width="50">
 							<textarea name="{{ fieldName }}[width]" rows="1">{{ width is defined ? width : '' }}</textarea>
+						</td>
+
+						<td class="" width="20">
+							<input type="hidden" name="{{ fieldName }}[required]">
+							<input type="checkbox" name="{{ fieldName }}[required]" value="1"{% if field.required %} checked{% endif %}>
 						</td>
 
 						<td class="thin">
@@ -69,6 +78,20 @@
 
 	<div class="btn add icon">{{ "Add a column"|t }}</div>
 
+	{% for blockType in settings.getBlockTypes() %}
+		{% for field in blockType.getFields() %}
+			{% if field.hasErrors() %}
+				<ul class="errors">
+					{% for errors in field.getErrors() %}
+						{% for error in errors %}
+							<li>{{ error }}</li>
+						{% endfor %}
+					{% endfor %}
+				</ul>
+			{% endif %}
+		{% endfor %}
+	{% endfor %}
+
 {% endset %}
 
 {{ forms.selectField({
@@ -87,3 +110,31 @@
 		name: 'config'
 	}, blockTypeInput) }}
 </div>
+
+{{ forms.textField({
+	label: "New Row Label"|t,
+	instructions: "Enter the text you want to appear in the button to create a new row."|t,
+	id: 'selectionLabel',
+	name: 'selectionLabel',
+	value: settings.selectionLabel,
+	size: 25,
+	errors: settings.getErrors('selectionLabel')
+}) }}
+
+{{ forms.textField({
+	label: "Max Rows"|t,
+	instructions: "The maximum number of rows the field is allowed to have."|t,
+	id: 'maxRows',
+	name: 'maxRows',
+	value: settings.maxRows,
+	size: 3,
+	errors: settings.getErrors('maxRows')
+}) }}
+
+{{ forms.lightswitchField({
+	label: "Static field"|t,
+	instructions: "A static field will only display a single row of fields."|t,
+	id: 'staticField',
+	name: 'staticField',
+	on: settings.staticField,
+}) }}

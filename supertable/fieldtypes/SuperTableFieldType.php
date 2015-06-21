@@ -73,13 +73,14 @@ class SuperTableFieldType extends BaseFieldType
 				if (!empty($blockTypeSettings['fields'])) {
 					foreach ($blockTypeSettings['fields'] as $fieldId => $fieldSettings) {
 						$field = new FieldModel();
-						$field->id           = $fieldId;
-						$field->name         = $fieldSettings['name'];
-						$field->handle       = $fieldSettings['handle'];
-						$field->type         = $fieldSettings['type'];
+						$field->id			= $fieldId;
+						$field->name		= $fieldSettings['name'];
+						$field->handle		= $fieldSettings['handle'];
+						$field->type		= $fieldSettings['type'];
+						$field->required	= $fieldSettings['required'];
 
 						$columns[$field->id] = array(
-							'width' => $fieldSettings['width']
+							'width' => $fieldSettings['width'],
 						);
 
 						if (isset($fieldSettings['typesettings'])) {
@@ -104,6 +105,19 @@ class SuperTableFieldType extends BaseFieldType
 			$superTableSettings->fieldLayout = $settings['fieldLayout'];
 		}
 
+		if (!empty($settings['staticField'])) {
+			$superTableSettings->staticField = $settings['staticField'];
+		}
+
+		if (!empty($settings['selectionLabel'])) {
+			$superTableSettings->selectionLabel = $settings['selectionLabel'];
+		}
+
+		if (!empty($settings['maxRows']))
+		{
+			$superTableSettings->maxRows = $settings['maxRows'];
+		}
+
 		return $superTableSettings;
 	}
 
@@ -120,8 +134,6 @@ class SuperTableFieldType extends BaseFieldType
 	public function prepValue($value)
 	{
 		$criteria = craft()->elements->getCriteria('SuperTable_Block');
-
-        //var_dump($value);
 
 		// Existing element?
 		if (!empty($this->element->id)) {
@@ -167,17 +179,17 @@ class SuperTableFieldType extends BaseFieldType
 	{
 		$id = craft()->templates->formatInputId($name);
 		$settings = $this->getSettings();
-		$layout = (!empty($settings->fieldLayout)) ? $settings->fieldLayout : 'table';
 
 		// Get the block types data
 		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
 
 		craft()->templates->includeJsResource('supertable/js/SuperTableInput.js');
 
-		craft()->templates->includeJs('new Craft.SuperTableInput'.ucfirst($layout).'(' .
+		craft()->templates->includeJs('new Craft.SuperTableInput'.ucfirst($settings->fieldLayout).'(' .
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($blockTypeInfo).', ' .
-			'"'.craft()->templates->namespaceInputName($name).'"' .
+			'"'.craft()->templates->namespaceInputName($name).'", ' .
+			JsonHelper::encode($settings).
 		');');
 
 		if ($value instanceof ElementCriteriaModel) {
@@ -189,14 +201,12 @@ class SuperTableFieldType extends BaseFieldType
 		$blockTypes = $settings->getBlockTypes();
 		$table = ($blockTypes) ? $blockTypes[0] : null;
 
-		return craft()->templates->render('supertable/'.$layout.'Input', array(
+		return craft()->templates->render('supertable/'.$settings->fieldLayout.'Input', array(
 			'id' => $id,
 			'name' => $name,
             'table' => $table,
 			'blocks' => $value,
-			'static' => false,
-			'settings' => $settings->columns,
-			'fieldLayout'	=> $layout,
+			'settings'	=> $settings,
 		));
 	}
 
@@ -302,6 +312,16 @@ class SuperTableFieldType extends BaseFieldType
 			$errors[] = Craft::t('Correct the errors listed above.');
 		}
 
+		$maxRows = $this->getSettings()->maxRows;
+
+		if ($maxRows && count($blocks) > $maxRows) {
+			if ($maxRows == 1) {
+				$errors[] = Craft::t('There can’t be more than one row.');
+			} else {
+				$errors[] = Craft::t('There can’t be more than {max} rows.', array('max' => $maxRows));
+			}
+		}
+
 		if ($errors) {
 			return $errors;
 		} else {
@@ -351,7 +371,17 @@ class SuperTableFieldType extends BaseFieldType
 
 	protected function getSettingsModel()
 	{
-		return new SuperTable_SettingsModel($this->model);
+		$settings = new SuperTable_SettingsModel($this->model);
+
+		if (!$settings->selectionLabel) {
+			$settings->selectionLabel = Craft::t('Add a row');
+		}
+
+		if (!$settings->fieldLayout) {
+			$settings->fieldLayout = 'table';
+		}
+
+		return $settings;
 	}
 
 	// Private Methods
@@ -402,7 +432,6 @@ class SuperTableFieldType extends BaseFieldType
 	private function _getBlockTypeInfoForInput($name)
 	{
 		$settings = $this->getSettings();
-		$layout = (!empty($settings->fieldLayout)) ? $settings->fieldLayout : 'table';
 
 		$blockType = array();
 
@@ -437,7 +466,7 @@ class SuperTableFieldType extends BaseFieldType
 			$bodyHtml = craft()->templates->namespaceInputs(craft()->templates->render('supertable/fields', array(
 				'namespace' 	=> null,
 				'fields'    	=> $fieldLayoutFields,
-				'fieldLayout'	=> $layout,
+				'settings'		=> $settings,
 			)));
 
 			// Reset $_isFresh's
