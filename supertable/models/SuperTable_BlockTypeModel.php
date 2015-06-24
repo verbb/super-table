@@ -33,6 +33,9 @@ class SuperTable_BlockTypeModel extends BaseModel
 	{
 		if (!isset($this->_fields)) {
 			$this->_fields = array();
+			
+			// Preload all of the fields in this block type's context
+			craft()->fields->getAllFields(null, 'superTableBlockType:'.$this->id);
 
 			$fieldLayoutFields = $this->getFieldLayout()->getFields();
 

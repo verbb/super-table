@@ -179,6 +179,23 @@ class SuperTableFieldType extends BaseFieldType
 	{
 		$id = craft()->templates->formatInputId($name);
 		$settings = $this->getSettings();
+		
+		if ($value instanceof ElementCriteriaModel) {
+			$value->limit = null;
+			$value->status = null;
+			$value->localeEnabled = null;
+		}
+
+		$blockTypes = $settings->getBlockTypes();
+		$table = ($blockTypes) ? $blockTypes[0] : null;
+		
+		$html = craft()->templates->render('supertable/'.$settings->fieldLayout.'Input', array(
+			'id' => $id,
+			'name' => $name,
+		    'table' => $table,
+			'blocks' => $value,
+			'settings'	=> $settings,
+		));
 
 		// Get the block types data
 		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
@@ -192,22 +209,7 @@ class SuperTableFieldType extends BaseFieldType
 			JsonHelper::encode($settings).
 		');');
 
-		if ($value instanceof ElementCriteriaModel) {
-			$value->limit = null;
-			$value->status = null;
-			$value->localeEnabled = null;
-		}
-
-		$blockTypes = $settings->getBlockTypes();
-		$table = ($blockTypes) ? $blockTypes[0] : null;
-
-		return craft()->templates->render('supertable/'.$settings->fieldLayout.'Input', array(
-			'id' => $id,
-			'name' => $name,
-            'table' => $table,
-			'blocks' => $value,
-			'settings'	=> $settings,
-		));
+		return $html;
 	}
 
 	public function prepValueFromPost($data)
