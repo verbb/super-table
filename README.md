@@ -81,6 +81,11 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 ## Changelog
 
+#### 0.3.0
+
+- Added composer support.
+- Improved performance (thanks to [@boboldehampsink](https://github.com/boboldehampsink) and [@takobell](https://github.com/takobell))
+
 #### 0.2.9
 
 - Added Static option for fields. Allows for blocks to be non-repeatable [see more](https://github.com/engram-design/SuperTable#staticoption).
