@@ -7,7 +7,7 @@
     "license": "MIT",
     "authors": [{
         "name": "S. Group",
-        "email": "joshua@sgroup.com.au"
+	"email": "joshua@sgroup.com.au",
         "homepage": "http://sgroup.com.au/",
 	}],
     "require": {
