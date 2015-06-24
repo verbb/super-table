@@ -1,0 +1,12 @@
+{
+    "name": "engram-design/SuperTable",
+    "description": "Super-charge your Craft workflow using Super Table.",
+    "authors": [{
+        "name": "S. Group",
+        "email": "joshua@sgroup.com.au"
+	}],
+    "type": "craft-plugin",
+    "require": {
+        "composer/installers": "~1.0"
+    }
+}
