@@ -8,7 +8,7 @@
     "authors": [{
         "name": "S. Group",
 	"email": "joshua@sgroup.com.au",
-        "homepage": "http://sgroup.com.au/",
+        "homepage": "http://sgroup.com.au/"
 	}],
     "require": {
         "composer/installers": "~1.0"
