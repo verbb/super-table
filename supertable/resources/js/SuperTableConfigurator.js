@@ -217,6 +217,10 @@ SuperTableField = Garnish.Base.extend({
 			'<td class="textual code" width="50">' +
 				'<textarea name="'+this.inputNamePrefix+'[width]" rows="1"></textarea>' +
 			'</td>' +
+			'<td width="20">' +
+				'<input type="hidden" name="'+this.inputNamePrefix+'[required]">' +
+				'<input type="checkbox" name="'+this.inputNamePrefix+'[required]" value="1">' +
+			'</td>' +
 			'<td class="thin">' +
 				'<div class="select small">' + 
 					'<select id="type" class="fieldtoggle" name="'+this.inputNamePrefix+'[type]">';

@@ -60,6 +60,9 @@ class SuperTable_SettingsModel extends BaseModel
 		return array(
 			'columns' => AttributeType::Mixed,
 			'fieldLayout' => AttributeType::String,
+			'staticField' => AttributeType::Bool,
+			'selectionLabel' => AttributeType::String,
+			'maxRows' => AttributeType::Number,
 		);
 	}
 }

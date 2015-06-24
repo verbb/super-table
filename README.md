@@ -60,11 +60,18 @@ The Row Layout also shines brightest when using inside a Matrix field as below.
 <img src="https://raw.githubusercontent.com/engram-design/SuperTable/master/screenshots/rowLayout.png" />
 
 
+## Static option
+
+A Super Table field can be set to be static, which turns the field into a non-repeatable collection of fields. This can be useful for a multitude of cases where you wish to simply group a collection of fields together, and not necessarily have them repeatable.
+
+<img src="https://raw.githubusercontent.com/engram-design/SuperTable/master/screenshots/static.png" />
+
+
 ## Roadmap
 
-- Better error-handling when saving field.
-- Integrate options for static, non-repeatable table - ie [Set Table](https://github.com/engram-design/SetTable).
 - Test more third-party fieldtypes, purely for a complete list.
+- Add ability to collapse rows.
+- Fix issue with Redactor - requires full rewrite using non tables [#3](https://github.com/engram-design/SuperTable/issues/3).
 
 
 ## Thanks / Contributions
@@ -73,6 +80,18 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 
 ## Changelog
+
+#### 0.2.9
+
+- Added Static option for fields. Allows for blocks to be non-repeatable [see more](https://github.com/engram-design/SuperTable#staticoption).
+- Fixed validation when creating Super Table fields.
+- Added option to set the 'Add a row' button text.
+- Added Max Rows option.
+- Added required option for fields.
+
+#### 0.2.8
+
+- Minor fix for Row Layout and Element Selection fields. Clicking delete on an element select would remove the entire row.
 
 #### 0.2.7
 

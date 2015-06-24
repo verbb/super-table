@@ -111,23 +111,17 @@ class SuperTable_BlockModel extends BaseElementModel
 		));
 	}
 	
-	/**
-	 * @inheritdoc
-	 */
 	protected function createContent()
 	{
 		$fieldId = $this->fieldId;
 
-		if (!isset(self::$_preloadedFields[$fieldId]))
-		{
+		if (!isset(self::$_preloadedFields[$fieldId])) {
 			$blockTypes = craft()->superTable->getBlockTypesByFieldId($fieldId);
 
-			if (count($blockTypes) > 1)
-			{
+			if (count($blockTypes) > 1) {
 				$contexts = array();
 
-				foreach ($blockTypes as $blockType)
-				{
+				foreach ($blockTypes as $blockType) {
 					$contexts[] = 'superTableBlockType:'.$blockType->id;
 				}
 
