@@ -55,7 +55,23 @@ class SuperTable_BlockElementType extends BaseElementType
 	{
 		$fields = array();
 
-		foreach (craft()->superTable->getBlockTypesByFieldId($criteria->fieldId) as $blockType) {
+		$blockTypes = craft()->superTable->getBlockTypesByFieldId($criteria->fieldId);
+
+		foreach ($blockTypes as $blockType)
+		{
+			$contexts = array();
+
+			foreach ($blockTypes as $blockType)
+			{
+				$contexts[] = 'superTableBlockType:'.$blockType->id;
+			}
+
+			// Preload them to save ourselves some DB queries, and discard
+			craft()->fields->getAllFields(null, $contexts);
+		}
+
+		foreach ($blockTypes as $blockType)
+		{
 			$fieldColumnPrefix = 'field_';
 
 			foreach ($blockType->getFields() as $field) {
