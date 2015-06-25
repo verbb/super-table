@@ -72,6 +72,9 @@ A Super Table field can be set to be static, which turns the field into a non-re
 - Test more third-party fieldtypes, purely for a complete list.
 - Add ability to collapse rows.
 - Fix issue with Redactor - requires full rewrite using non tables [#3](https://github.com/engram-design/SuperTable/issues/3).
+- New settings layout, including drag/drop, full control over field layout. Allows you to set out the field exactly as you like.
+- Add template hook to allow other plugins to provide layouts for editing field.
+- Allow for SuperTable-in-SuperTable - because why not.
 
 
 ## Thanks / Contributions
