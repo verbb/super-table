@@ -1,16 +1,19 @@
 {% if element is not defined %}{% set element = null %}{% endif %}
 {% if namespace is not defined %}{% set namespace = 'fields' %}{% endif %}
 
+{% set columnSettings = [] %}
+{% if settings is defined and settings %}
+	{% for col in settings.columns %}
+		{% set columnSettings = columnSettings | merge([col]) %}
+	{% endfor %}
+{% endif %}
+
 {% namespace namespace %}
-	{% for field in fields %}
+	{% for index, field in fields %}
 
 		{# Additional field settings #}
-		{% if settings is defined and settings %}
-			{% set fieldId = field.getField().id %}
-			
-			{% if settings[fieldId] is defined %}
-				{% set width = settings[fieldId].width %}
-			{% endif %}
+		{% if columnSettings[index] is defined %}
+			{% set width = columnSettings[index].width %}
 		{% endif %}
 
 		{% if settings is defined and settings.fieldLayout == 'row' %}

@@ -44,7 +44,8 @@ Craft.MatrixConfiguratorAlt = Garnish.Base.extend({
 		this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
 
 		// Fix to support more than one Matrix in a single field
-		this.$container = $('.fieldtype-settings[name="'+inputNamePrefix+'"] .matrix-configurator > .field > .input');
+		this.$container = $('#' + this.inputIdPrefix + '-matrix-configurator:first .input:first');
+		//this.$container = $('.matrix-configurator:first .input:first');
 
 		this.$blockTypesColumnContainer = this.$container.children('.block-types').children();
 		this.$fieldsColumnContainer = this.$container.children('.fields').children();

@@ -71,7 +71,6 @@ A Super Table field can be set to be static, which turns the field into a non-re
 
 - Test more third-party fieldtypes, purely for a complete list.
 - Add ability to collapse rows.
-- Fix issue with Redactor - requires full rewrite using non tables [#3](https://github.com/engram-design/SuperTable/issues/3).
 - New settings layout, including drag/drop, full control over field layout. Allows you to set out the field exactly as you like.
 - Add template hook to allow other plugins to provide layouts for editing field.
 - Allow for SuperTable-in-SuperTable - because why not.
@@ -83,6 +82,13 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 
 ## Changelog
+
+#### 0.3.1
+
+- Fix for field labels on inner-Matrix field being hidden [#16](https://github.com/engram-design/SuperTable/issues/16).
+- Latest Redactor version fixes [#3](https://github.com/engram-design/SuperTable/issues/3).
+- Fix for width not being applied for columns [#15](https://github.com/engram-design/SuperTable/issues/15).
+- Fix issues with multiple Matrix Configurators causing many javascript issues [see Craft 2.4.2677](https://buildwithcraft.com/updates#build2677).
 
 #### 0.3.0
 

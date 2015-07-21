@@ -7,7 +7,7 @@ table.editable.superTable tbody tr td {
 	text-align: left;
 }
 
-table.editable.superTable tbody tr td .field .heading {
+table.editable.superTable tbody tr td > .field > .heading {
 	display: none;
 }
 
