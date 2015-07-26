@@ -179,19 +179,19 @@ Craft.SuperTableInputRow = Garnish.Base.extend({
 		var staticFieldStyle = (this.settings.staticField) ? 'style="display: none;"' : '';
 
 		var html = '<div class="superTableRow">' +
-				'<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'">' +
-			    '<table id="'+id+'" class="shadow-box editable superTable">' +
-			        '<tbody>' +
-			        	'' + bodyHtml + '' +
-			        '</tbody>' +
-			    	'<tfoot ' + staticFieldStyle + '>' +
-			    		'<tr>' +
-			                '<td class="floating reorder"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
-			                '<td class="floating delete"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
-			    		'</tr>' +
-			    	'</tfoot>' +
-			    '</table>' +
-		    '</div>';
+			'<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'">' +
+		    '<table id="'+id+'" class="shadow-box editable superTable">' +
+		        '<tbody>' +
+		        	'' + bodyHtml + '' +
+		        '</tbody>' +
+		    	'<tfoot ' + staticFieldStyle + '>' +
+		    		'<tr>' +
+		                '<td class="floating reorder"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
+		                '<td class="floating delete"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
+		    		'</tr>' +
+		    	'</tfoot>' +
+		    '</table>' +
+	    '</div>';
 
 		var $tr = $(html).appendTo(this.$divInner);
 
