@@ -54,7 +54,7 @@ Craft.MatrixInputAlt = Garnish.Base.extend(
 		}
 
 		var $blocks = this.$blockContainer.children(),
-			collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
+			collapsedBlocks = Craft.MatrixInputAlt.getCollapsedBlockIds();
 
 		this.blockSort = new Garnish.DragSort($blocks, {
 			handle: '> .actions > .move',
@@ -352,13 +352,13 @@ Craft.MatrixInputAlt = Garnish.Base.extend(
 	}
 },
 {
-	collapsedBlockStorageKey: 'Craft-'+Craft.siteUid+'.MatrixInput.collapsedBlocks',
+	collapsedBlockStorageKey: 'Craft-'+Craft.siteUid+'.MatrixInputAlt.collapsedBlocks',
 
 	getCollapsedBlockIds: function()
 	{
-		if (typeof localStorage[Craft.MatrixInput.collapsedBlockStorageKey] == 'string')
+		if (typeof localStorage[Craft.MatrixInputAlt.collapsedBlockStorageKey] == 'string')
 		{
-			return Craft.filterArray(localStorage[Craft.MatrixInput.collapsedBlockStorageKey].split(','));
+			return Craft.filterArray(localStorage[Craft.MatrixInputAlt.collapsedBlockStorageKey].split(','));
 		}
 		else
 		{
@@ -368,19 +368,19 @@ Craft.MatrixInputAlt = Garnish.Base.extend(
 
 	setCollapsedBlockIds: function(ids)
 	{
-		localStorage[Craft.MatrixInput.collapsedBlockStorageKey] = ids.join(',');
+		localStorage[Craft.MatrixInputAlt.collapsedBlockStorageKey] = ids.join(',');
 	},
 
 	rememberCollapsedBlockId: function(id)
 	{
 		if (typeof Storage !== 'undefined')
 		{
-			var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
+			var collapsedBlocks = Craft.MatrixInputAlt.getCollapsedBlockIds();
 
 			if ($.inArray(''+id, collapsedBlocks) == -1)
 			{
 				collapsedBlocks.push(id);
-				Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
+				Craft.MatrixInputAlt.setCollapsedBlockIds(collapsedBlocks);
 			}
 		}
 	},
@@ -389,13 +389,13 @@ Craft.MatrixInputAlt = Garnish.Base.extend(
 	{
 		if (typeof Storage !== 'undefined')
 		{
-			var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
+			var collapsedBlocks = Craft.MatrixInputAlt.getCollapsedBlockIds(),
 				collapsedBlocksIndex = $.inArray(''+id, collapsedBlocks);
 
 			if (collapsedBlocksIndex != -1)
 			{
 				collapsedBlocks.splice(collapsedBlocksIndex, 1);
-				Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
+				Craft.MatrixInputAlt.setCollapsedBlockIds(collapsedBlocks);
 			}
 		}
 	}
@@ -555,7 +555,7 @@ var MatrixBlock = Garnish.Base.extend(
 		// Remember that?
 		if (!this.isNew)
 		{
-			Craft.MatrixInput.rememberCollapsedBlockId(this.id);
+			Craft.MatrixInputAlt.rememberCollapsedBlockId(this.id);
 		}
 		else
 		{
@@ -603,19 +603,19 @@ var MatrixBlock = Garnish.Base.extend(
 		// Remember that?
 		if (!this.isNew && typeof Storage !== 'undefined')
 		{
-			var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
+			var collapsedBlocks = Craft.MatrixInputAlt.getCollapsedBlockIds(),
 				collapsedBlocksIndex = $.inArray(''+this.id, collapsedBlocks);
 
 			if (collapsedBlocksIndex != -1)
 			{
 				collapsedBlocks.splice(collapsedBlocksIndex, 1);
-				Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
+				Craft.MatrixInputAlt.setCollapsedBlockIds(collapsedBlocks);
 			}
 		}
 
 		if (!this.isNew)
 		{
-			Craft.MatrixInput.forgetCollapsedBlockId(this.id);
+			Craft.MatrixInputAlt.forgetCollapsedBlockId(this.id);
 		}
 		else if (this.$collapsedInput)
 		{
