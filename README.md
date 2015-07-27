@@ -83,6 +83,10 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 ## Changelog
 
+#### 0.3.3
+
+- Minor fixes to issues introduced accidentally in 0.3.3.
+
 #### 0.3.2
 
 - Fix for Matrix-SuperTable-Matrix field configuration and correct namespacing. Caused numerous inner-Matrix issues.
