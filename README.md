@@ -85,7 +85,7 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 #### 0.3.3
 
-- Minor fixes to issues introduced accidentally in 0.3.3.
+- Minor fixes to issues introduced accidentally in 0.3.2.
 
 #### 0.3.2
 
