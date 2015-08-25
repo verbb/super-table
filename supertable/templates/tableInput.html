@@ -45,10 +45,13 @@
 						settings: settings,
 					} %}
 
-					{% if not settings.staticField %}
-	                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
-	                    <td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
-	                {% endif %}
+                    <td class="thin action {% if settings.staticField %}hidden{% endif %}">
+                    	<a class="move icon" title="{{ 'Reorder'|t }}"></a>
+                    </td>
+
+                    <td class="thin action {% if settings.staticField %}hidden{% endif %}">
+                    	<a class="delete icon" title="{{ 'Delete'|t }}"></a>
+                    </td>
                 </tr>
 			{% endfor %}
         </tbody>

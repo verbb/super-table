@@ -83,6 +83,11 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 ## Changelog
 
+#### 0.3.4
+
+- Minor visual fix for Row layout and table overflow [#24](https://github.com/engram-design/SuperTable/issues/24).
+- Fix for Table layout and deleting element select items [#25](https://github.com/engram-design/SuperTable/issues/25).
+
 #### 0.3.3
 
 - Minor fixes to issues introduced accidentally in 0.3.2.
