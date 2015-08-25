@@ -48,11 +48,12 @@ body.ltr .structure li:first-child {
 /* Provide special formatting for some third-party field types. Just to make things clean */
 
 .superTableContainer .field .linkit .linkit-type {
-	margin: 5px 0;
+  margin: 7px 0;
 }
 
-.superTableContainer .field .linkit .linkit-type-option {
-	margin-bottom: 0;
+.superTableContainer .field .linkit .linkit-type-option,
+.superTableContainer .field .linkit .linkit-text {
+  margin-bottom: 7px;
 }
 
 
