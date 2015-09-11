@@ -43,7 +43,7 @@ Craft.MatrixInputAlt = Garnish.Base.extend(
 		this.$addBlockBtnGroupBtns = this.$addBlockBtnGroup.children('.btn');
 		this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.menubtn');
 
-		this.setNewBlockBtn();
+		$(window).on('load', $.proxy(this.setNewBlockBtn, this));
 
 		this.blockTypesByHandle = {};
 
