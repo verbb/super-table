@@ -43,7 +43,7 @@ Craft.MatrixInputAlt = Garnish.Base.extend(
 		this.$addBlockBtnGroupBtns = this.$addBlockBtnGroup.children('.btn');
 		this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.menubtn');
 
-		$(window).on('load', $.proxy(this.setNewBlockBtn, this));
+		this.setNewBlockBtn();
 
 		this.blockTypesByHandle = {};
 
@@ -133,7 +133,7 @@ Craft.MatrixInputAlt = Garnish.Base.extend(
 		// Do we know what the button group width is yet?
 		if (!this.addBlockBtnGroupWidth)
 		{
-			this.addBlockBtnGroupWidth = this.$addBlockBtnGroup.width();
+			this.addBlockBtnGroupWidth = this.$addBlockBtnGroup.outerWidth(true);
 
 			if (!this.addBlockBtnGroupWidth)
 			{
@@ -142,7 +142,7 @@ Craft.MatrixInputAlt = Garnish.Base.extend(
 		}
 
 		// Only check if the container width has resized
-		if (this.addBlockBtnContainerWidth !== (this.addBlockBtnContainerWidth = this.$addBlockBtnContainer.width()))
+		if (this.addBlockBtnContainerWidth !== (this.addBlockBtnContainerWidth = this.$addBlockBtnContainer.outerWidth(true)))
 		{
 			if (this.addBlockBtnGroupWidth > this.addBlockBtnContainerWidth)
 			{
