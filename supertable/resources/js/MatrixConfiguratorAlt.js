@@ -516,7 +516,7 @@ var BlockType = Garnish.Base.extend(
 });
 
 
-Field = Garnish.Base.extend(
+var Field = Garnish.Base.extend(
 {
 	configurator: null,
 	blockType: null,
@@ -580,6 +580,8 @@ Field = Garnish.Base.extend(
 		{
 			this.selectedFieldType = this.$typeSelect.val();
 			this.initializedFieldTypeSettings[this.selectedFieldType] = this.$typeSettingsContainer.children();
+
+			this.setFieldType(this.selectedFieldType);
 		}
 
 		if (!this.$handleInput.val())
@@ -670,12 +672,13 @@ Field = Garnish.Base.extend(
 
 		var firstTime = (typeof this.initializedFieldTypeSettings[type] == 'undefined');
 
+		var info = this.configurator.getFieldTypeInfo(type),
+			bodyHtml = this.getParsedFieldTypeHtml(info.settingsBodyHtml),
+			footHtml = this.getParsedFieldTypeHtml(info.settingsFootHtml);
+
 		if (firstTime)
 		{
-			var info = this.configurator.getFieldTypeInfo(type),
-				bodyHtml = this.getParsedFieldTypeHtml(info.settingsBodyHtml),
-				footHtml = this.getParsedFieldTypeHtml(info.settingsFootHtml),
-				$body = $('<div>'+bodyHtml+'</div>');
+			var $body = $('<div>'+bodyHtml+'</div>');
 
 			this.initializedFieldTypeSettings[type] = $body;
 		}
@@ -686,11 +689,8 @@ Field = Garnish.Base.extend(
 
 		$body.appendTo(this.$typeSettingsContainer);
 
-		if (firstTime)
-		{
-			Craft.initUiElements($body);
-			Garnish.$bod.append(footHtml);
-		}
+		Craft.initUiElements($body);
+		Garnish.$bod.append(footHtml);
 	},
 
 	getParsedFieldTypeHtml: function(html)

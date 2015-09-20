@@ -14,7 +14,7 @@ class SuperTablePlugin extends BasePlugin
 
     public function getVersion()
     {
-        return '0.3.4';
+        return '0.3.5';
     }
 
     public function getDeveloper()

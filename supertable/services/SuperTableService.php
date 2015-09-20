@@ -417,6 +417,7 @@ class SuperTableService extends BaseApplicationComponent
 	public function getContentTableName(FieldModel $superTableField, $useOldHandle = false)
 	{
 		$name = '';
+		$parentFieldId = '';
 
 		do {
 			if ($useOldHandle) {
@@ -429,9 +430,22 @@ class SuperTableService extends BaseApplicationComponent
 				$handle = $superTableField->handle;
 			}
 
+			// Check if this field is inside a Matrix - we need to prefix this content table if so.
+			if ($superTableField->context != 'global') {
+				$parentFieldContext = explode(':', $superTableField->context);
+
+				if ($parentFieldContext[0] == 'matrixBlockType') {
+					$parentFieldId = $parentFieldContext[1];
+				}
+			}
+
 			$name = '_'.StringHelper::toLowerCase($handle).$name;
 		}
 		while ($superTableField = $this->getParentSuperTableField($superTableField));
+
+		if ($parentFieldId) {
+			$name = '_'.$parentFieldId.$name;
+		}
 
 		return 'supertablecontent'.$name;
 	}

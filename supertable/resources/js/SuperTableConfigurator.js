@@ -274,13 +274,23 @@ Craft.SuperTableSettingsModal = Garnish.Modal.extend({
 
 		this.$fieldSettings = this.$settingsContainer.appendTo($main);
 
-		Craft.initUiElements(this.$fieldSettings);
-		Garnish.$bod.append(this.fieldTypeFootHtml);
+		// Give the modal window some time to get it together
+		setTimeout($.proxy(function() {
+			Craft.initUiElements(this.$fieldSettings);
+			Garnish.$bod.append(this.fieldTypeFootHtml);
+		}, this), 1);
 
 		this.addListener(this.$closeBtn, 'activate', 'closeModal');
 	},
 
 	restoreSettingsToTable: function() {
+
+		// Special case for Matrix - reset field back to defaults, otherwise causes UI havok
+		this.$fieldSettings.find('.matrixconfigitem.sel').removeClass('sel');
+		this.$fieldSettings.find('.mc-sidebar.fields .col-inner-container').addClass('hidden');
+		this.$fieldSettings.find('.field-settings .col-inner-container').addClass('hidden');
+		this.$fieldSettings.find('.field-settings .col-inner-container .items div[data-id]').addClass('hidden');
+
 		this.field.restoreSettingsHtml(this.$fieldSettings);
 	},
 
