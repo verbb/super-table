@@ -74,6 +74,7 @@ A Super Table field can be set to be static, which turns the field into a non-re
 - New settings layout, including drag/drop, full control over field layout. Allows you to set out the field exactly as you like.
 - Add template hook to allow other plugins to provide layouts for editing field.
 - Allow for SuperTable-in-SuperTable - because why not.
+- Support column duplication in SuperTable field settings.
 
 
 ## Thanks / Contributions
