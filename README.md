@@ -100,7 +100,7 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 #### 0.3.5
 
-- Change to content table naming when inside Matrix field. When two Super Table fields in different Matrix fields had the same handle, when one ST field was deleted, content for both would be deleted. Now prefixes tables with Matrix field id - ie: `supertablecontent_matrixId_fieldhandle`. See [notes](https://github.com/engram-design/SuperTable#field-settings).
+- Change to content table naming when inside Matrix field. When two Super Table fields in different Matrix fields had the same handle, when one ST field was deleted, content for both would be deleted. Now prefixes tables with Matrix field id - ie: `supertablecontent_matrixId_fieldhandle`. See [notes](https://github.com/engram-design/SuperTable/blob/master/README.md#updating-from-034-to-035).
 - Fix for some UI elements not initializing for Matrix > Super Table > Matrix layout [#28](https://github.com/engram-design/SuperTable/issues/28).
 
 
