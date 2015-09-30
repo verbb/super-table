@@ -77,6 +77,20 @@ A Super Table field can be set to be static, which turns the field into a non-re
 - Support column duplication in SuperTable field settings.
 
 
+## Updating from 0.3.4 to 0.3.5
+The 0.3.5 update changed the way that Super Table's within Matrix fields store their content. Because two Super Tables with the same handle could be created in different Matrix fields, both these Super Table fields shared a single content table. This creates all sorts of issues when it comes to deleting your Super Table fields.
+
+While the update will automatically rename and migrate all your Super Table content in a non-destructive fashion, you may come across a particular issue which causes the plugin update to fail. This revolves around one of the primary keys becomes too long for MySQL to handle.
+
+If your receive the error when updating the plugin, please check out `craft/storage/runtime/logs/craft.log` for a line that looks similar to:
+
+```
+[error] [system.db.CDbCommand] CDbCommand::execute() failed: SQLSTATE[42000]: Syntax error or access violation: 1059 Identifier name 'craft_supertablecontent_NUMBER_HANDLE_elementId_locale_unq_idx' is too long.
+```
+
+If you find this error, you will need to manually rename the provided table before performing the plugin update. Simple rename the table from `craft_supertablecontent_HANDLE_elementId_locale_unq_idx` to `craft_supertablecontent_NUMBER_HANDLE_elementId_locale_unq_idx` with `NUMBER` and `HANDLE` obviously specific to your particular table. Perform the plugin update once you have renamed these tables.
+
+
 ## Thanks / Contributions
 
 Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](https://github.com/benparizek) for their input, ideas and suggestions.
@@ -86,7 +100,7 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 #### 0.3.5
 
-- Change to content table naming when inside Matrix field. When two Super Table fields in different Matrix fields had the same handle, when one ST field was deleted, content for both would be deleted. Now prefixes tables with Matrix field id - ie: `supertablecontent_matrixId_fieldhandle`.
+- Change to content table naming when inside Matrix field. When two Super Table fields in different Matrix fields had the same handle, when one ST field was deleted, content for both would be deleted. Now prefixes tables with Matrix field id - ie: `supertablecontent_matrixId_fieldhandle`. See [notes](https://github.com/engram-design/SuperTable#field-settings).
 - Fix for some UI elements not initializing for Matrix > Super Table > Matrix layout [#28](https://github.com/engram-design/SuperTable/issues/28).
 
 
