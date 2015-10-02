@@ -88,7 +88,7 @@ If your receive the error when updating the plugin, please check out `craft/stor
 [error] [system.db.CDbCommand] CDbCommand::execute() failed: SQLSTATE[42000]: Syntax error or access violation: 1059 Identifier name 'craft_supertablecontent_NUMBER_HANDLE_elementId_locale_unq_idx' is too long.
 ```
 
-If you find this error, you will need to manually rename the provided table before performing the plugin update. Simple rename the table from `craft_supertablecontent_HANDLE_elementId_locale_unq_idx` to `craft_supertablecontent_NUMBER_HANDLE_elementId_locale_unq_idx` with `NUMBER` and `HANDLE` obviously specific to your particular table. Perform the plugin update once you have renamed these tables.
+If you find this error, you will need to manually rename the provided table before performing the plugin update. Simple rename the table from `craft_supertablecontent_HANDLE` to `craft_supertablecontent_NUMBER_HANDLE` with `NUMBER` and `HANDLE` obviously specific to your particular table. This will be identified in the error line in your `craft.log` file. Perform the plugin update once you have renamed these tables.
 
 
 ## Thanks / Contributions
