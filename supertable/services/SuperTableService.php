@@ -74,8 +74,12 @@ class SuperTableService extends BaseApplicationComponent
         $validates = true;
 
         $blockTypeRecord = $this->_getBlockTypeRecord($blockType);
-
         $blockTypeRecord->fieldId = $blockType->fieldId;
+
+        if (!$blockTypeRecord->validate()) {
+            $validates = false;
+            $blockType->addErrors($blockTypeRecord->getErrors());
+        }
 
         // Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
         // handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
@@ -100,6 +104,8 @@ class SuperTableService extends BaseApplicationComponent
             if ($field->hasErrors()) {
                 $blockType->hasFieldErrors = true;
                 $validates = false;
+
+                $blockType->addErrors($field->getErrors());
             }
         }
 
@@ -290,16 +296,15 @@ class SuperTableService extends BaseApplicationComponent
     {
         $validates = true;
 
-        $this->_uniqueBlockTypeAndFieldHandles = array();
-
-        $uniqueAttributes = array('name', 'handle');
-        $uniqueAttributeValues = array();
-
-        foreach ($settings->getBlockTypes() as $blockType) {
+        foreach ($settings->getBlockTypes() as $btIndex => $blockType) {
             if (!$this->validateBlockType($blockType, false)) {
                 // Don't break out of the loop because we still want to get validation errors for the remaining block
                 // types.
                 $validates = false;
+            }
+
+            if ($blockType->hasFieldErrors) {
+                $settings->addErrors($blockType->getErrors());
             }
         }
 
