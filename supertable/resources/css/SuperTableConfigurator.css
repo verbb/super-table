@@ -1,31 +1,31 @@
 /* Settings */
 
 table.editable tbody tr td.type-Label {
-	background: #f9fafa;
+    background: #f9fafa;
 }
 
 table.editable tbody tr td.type-Label textarea {
-	background: transparent;
+    background: transparent;
 }
 
 table.editable .icon.settings:before {
-	color: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.2);
 }
 
 table.editable .icon.settings:hover:before {
-	color: #0d78f2;
+    color: #0d78f2;
 }
 
 table.editable tbody textarea {
-	border: 1px solid transparent;
+    border: 1px solid transparent;
 }
 
 table.editable tbody textarea:focus {
-	padding: 7px 10px;
+    padding: 7px 10px;
 }
 
 td.errors textarea {
-	border: 1px solid #da5a47 !important;
+    border: 1px solid #da5a47 !important;
 }
 
 
@@ -33,35 +33,35 @@ td.errors textarea {
 /* Settings Field Settings Modal */
 
 .fieldsettingsmodal {
-	padding-bottom: 58px;
+    padding-bottom: 58px;
 }
 
 .fieldsettingsmodal .spinner.big {
-	width: 100%;
-	height: 100%;
+    width: 100%;
+    height: 100%;
  }
 
 .fieldsettingsmodal .main {
-	margin: -24px;
-	padding: 24px;
-	height: calc(100% - 48px);
-	overflow: auto;
-	position: relative;
+    margin: -24px;
+    padding: 24px;
+    height: calc(100% - 48px);
+    overflow: auto;
+    position: relative;
 }
 
 .fieldsettingsmodal .body {
-	position: relative;
-	height: 100%;
+    position: relative;
+    height: 100%;
 }
 
 .fieldsettingsmodal .body .content {
-	height: calc(100% + 48px);
+    height: calc(100% + 48px);
 }
 
 .fieldsettingsmodal .footer {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	width: 100%;
-	margin: 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
 }

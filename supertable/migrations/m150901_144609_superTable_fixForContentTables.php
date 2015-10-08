@@ -5,7 +5,7 @@ class m150901_144609_superTable_fixForContentTables extends BaseMigration
 {
     public function safeUp()
     {
-    	// Get all Super Table fields - but only the ones inside Matrix fields
+        // Get all Super Table fields - but only the ones inside Matrix fields
         $fields = craft()->fields->getAllFields();
         $superTableFields = array();
 
