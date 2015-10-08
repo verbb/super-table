@@ -7,34 +7,34 @@
 {% set instructions = (not static and field.instructions ? field.instructions|t : null) %}
 
 {% if fieldtype %}
-	{% if element %}
-		{% do fieldtype.setElement(element) %}
-	{% endif %}
+    {% if element %}
+        {% do fieldtype.setElement(element) %}
+    {% endif %}
 
-	{% if not static %}
+    {% if not static %}
 
-		{# Special-case for Matrix-in-SuperTable #}
-		{% if field.type == 'Matrix' %}
-			{% set input = craft.superTable.getMatrixInputHtml(fieldtype, field.handle, value) %}
-		{% else %}
-			{% set input = fieldtype.getInputHtml(field.handle, value) %}
-		{% endif %}
-		
-	{% else %}
-		{% set input = fieldtype.getStaticHtml(value) %}
-	{% endif %}
+        {# Special-case for Matrix-in-SuperTable #}
+        {% if field.type == 'Matrix' %}
+            {% set input = craft.superTable.getMatrixInputHtml(fieldtype, field.handle, value) %}
+        {% else %}
+            {% set input = fieldtype.getInputHtml(field.handle, value) %}
+        {% endif %}
+        
+    {% else %}
+        {% set input = fieldtype.getStaticHtml(value) %}
+    {% endif %}
 {% else %}
-	{% set input = '<p class="error">' ~ "The fieldtype class “{class}” could not be found."|t({ class: field.type }) ~ '</p>' %}
+    {% set input = '<p class="error">' ~ "The fieldtype class “{class}” could not be found."|t({ class: field.type }) ~ '</p>' %}
 {% endif %}
 
 {% if instructions or input %}
-	{% include "_includes/forms/field" with {
-		label: field.name|t|e,
-		locale: field.translatable ? (locale is defined ? locale : (element ? element.locale : craft.locale)),
-		required: (not static ? required : false),
-		instructions: instructions|e,
-		id: field.handle,
-		errors: errors,
-		input: input
-	} only %}
+    {% include "_includes/forms/field" with {
+        label: field.name|t|e,
+        locale: field.translatable ? (locale is defined ? locale : (element ? element.locale : craft.locale)),
+        required: (not static ? required : false),
+        instructions: instructions|e,
+        id: field.handle,
+        errors: errors,
+        input: input
+    } only %}
 {% endif %}

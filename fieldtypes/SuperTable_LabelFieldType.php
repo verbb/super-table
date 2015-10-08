@@ -3,43 +3,43 @@ namespace Craft;
 
 class SuperTable_LabelFieldType extends BaseFieldType
 {
-	public function getName()
-	{
-		return Craft::t('Label');
-	}
-
-	public function defineContentAttribute()
+    public function getName()
     {
-		return AttributeType::String;
+        return Craft::t('Label');
     }
 
-	public function getInputHtml($name, $value)
-	{
-		$value = $this->settings->value;
+    public function defineContentAttribute()
+    {
+        return AttributeType::String;
+    }
 
-		return craft()->templates->render('supertable/label/input', array(
-			'id'    => craft()->templates->formatInputId($name),
-			'name'  => $name,
-			'value' => $value,
-		));
-	}
+    public function getInputHtml($name, $value)
+    {
+        $value = $this->settings->value;
 
-	public function getSettingsHtml()
-	{
-		return craft()->templates->render('supertable/label/settings', array(
-			'settings' => $this->getSettings()
-		));
-	}
+        return craft()->templates->render('supertable/label/input', array(
+            'id'    => craft()->templates->formatInputId($name),
+            'name'  => $name,
+            'value' => $value,
+        ));
+    }
+
+    public function getSettingsHtml()
+    {
+        return craft()->templates->render('supertable/label/settings', array(
+            'settings' => $this->getSettings()
+        ));
+    }
 
 
-	// Protected Methods
-	// =========================================================================
+    // Protected Methods
+    // =========================================================================
 
-	protected function defineSettings()
-	{
-		return array(
-			'value' => array(AttributeType::String),
-		);
-	}
+    protected function defineSettings()
+    {
+        return array(
+            'value' => array(AttributeType::String),
+        );
+    }
 
 }

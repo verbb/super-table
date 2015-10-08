@@ -5,40 +5,40 @@
 <input type="hidden" name="{{ name }}" value="">
 
 <div id="{{ id }}" class="superTableContainer rowLayout">
-	<div class="rowLayoutContainer">
-		{% set totalNewBlocks = 0 %}
+    <div class="rowLayoutContainer">
+        {% set totalNewBlocks = 0 %}
 
-		{% for block in blocks %}
-			<div class="superTableRow">
-				{% set blockId = block.id %}
+        {% for block in blocks %}
+            <div class="superTableRow">
+                {% set blockId = block.id %}
 
-				{% if not blockId %}
-					{% set totalNewBlocks = totalNewBlocks + 1 %}
-					{% set blockId = 'new'~totalNewBlocks %}
-				{% endif %}
+                {% if not blockId %}
+                    {% set totalNewBlocks = totalNewBlocks + 1 %}
+                    {% set blockId = 'new'~totalNewBlocks %}
+                {% endif %}
 
-				<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
+                <input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
 
-			    <table class="shadow-box editable superTable">
-			        <tbody>
-						{% include "supertable/fields" with {
-							namespace: name~'['~blockId~'][fields]',
-							element: block,
-							fields: block.getType().getFieldLayout().getFields(),
-							settings: settings,
-						} %}
-			        </tbody>
+                <table class="shadow-box editable superTable">
+                    <tbody>
+                        {% include "supertable/fields" with {
+                            namespace: name~'['~blockId~'][fields]',
+                            element: block,
+                            fields: block.getType().getFieldLayout().getFields(),
+                            settings: settings,
+                        } %}
+                    </tbody>
 
-			    	<tfoot {% if settings.staticField %}style="display: none;"{% endif %}>
-			    		<tr>
-			                <td class="floating reorder"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
-			                <td class="floating delete"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
-			    		</tr>
-			    	</tfoot>
-			    </table>
-			</div>
-		{% endfor %}
-	</div>
+                    <tfoot {% if settings.staticField %}style="display: none;"{% endif %}>
+                        <tr>
+                            <td class="floating reorder"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
+                            <td class="floating delete"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% endfor %}
+    </div>
 
     <div class="superTableAddRow btn add icon" {% if settings.staticField %}style="display: none;"{% endif %}>{{ settings.selectionLabel | default("Add a row") | t }}</div>
 </div>
