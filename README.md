@@ -66,6 +66,19 @@ A Super Table field can be set to be static, which turns the field into a non-re
 
 <img src="https://raw.githubusercontent.com/engram-design/SuperTable/master/screenshots/static.png" />
 
+## Installation via Composer
+
+- Install [composer](http://getcomposer.org) if you haven't yet
+- Add dependency to `composer.json`:
+  ```
+  {
+    "require": {
+      "engram-design/supertable": "~1.3",
+    }
+  }
+  ```
+- Run `composer update`
+
 
 ## Roadmap
 
@@ -97,6 +110,10 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 
 ## Changelog
+
+#### 0.3.7
+
+- Adds support for installation via Composer
 
 #### 0.3.6
 
