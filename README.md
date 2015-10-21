@@ -98,9 +98,9 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 ## Changelog
 
-#### 0.3.6
+#### 0.3.7
 
-- Fix for validation when inside a Matrix field.
+- Added relations support, thanks to [joshangell](https://github.com/joshangell).
 
 
 [View Full Changelog](https://github.com/engram-design/SuperTable/blob/master/CHANGELOG.md)

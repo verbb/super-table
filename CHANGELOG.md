@@ -1,3 +1,7 @@
+#### 0.3.6
+
+- Fix for validation when inside a Matrix field.
+
 #### 0.3.5
 
 - Change to content table naming when inside Matrix field. When two Super Table fields in different Matrix fields had the same handle, when one ST field was deleted, content for both would be deleted. Now prefixes tables with Matrix field id - ie: `supertablecontent_matrixId_fieldhandle`. See [notes](https://github.com/engram-design/SuperTable/blob/master/README.md#updating-from-034-to-035).
