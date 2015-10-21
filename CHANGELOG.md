@@ -1,3 +1,7 @@
+#### 0.3.7
+
+- Added relations support, thanks to [joshangell](https://github.com/joshangell).
+
 #### 0.3.6
 
 - Fix for validation when inside a Matrix field.
