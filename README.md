@@ -96,11 +96,16 @@ If you find this error, you will need to manually rename the provided table befo
 Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](https://github.com/benparizek) for their input, ideas and suggestions.
 
 
+## Requirements
+
+Super Table requires a minimum of Craft 2.3.2615 in order to function.
+
+
 ## Changelog
 
-#### 0.3.6
+#### 0.3.8
 
-- Fix for validation when inside a Matrix field.
+- Ensure Craft 2.3.2615 is minimum required version.
 
 
 [View Full Changelog](https://github.com/engram-design/SuperTable/blob/master/CHANGELOG.md)

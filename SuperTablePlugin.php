@@ -14,7 +14,7 @@ class SuperTablePlugin extends BasePlugin
 
     public function getVersion()
     {
-        return '0.3.6';
+        return '0.3.8';
     }
 
     public function getDeveloper()
@@ -25,6 +25,22 @@ class SuperTablePlugin extends BasePlugin
     public function getDeveloperUrl()
     {
         return 'http://sgroup.com.au';
+    }
+
+    public function onAfterInstall()
+    {   
+        $minBuild = '2615';
+
+        if (craft()->getBuild() < $minBuild) {
+            craft()->plugins->disablePlugin($this->getClassHandle());
+
+            craft()->plugins->uninstallPlugin($this->getClassHandle());
+
+            craft()->userSession->setError(Craft::t('{plugin} only works on Craft build {build} or higher', array(
+                'plugin' => $this->getName(),
+                'build' => $minBuild,
+            )));
+        }
     }
 
 
