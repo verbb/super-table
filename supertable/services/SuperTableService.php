@@ -632,6 +632,10 @@ class SuperTableService extends BaseApplicationComponent
         return $this->_parentSuperTableFields[$superTableField->id];
     }
 
+
+
+
+
     // Private Methods
     // =========================================================================
 
@@ -798,5 +802,204 @@ class SuperTableService extends BaseApplicationComponent
                 }
             }
         }
+    }
+
+
+    // Hook Methods
+    // =========================================================================
+
+
+
+    // Feed Me
+    // =========================================================================
+
+    public function prepForFeedMeFieldType($field, &$data, $handle)
+    {
+        if ($field->type == 'SuperTable') {
+            $content = array();
+
+            preg_match_all('/\w+/', $handle, $matches);
+
+            if (isset($matches[0])) {
+                $fieldData = array();
+
+                $fieldHandle = $matches[0][0];
+                $blocktypeHandle = $matches[0][1];
+                $subFieldHandle = $matches[0][2];
+
+                // Store the fields for this Matrix - can't use the fields service due to context
+                $blockTypes = craft()->superTable->getBlockTypesByFieldId($field->id, 'id');
+                $blockType = $blockTypes[$blocktypeHandle];
+
+                foreach ($blockType->getFields() as $f) {
+                    if ($f->handle == $subFieldHandle) {
+                        $subField = $f;
+                    }
+                }
+
+                $rows = array();
+
+                if (!empty($data)) {
+                    if (!is_array($data)) {
+                        $data = array($data);
+                    }
+
+                    foreach ($data as $i => $singleFieldData) {
+
+                        // Check to see if this is an array of items, or just a single item
+                        if (count($singleFieldData) != count($singleFieldData, 1)) {
+                            $elementFieldData = array_values($singleFieldData)[0];
+                            
+                            $subFieldData = craft()->feedMe_fields->prepForFieldType($elementFieldData, $subFieldHandle, $subField);
+                        } else {
+                            $subFieldData = craft()->feedMe_fields->prepForFieldType($singleFieldData, $subFieldHandle, $subField);
+                        }
+
+                        $fieldData['new'.$blocktypeHandle.($i+1)] = array(
+                            'type' => $blocktypeHandle,
+                            'order' => $i,
+                            'enabled' => true,
+                            'fields' => $subFieldData,
+                        );
+                    }
+                }
+
+                $data[$fieldHandle] = $fieldData;
+            }
+        }
+    }
+
+    public function postForFeedMeFieldType(&$fieldData)
+    {
+        // This is less intensive than craft()->fields->getFieldByHandle($fieldHandle);
+        foreach ($fieldData as $fieldHandle => $data) {
+            if (is_array($data)) {
+                
+                // Check for the order attr, otherwise not what we're after
+                if (isset(array_values($data)[0]['order'])) {
+                    $orderedSuperTableData = array();
+                    $tempSuperTableData = array();
+
+                    foreach ($data as $key => $subField) {
+                        $tempSuperTableData[$subField['order']][$key] = $subField;
+                    }
+
+                    $fieldData[$fieldHandle] = array();
+
+                    foreach ($tempSuperTableData as $key => $subField) {
+                        $fieldData[$fieldHandle] = array_merge($fieldData[$fieldHandle], $subField);
+                    }
+                }
+            }
+        }
+    }
+
+
+    // Export
+    // =========================================================================
+
+    public function registerExportOperation(&$data, $handle)
+    {
+        $superTableField = craft()->fields->getFieldByHandle($handle);
+
+        if ($superTableField) {
+            if ($superTableField->type == 'SuperTable') {
+
+                $values = array();
+                foreach ($data as $index => $block) {
+                    foreach ($block->getFieldLayout()->getFields() as $fieldLayoutField) {
+                        $field = $fieldLayoutField->getField();
+
+                        $value = $block->getFieldValue($field->handle);
+                        $value = $this->parseFieldData($field, $value);
+
+                        $values[] = $value;
+                    }
+                }
+
+                $data = $values;
+            }
+        }
+    }
+
+    // Assists with Export functionality - prepares field content for export. Extracted from ExportService.php
+    protected function parseFieldData($field, $data)
+    {
+        if (!is_null($data)) {
+            if (!is_null($field)) {
+                switch ($field->type) {
+                    case ExportModel::FieldTypeEntries:
+                    case ExportModel::FieldTypeCategories:
+                    case ExportModel::FieldTypeAssets:
+                    case ExportModel::FieldTypeUsers:
+                        $data = $data instanceof ElementCriteriaModel ? implode(', ', $data->find()) : $data;
+
+                        break;
+
+                    case ExportModel::FieldTypeLightswitch:
+                        switch ($data) {
+                            case '0':
+                                $data = Craft::t('No');
+                                break;
+
+                            case '1':
+                                $data = Craft::t('Yes');
+                                break;
+                        }
+
+                        break;
+
+                    case ExportModel::FieldTypeTable:
+                        $table = array();
+                        foreach ($data as $row) {
+
+                            $i = 1;
+
+                            foreach ($row as $column => $value) {
+                                $column = isset($field->settings['columns'][$column]) ? $field->settings['columns'][$column] : (isset($field->settings['columns']['col'.$i]) ? $field->settings['columns']['col'.$i] : array('type' => 'dummy'));
+
+                                $i++;
+
+                                $table[] = $column['type'] == 'checkbox' ? ($value == 1 ? Craft::t('Yes') : Craft::t('No')) : $value;
+                            }
+                        }
+
+                        $data = $table;
+
+                        break;
+
+                    case ExportModel::FieldTypeRichText:
+                    case ExportModel::FieldTypeDate:
+                    case ExportModel::FieldTypeRadioButtons:
+                    case ExportModel::FieldTypeDropdown:
+                        $data = (string) $data;
+
+                        break;
+
+                    case ExportModel::FieldTypeCheckboxes:
+                    case ExportModel::FieldTypeMultiSelect:
+                        $multi = array();
+                        foreach ($data as $row) {
+                            $multi[] = $row->value;
+                        }
+
+                        $data = $multi;
+
+                        break;
+                }
+            }
+        } else {
+            $data = '';
+        }
+
+        if (is_array($data)) {
+            $data = StringHelper::arrayToString(ArrayHelper::filterEmptyStringsFromArray(ArrayHelper::flattenArray($data)), ', ');
+        }
+
+        if (is_object($data)) {
+            $data = StringHelper::arrayToString(ArrayHelper::filterEmptyStringsFromArray(ArrayHelper::flattenArray(get_object_vars($data))), ', ');
+        }
+
+        return $data;
     }
 }

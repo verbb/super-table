@@ -1,0 +1,14 @@
+{% for blocktype in craft.superTable.getSuperTableBlocks(field.id) %}
+    <option disabled label="{{ field.name }}">
+
+    {% for blocktypefield in blocktype.getFields() %}
+        {% set selected = '' %}
+        {% set fieldHandle = field.handle ~ '[' ~ blocktype.id ~ '][' ~ blocktypefield.handle ~ ']' %}
+
+        {% if key in feed.fieldMapping | keys %}
+            {% set selected = (feed.fieldMapping[key] == fieldHandle) ? 'selected' : '' %}
+        {% endif %}
+
+        <option {{ selected }} value="{{ fieldHandle }}">-- {{ blocktypefield.name }}</option>
+    {% endfor %}
+{% endfor %}

@@ -103,9 +103,4 @@ Super Table requires a minimum of Craft 2.3.2615 in order to function.
 
 ## Changelog
 
-#### 0.3.8
-
-- Ensure Craft 2.3.2615 is minimum required version.
-
-
-[View Full Changelog](https://github.com/engram-design/SuperTable/blob/master/CHANGELOG.md)
+[View JSON Changelog](https://github.com/engram-design/SuperTable/blob/master/changelog.json)

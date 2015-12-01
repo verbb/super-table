@@ -137,6 +137,11 @@ class SuperTableVariable
         return $html;
     }
 
+    public function getSuperTableBlocks($fieldId)
+    {
+        return craft()->superTable->getBlockTypesByFieldId($fieldId);
+    }
+
     private function _getBlockTypeInfoForInput($fieldType, $name)
     {
         $blockTypes = array();

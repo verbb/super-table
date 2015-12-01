@@ -1,3 +1,7 @@
+#### 0.3.8
+
+- Ensure Craft 2.3.2615 is minimum required version.
+
 #### 0.3.7
 
 - Added relations support, thanks to [joshangell](https://github.com/joshangell).

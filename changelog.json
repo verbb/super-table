@@ -1,0 +1,13 @@
+[
+    {
+        "version": "0.4.0",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.0.zip",
+        "date": "2015-12-01 19:45:00",
+        "notes": [
+            "[Added] Craft 2.5 support, including release feed and icons.",
+            "[Added] Support for [Feed Me](https://github.com/engram-design/FeedMe).",
+            "[Added] Support for [Export](https://github.com/boboldehampsink/Export).",
+            "[Fixed] Labels in Row Layout are now top-aligned."
+        ]
+    }
+]

@@ -29,31 +29,18 @@ body.ltr table.editable.superTable tbody tr td:nth-child(2) {
     border-left: none;
 }
 
-/* Strange issue for Categories and button alignment */
-.elements.structure li {
-    display: inline-block;
-    float: left;
-}
-
-body.ltr .structure li:first-child {
-    padding-left: 0;
-}
-
-.categoriesfield .btn {
-    margin-left: 10px;
-}
-
 
 
 /* Provide special formatting for some third-party field types. Just to make things clean */
 
 .superTableContainer .field .linkit .linkit-type {
-  margin: 7px 0;
+    margin: 7px 0;
 }
 
 .superTableContainer .field .linkit .linkit-type-option,
-.superTableContainer .field .linkit .linkit-text {
-  margin-bottom: 7px;
+.superTableContainer .field .linkit .linkit-text,
+.superTableContainer .field .linkit .linkit-target {
+    margin-bottom: 7px;
 }
 
 
@@ -70,7 +57,7 @@ body.ltr .structure li:first-child {
 
 .superTableRow .rowHeader {
     font-weight: bold;
-    vertical-align: middle;
+    vertical-align: top;
     font-size: 11px;
     line-height: 1.2;
     color: rgba(0, 0, 0, 0.5);
