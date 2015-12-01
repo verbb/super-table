@@ -1,5 +1,13 @@
 [
     {
+        "version": "0.4.1",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.1.zip",
+        "date": "2015-12-01 23:06:00",
+        "notes": [
+            "[Fixed] Some files not correctly updated (for some strange reason)."
+        ]
+    },
+    {
         "version": "0.4.0",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.0.zip",
         "date": "2015-12-01 19:45:00",
