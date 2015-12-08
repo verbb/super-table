@@ -1,5 +1,6 @@
 table.editable.superTable {
     margin-top: 10px;
+    table-layout: fixed;
 }
 
 table.editable.superTable tbody tr td {
