@@ -98,7 +98,8 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 ## Requirements
 
-Super Table requires a minimum of Craft 2.3.2615 in order to function.
+- Craft 2.3.2615+.
+- PHP 5.4+
 
 
 ## Changelog
