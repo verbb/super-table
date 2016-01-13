@@ -43,7 +43,8 @@ class SuperTableVariable
 
         // Get the Super Table field and associated block type
         $superTableField = craft()->fields->getFieldByHandle($superTableFieldHandle);
-        $superTableBlockType = craft()->superTable->getBlockTypesByFieldId($superTableField->id)[0];
+        $superTableBlockTypes = craft()->superTable->getBlockTypesByFieldId($superTableField->id);
+        $superTableBlockType = $superTableBlockTypes[0];
        
         // Loop the fields on the block type and save the first one that matches our handle
         $fieldId = false;
