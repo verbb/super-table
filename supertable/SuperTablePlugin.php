@@ -14,7 +14,7 @@ class SuperTablePlugin extends BasePlugin
 
     public function getVersion()
     {
-        return '0.4.0';
+        return '0.4.2';
     }
 
     public function getSchemaVersion()
@@ -44,7 +44,7 @@ class SuperTablePlugin extends BasePlugin
 
     public function getReleaseFeedUrl()
     {
-        return $this->getPluginUrl() . '/blob/master/changelog.json';
+        return 'https://raw.githubusercontent.com/engram-design/SuperTable/master/changelog.json';
     }
 
     public function onBeforeInstall()

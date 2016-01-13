@@ -848,7 +848,8 @@ class SuperTableService extends BaseApplicationComponent
 
                         // Check to see if this is an array of items, or just a single item
                         if (count($singleFieldData) != count($singleFieldData, 1)) {
-                            $elementFieldData = array_values($singleFieldData)[0];
+                            $allSingleFieldData = array_values($singleFieldData);
+                            $elementFieldData = $allSingleFieldData[0];
                             
                             $subFieldData = craft()->feedMe_fields->prepForFieldType($elementFieldData, $subFieldHandle, $subField);
                         } else {
@@ -874,9 +875,10 @@ class SuperTableService extends BaseApplicationComponent
         // This is less intensive than craft()->fields->getFieldByHandle($fieldHandle);
         foreach ($fieldData as $fieldHandle => $data) {
             if (is_array($data)) {
+                $singleFieldData = array_values($data);
                 
                 // Check for the order attr, otherwise not what we're after
-                if (isset(array_values($data)[0]['order'])) {
+                if (isset($singleFieldData[0]['order'])) {
                     $orderedSuperTableData = array();
                     $tempSuperTableData = array();
 
