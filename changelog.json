@@ -1,5 +1,15 @@
 [
     {
+        "version": "0.4.3",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.3.zip",
+        "date": "2016-02-28 18:15:00",
+        "notes": [
+            "[Fixed] Fixed issue with JS not firing correctly in field settings - caused some field types to not allow editing of settings.",
+            "[Fixed] Fixed issue where blocks were being overwritten when entries are saved as drafts.",
+            "[Improved] You now have direct access to fields when using the Static Field option. No more looping or using `superTableField[0].fieldHandle`."
+        ]
+    },
+    {
         "version": "0.4.2",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.2.zip",
         "date": "2016-01-13 18:15:00",

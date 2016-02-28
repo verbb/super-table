@@ -262,6 +262,12 @@ class SuperTableService extends BaseApplicationComponent
 
             $this->deleteBlockById($blockIds);
 
+            // Set the new contentTable
+            $originalContentTable = craft()->content->contentTable;
+            $superTableField = craft()->fields->getFieldById($blockType->fieldId);
+            $newContentTable = $this->getContentTableName($superTableField);
+            craft()->content->contentTable = $newContentTable;
+
             // Now delete the block type fields
             $originalFieldColumnPrefix = craft()->content->fieldColumnPrefix;
             craft()->content->fieldColumnPrefix = 'field_';
@@ -270,7 +276,9 @@ class SuperTableService extends BaseApplicationComponent
                 craft()->fields->deleteField($field);
             }
 
+            // Restore the contentTable and the fieldColumnPrefix to original values.
             craft()->content->fieldColumnPrefix = $originalFieldColumnPrefix;
+            craft()->content->contentTable = $newContentTable;
 
             // Delete the field layout
             craft()->fields->deleteLayoutById($blockType->fieldLayoutId);

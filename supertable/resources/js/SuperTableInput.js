@@ -41,6 +41,16 @@ Craft.SuperTableInputTable = Garnish.Base.extend({
 
         for (var i = 0; i < $rows.length; i++) {
             new Craft.EditableTable.Row(this, $rows[i]);
+
+            var $block = $($rows[i]),
+                id = $block.data('id');
+                
+            // Is this a new block?
+            var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
+
+            if (newMatch && newMatch[1] > this.totalNewBlocks) {
+                this.totalNewBlocks = parseInt(newMatch[1]);
+            }
         }
 
         this.updateAddBlockBtn();
@@ -153,6 +163,16 @@ Craft.SuperTableInputRow = Garnish.Base.extend({
 
         for (var i = 0; i < this.$rows.length; i++) {
             new Craft.SuperTableInputRow.Row(this, this.$rows[i]);
+
+            var $block = $(this.$rows[i]),
+                id = $block.data('id');
+
+            // Is this a new block?
+            var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
+
+            if (newMatch && newMatch[1] > this.totalNewBlocks) {
+                this.totalNewBlocks = parseInt(newMatch[1]);
+            }
         }
 
         this.$addRowBtn = this.$divInner.next('.add');
@@ -178,7 +198,7 @@ Craft.SuperTableInputRow = Garnish.Base.extend({
 
         var staticFieldStyle = (this.settings.staticField) ? 'style="display: none;"' : '';
 
-        var html = '<div class="superTableRow">' +
+        var html = '<div class="superTableRow" data-id="'+id+'">' +
             '<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'">' +
             '<table id="'+id+'" class="shadow-box editable superTable">' +
                 '<tbody>' +

@@ -172,7 +172,30 @@ class SuperTableFieldType extends BaseFieldType
             }
         }
 
-        return $criteria;
+        if ($this->settings->staticField) {
+            return $criteria[0];
+        } else {
+            return $criteria;
+        }
+    }
+
+    public function modifyElementsQuery(DbCommand $query, $value)
+    {
+        if ($value == 'not :empty:') {
+            $value = ':notempty:';
+        }
+
+        if ($value == ':notempty:' || $value == ':empty:') {
+            $alias = 'supertableblocks_'.$this->model->handle;
+            $operator = ($value == ':notempty:' ? '!=' : '=');
+
+            $query->andWhere(
+                "(select count({$alias}.id) from {{supertableblocks}} {$alias} where {$alias}.ownerId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
+                array(':fieldId' => $this->model->id)
+            );
+        } else if ($value !== null) {
+            return false;
+        }
     }
 
     public function getInputHtml($name, $value)
@@ -450,6 +473,7 @@ class SuperTableFieldType extends BaseFieldType
 
             if ($this->element) {
                 $block->setOwner($this->element);
+                $block->locale = $this->element->locale;
             }
 
             $fieldLayoutFields = $blockType->getFieldLayout()->getFields();

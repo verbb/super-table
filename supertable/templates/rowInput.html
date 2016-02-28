@@ -8,15 +8,19 @@
     <div class="rowLayoutContainer">
         {% set totalNewBlocks = 0 %}
 
+        {% if settings.staticField %}
+            {% set blocks = [blocks] %}
+        {% endif %}
+
         {% for block in blocks %}
-            <div class="superTableRow">
-                {% set blockId = block.id %}
+            {% set blockId = block.id %}
 
-                {% if not blockId %}
-                    {% set totalNewBlocks = totalNewBlocks + 1 %}
-                    {% set blockId = 'new'~totalNewBlocks %}
-                {% endif %}
+            {% if not blockId %}
+                {% set totalNewBlocks = totalNewBlocks + 1 %}
+                {% set blockId = 'new'~totalNewBlocks %}
+            {% endif %}
 
+            <div class="superTableRow" data-id="{{ blockId }}">
                 <input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
 
                 <table class="shadow-box editable superTable">

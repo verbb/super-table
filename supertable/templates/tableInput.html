@@ -24,6 +24,10 @@
         </thead>
         <tbody>
             {% set totalNewBlocks = 0 %}
+
+            {% if settings.staticField %}
+                {% set blocks = [blocks] %}
+            {% endif %}
             
             {% for block in blocks %}
                 {% set blockId = block.id %}

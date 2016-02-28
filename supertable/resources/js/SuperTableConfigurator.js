@@ -274,12 +274,6 @@ Craft.SuperTableSettingsModal = Garnish.Modal.extend({
 
         this.$fieldSettings = this.$settingsContainer.appendTo($main);
 
-        // Give the modal window some time to get it together
-        setTimeout($.proxy(function() {
-            Craft.initUiElements(this.$fieldSettings);
-            Garnish.$bod.append(this.fieldTypeFootHtml);
-        }, this), 1);
-
         this.addListener(this.$closeBtn, 'activate', 'closeModal');
     },
 
@@ -303,6 +297,14 @@ Craft.SuperTableSettingsModal = Garnish.Modal.extend({
 
         this.removeListener(this.$closeBtn, 'click');
         this.removeListener(this.$saveBtn, 'click');
+    },
+
+    onFadeIn: function() {
+        // Give the modal window some time to get it together
+        setTimeout($.proxy(function() {
+            Craft.initUiElements(this.$fieldSettings);
+            Garnish.$bod.append(this.fieldTypeFootHtml);
+        }, this), 1);
     },
 
     closeModal: function() {
