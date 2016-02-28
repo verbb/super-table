@@ -91,6 +91,13 @@ If your receive the error when updating the plugin, please check out `craft/stor
 If you find this error, you will need to manually rename the provided table before performing the plugin update. Simple rename the table from `craft_supertablecontent_HANDLE` to `craft_supertablecontent_NUMBER_HANDLE` with `NUMBER` and `HANDLE` obviously specific to your particular table. This will be identified in the error line in your `craft.log` file. Perform the plugin update once you have renamed these tables.
 
 
+## Troubleshooting
+
+**Errors or trouble saving Matrix / Super Table combination**
+
+If you're using a Matrix / Super Table combination, you'll likely need to alter the `max_input_vars` and `post_max_size` setting in your `php.ini` file. Whether this is a necessary change depends on your server setup, but its advised that you make this change regardless to ensure data isn't lost. This will ensure your fields save correctly, and data is not lost. You may experience a 500 error on save, or a semi-blank screen when saving your content. This can also be a common problem with Matrix and other fields - see [http://craftcms.stackexchange.com/a/2777](http://craftcms.stackexchange.com/a/2777).
+
+
 ## Thanks / Contributions
 
 Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](https://github.com/benparizek) for their input, ideas and suggestions.
