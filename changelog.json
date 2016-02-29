@@ -1,5 +1,13 @@
 [
     {
+        "version": "0.4.4",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.4.zip",
+        "date": "2016-02-29 13:45:00",
+        "notes": [
+            "[Fixed] Fixed issue with rows not displaying correctly for Static Field option."
+        ]
+    },
+    {
         "version": "0.4.3",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.3.zip",
         "date": "2016-02-28 18:15:00",

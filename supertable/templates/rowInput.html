@@ -9,7 +9,9 @@
         {% set totalNewBlocks = 0 %}
 
         {% if settings.staticField %}
-            {% set blocks = [blocks] %}
+            {% if blocks %}
+                {% set blocks = [blocks] %}
+            {% endif %}
         {% endif %}
 
         {% for block in blocks %}

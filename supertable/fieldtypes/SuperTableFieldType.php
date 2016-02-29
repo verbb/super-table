@@ -359,6 +359,10 @@ class SuperTableFieldType extends BaseFieldType
         $keywords = array();
         $contentService = craft()->content;
 
+        if ($this->settings->staticField) {
+            $value = array($value);
+        }
+
         foreach ($value as $block) {
             $originalContentTable      = $contentService->contentTable;
             $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
