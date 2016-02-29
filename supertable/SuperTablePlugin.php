@@ -14,7 +14,7 @@ class SuperTablePlugin extends BasePlugin
 
     public function getVersion()
     {
-        return '0.4.3';
+        return '0.4.4';
     }
 
     public function getSchemaVersion()
