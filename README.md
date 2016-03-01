@@ -83,7 +83,7 @@ Below are major release notes when updating from one version to another. Breakin
 
 - [Updating from 0.4.2 to 0.4.3](https://github.com/engram-design/SuperTable/wiki/Release-Notes#updating-from-042-to-043)
 - [Updating from 0.3.4 to 0.3.5](https://github.com/engram-design/SuperTable/wiki/Release-Notes#updating-from-034-to-035)
-- 
+
 
 ## Troubleshooting
 
