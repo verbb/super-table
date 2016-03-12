@@ -852,17 +852,11 @@ class SuperTableService extends BaseApplicationComponent
                         $data = array($data);
                     }
 
-                    foreach ($data as $i => $singleFieldData) {
+                    // We're passed data in with the fieldHandle as the key to our data
+                    $blockData = $data[$fieldHandle];
 
-                        // Check to see if this is an array of items, or just a single item
-                        if (count($singleFieldData) != count($singleFieldData, 1)) {
-                            $allSingleFieldData = array_values($singleFieldData);
-                            $elementFieldData = $allSingleFieldData[0];
-                            
-                            $subFieldData = craft()->feedMe_fields->prepForFieldType($elementFieldData, $subFieldHandle, $subField);
-                        } else {
-                            $subFieldData = craft()->feedMe_fields->prepForFieldType($singleFieldData, $subFieldHandle, $subField);
-                        }
+                    foreach ($blockData as $i => $singleFieldData) {
+                        $subFieldData = craft()->feedMe_fields->prepForFieldType($singleFieldData, $subFieldHandle, $subField);
 
                         $fieldData['new'.$blocktypeHandle.($i+1)] = array(
                             'type' => $blocktypeHandle,
@@ -881,7 +875,7 @@ class SuperTableService extends BaseApplicationComponent
     public function postForFeedMeFieldType(&$fieldData)
     {
         // This is less intensive than craft()->fields->getFieldByHandle($fieldHandle);
-        foreach ($fieldData as $fieldHandle => $data) {
+        /*foreach ($fieldData as $fieldHandle => $data) {
             if (is_array($data)) {
                 $singleFieldData = array_values($data);
                 
@@ -901,7 +895,7 @@ class SuperTableService extends BaseApplicationComponent
                     }
                 }
             }
-        }
+        }*/
     }
 
 
