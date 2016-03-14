@@ -356,7 +356,7 @@ class SuperTableFieldType extends BaseFieldType
 
     public function getSearchKeywords($value)
     {
-    if ($value)
+        if ($value)
         {
             $keywords = array();
             $contentService = craft()->content;
@@ -388,7 +388,6 @@ class SuperTableFieldType extends BaseFieldType
                 $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
                 $contentService->fieldContext      = $originalFieldContext;
             }
-    
             return parent::getSearchKeywords($keywords);
         }
     }
