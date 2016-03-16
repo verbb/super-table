@@ -356,38 +356,40 @@ class SuperTableFieldType extends BaseFieldType
 
     public function getSearchKeywords($value)
     {
-        $keywords = array();
-        $contentService = craft()->content;
-
-        if ($this->settings->staticField) {
-            $value = array($value);
-        }
-
-        foreach ($value as $block) {
-            $originalContentTable      = $contentService->contentTable;
-            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-            $originalFieldContext      = $contentService->fieldContext;
-
-            $contentService->contentTable      = $block->getContentTable();
-            $contentService->fieldColumnPrefix = $block->getFieldColumnPrefix();
-            $contentService->fieldContext      = $block->getFieldContext();
-
-            foreach (craft()->fields->getAllFields() as $field) {
-                $fieldType = $field->getFieldType();
-
-                if ($fieldType) {
-                    $fieldType->element = $block;
-                    $handle = $field->handle;
-                    $keywords[] = $fieldType->getSearchKeywords($block->getFieldValue($handle));
-                }
+        if ($value)
+        {
+            $keywords = array();
+            $contentService = craft()->content;
+    
+            if ($this->settings->staticField) {
+                $value = array($value);
             }
-
-            $contentService->contentTable      = $originalContentTable;
-            $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-            $contentService->fieldContext      = $originalFieldContext;
+    
+            foreach ($value as $block) {
+                $originalContentTable      = $contentService->contentTable;
+                $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+                $originalFieldContext      = $contentService->fieldContext;
+    
+                $contentService->contentTable      = $block->getContentTable();
+                $contentService->fieldColumnPrefix = $block->getFieldColumnPrefix();
+                $contentService->fieldContext      = $block->getFieldContext();
+    
+                foreach (craft()->fields->getAllFields() as $field) {
+                    $fieldType = $field->getFieldType();
+    
+                    if ($fieldType) {
+                        $fieldType->element = $block;
+                        $handle = $field->handle;
+                        $keywords[] = $fieldType->getSearchKeywords($block->getFieldValue($handle));
+                    }
+                }
+    
+                $contentService->contentTable      = $originalContentTable;
+                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+                $contentService->fieldContext      = $originalFieldContext;
+            }
+            return parent::getSearchKeywords($keywords);
         }
-
-        return parent::getSearchKeywords($keywords);
     }
 
     public function onAfterElementSave()
