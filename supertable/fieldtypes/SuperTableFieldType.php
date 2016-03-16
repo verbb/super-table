@@ -356,8 +356,7 @@ class SuperTableFieldType extends BaseFieldType
 
     public function getSearchKeywords($value)
     {
-        if ($value)
-        {
+        if ($value) {
             $keywords = array();
             $contentService = craft()->content;
     

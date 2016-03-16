@@ -1,5 +1,15 @@
 [
     {
+        "version": "0.4.6",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.6.zip",
+        "date": "2016-03-16 20:00:00",
+        "notes": [
+            "[Fixed] Adding a new locale when using with a Craft Commerce product type results in a stuck background task [#58](https://github.com/engram-design/SuperTable/issues/58).",
+            "[Fixed] Fix Table layout overflow issues with Matrix-in-SuperTable [#59](https://github.com/engram-design/SuperTable/issues/59)",
+            "[Improved] Improvements to Feed Me support."
+        ]
+    },
+    {
         "version": "0.4.5",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.5.zip",
         "date": "2016-02-29 19:45:00",
