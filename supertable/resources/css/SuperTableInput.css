@@ -19,12 +19,6 @@ table.editable.superTable tbody tr td.action {
     position: relative;
 }
 
-.superTableContainer .row-spinner {
-    height: 22px;
-    position: absolute;
-    bottom: 4px;
-}
-
 body.ltr table.editable.superTable tbody tr td:nth-child(2) {
     border-left: none;
 }
@@ -44,7 +38,28 @@ body.ltr table.editable.superTable tbody tr td:nth-child(2) {
 }
 
 
+/* Column Layout */
 
+/* Fix for inner matrix collapsed block text */
+.superTableColumn table.editable.superTable {
+    table-layout: fixed;
+}
+
+.superTableColumn table.editable.superTable th.header {
+    width: 100%;
+}
+
+.superTableColumn table.editable.superTable th.header[colspan="2"] {
+    width: 48px;
+}
+
+.superTableColumn table.editable.superTable tbody tr td.action + td.action {
+    padding-left: 4px;
+}
+
+
+
+/* Row Layout */
 
 .superTableRow {
     margin: 10px 0;
