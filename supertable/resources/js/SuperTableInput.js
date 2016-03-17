@@ -30,7 +30,7 @@ Craft.SuperTableInputTable = Garnish.Base.extend({
         this.$tbody = this.$table.children('tbody');
 
         this.sorter = new Craft.DataTableSorter(this.$table, {
-            handle: 'td.action .move',
+            handle: 'td.super-table-action .move',
             helperClass: 'editablesupertablesorthelper',
             copyDraggeeInputValuesToHelper: true
         });
@@ -77,8 +77,8 @@ Craft.SuperTableInputTable = Garnish.Base.extend({
         var html = '<tr data-id="'+this.totalNewBlocks+'">' +
             '<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'" />' +
             '' + bodyHtml + '' +
-            '<td '+staticFieldStyle+' class="thin action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
-            '<td '+staticFieldStyle+' class="thin action"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
+            '<td '+staticFieldStyle+' class="thin action super-table-action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
+            '<td '+staticFieldStyle+' class="thin action super-table-action"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
         '</tr>';
 
         var $tr = $(html).appendTo(this.$tbody);
