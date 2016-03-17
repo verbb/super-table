@@ -30,6 +30,7 @@ Craft.SuperTableInputTable = Garnish.Base.extend({
         this.$tbody = this.$table.children('tbody');
 
         this.sorter = new Craft.DataTableSorter(this.$table, {
+            handle: 'td.action .move',
             helperClass: 'editablesupertablesorthelper',
             copyDraggeeInputValuesToHelper: true
         });
