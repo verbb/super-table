@@ -50,12 +50,12 @@ class SuperTable_BlockModel extends BaseElementModel
         }
     }
 
-    public function getType()
+    /*public function getType()
     {
         if ($this->typeId) {
             return craft()->superTable->getBlockTypeById($this->typeId);
         }
-    }
+    }*/
 
     public function getOwner()
     {
