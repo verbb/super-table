@@ -28,7 +28,7 @@ class SuperTable_BlockElementType extends BaseElementType
             'order'       => array(AttributeType::String, 'default' => 'supertableblocks.sortOrder'),
             'ownerId'     => AttributeType::Number,
             'ownerLocale' => AttributeType::Locale,
-            //'type'        => AttributeType::Mixed,
+            'type'        => AttributeType::Mixed,
         );
     }
 
@@ -98,10 +98,10 @@ class SuperTable_BlockElementType extends BaseElementType
             $query->andWhere(DbHelper::parseParam('supertableblocks.ownerLocale', $criteria->ownerLocale, $query->params));
         }
 
-        /*if ($criteria->type) {
+        if ($criteria->type) {
             $query->join('supertableblocktypes supertableblocktypes', 'supertableblocktypes.id = supertableblocks.typeId');
             $query->andWhere(DbHelper::parseParam('supertableblocktypes.handle', $criteria->type, $query->params));
-        }*/
+        }
     }
 
     public function populateElementModel($row)
