@@ -12,14 +12,14 @@
                     <th class="hidden"></th>
                     {% if table %}
                         {% for field in table.getFields() %}
-                            <th scope="col" class="header">
+                            <th scope="col" class="col-header">
                                 <span class="heading-text {% if field.required %}required{% endif %}">{{ field.name }}</span>
                             </th>
                         {% endfor %}
                     {% endif %}
 
                     {% if not settings.staticField %}
-                        <th class="header" colspan="2"></th>
+                        <th class="col-header" colspan="2"></th>
                     {% endif %}
                 </tr>
             </thead>
