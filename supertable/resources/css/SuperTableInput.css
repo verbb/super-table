@@ -61,8 +61,12 @@ body.ltr table.editable.superTable tbody tr td:nth-child(2) {
 
 /* Row Layout */
 
+.superTableContainer > .rowLayoutContainer {
+    margin-top: 10px;
+}
+
 .superTableRow {
-    margin: 10px 0;
+    margin: 0 0 10px 0;
 }
 
 .superTableRow table.editable.superTable {
