@@ -85,6 +85,16 @@ Below are major release notes when updating from one version to another. Breakin
 - [Updating from 0.3.4 to 0.3.5](https://github.com/engram-design/SuperTable/wiki/Release-Notes#updating-from-034-to-035)
 
 
+## Documentation
+
+As a rule of thumb, a Super Table field acts almost identically to a Matrix field, so templating and custom development should be similar to a Matrix field. Below are a few resources for developers.
+
+- [Templating examples](https://github.com/engram-design/SuperTable/wiki/Templating-examples)
+- [Updating a Super Table field from a front end form](https://github.com/engram-design/SuperTable/wiki/Updating-a-Super-Table-field-from-a-front-end-form)
+- [Fetching content from a Super Table field via plugin](https://github.com/engram-design/SuperTable/wiki/Fetching-content-from-a-Super-Table-field)
+- [Programatically saving a Super Table field with content via plugin](https://github.com/engram-design/SuperTable/wiki/Programatically-saving-a-Super-Table-field-with-content)
+
+
 ## Troubleshooting
 
 **Errors or trouble saving Matrix / Super Table combination**
