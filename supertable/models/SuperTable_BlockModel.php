@@ -8,6 +8,7 @@ class SuperTable_BlockModel extends BaseElementModel
 
     protected $elementType = 'SuperTable_Block';
     private $_owner;
+    private $_eagerLoadedBlockTypeElements;
 
     // Public Methods
     // =========================================================================
@@ -92,6 +93,40 @@ class SuperTable_BlockModel extends BaseElementModel
         return 'superTableBlockType:'.$this->typeId;
     }
 
+    public function hasEagerLoadedElements($handle)
+    {
+        if (isset($this->_eagerLoadedBlockTypeElements[$handle])) {
+            return true;
+        }
+
+        return parent::hasEagerLoadedElements($handle);
+    }
+
+    public function getEagerLoadedElements($handle)
+    {
+        if (isset($this->_eagerLoadedBlockTypeElements[$handle])) {
+            return $this->_eagerLoadedBlockTypeElements[$handle];
+        }
+
+        return parent::getEagerLoadedElements($handle);
+    }
+
+    public function setEagerLoadedElements($handle, $elements)
+    {
+        $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
+
+        parent::setEagerLoadedElements($handle, $elements);
+    }
+
+    public function getHasFreshContent()
+    {
+        // Defer to the owner element
+        $owner = $this->getOwner();
+
+        return $owner ? $owner->getHasFreshContent() : false;
+    }
+
+
     // Protected Methods
     // =========================================================================
 
@@ -105,6 +140,7 @@ class SuperTable_BlockModel extends BaseElementModel
             'sortOrder'   => AttributeType::Number,
         ));
     }
+
 
     // Private Methods
     // =========================================================================

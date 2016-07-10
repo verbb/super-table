@@ -3,6 +3,11 @@ namespace Craft;
 
 class SuperTableVariable
 {
+    public function blocks($criteria)
+    {
+        return craft()->elements->getCriteria('SuperTable_Block', $criteria);
+    }
+
     /**
     * Expands the defualt relationship behaviour to include Super Table
     * fields so that the user can filter by those too.

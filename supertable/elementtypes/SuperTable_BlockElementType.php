@@ -108,4 +108,27 @@ class SuperTable_BlockElementType extends BaseElementType
     {
         return SuperTable_BlockModel::populateModel($row);
     }
+
+    public function getEagerLoadingMap($sourceElements, $handle)
+    {
+        $superTableFieldId = $sourceElements[0]->fieldId;
+        $blockTypes = craft()->superTable->getBlockTypesByFieldId($superTableFieldId);
+
+        if (!isset($blockTypes[0])) {
+            return false;
+        }
+
+        $blockType = $blockTypes[0];
+
+        // Set the field context
+        $contentService = craft()->content;
+        $originalFieldContext = $contentService->fieldContext;
+        $contentService->fieldContext = 'superTableBlockType:' . $blockType->id;
+
+        $map = parent::getEagerLoadingMap($sourceElements, $handle);
+
+        $contentService->fieldContext = $originalFieldContext;
+
+        return $map;
+    }
 }

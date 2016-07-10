@@ -1,5 +1,17 @@
 [
     {
+        "version": "0.4.7",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.7.zip",
+        "date": "2016-07-10T13:00:00+10:00",
+        "notes": [
+            "[Added] Added support for eager loading.",
+            "[Added] Added `blocks()` template tag for Super Table block elements.",
+            "[Improved] Column layout width now allows either px or % values. Defaults to % if unit-less.",
+            "[Fixed] Fix for certain fields not settings content properly from draft.",
+            "[Fixed] Fixed column layout not applying width correctly."
+        ]
+    },
+    {
         "version": "0.4.6",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.6.zip",
         "date": "2016-03-16T20:00:00+10:00",

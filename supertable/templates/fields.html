@@ -1,21 +1,8 @@
 {% if element is not defined %}{% set element = null %}{% endif %}
 {% if namespace is not defined %}{% set namespace = 'fields' %}{% endif %}
 
-{% set columnSettings = [] %}
-{% if settings is defined and settings %}
-    {% for col in settings.columns %}
-        {% set columnSettings = columnSettings | merge([col]) %}
-    {% endfor %}
-{% endif %}
-
 {% namespace namespace %}
     {% for index, field in fields %}
-
-        {# Additional field settings #}
-        {% if columnSettings[index] is defined %}
-            {% set width = columnSettings[index].width %}
-        {% endif %}
-
         {% if settings is defined and settings.fieldLayout == 'row' %}
 
             <tr data-id="">
@@ -40,7 +27,7 @@
             </tr>
 
         {% else %}
-            <td {% if width is defined and width %}style="width: {{ width }}px"{% endif %}>
+            <td>
                 {% include "supertable/field" with {
                     field:    field.getField(),
                     required: field.required,

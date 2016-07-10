@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-class SuperTableFieldType extends BaseFieldType
+class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldType
 {
     // Public Methods
     // =========================================================================
@@ -396,6 +396,34 @@ class SuperTableFieldType extends BaseFieldType
         craft()->superTable->saveField($this);
     }
 
+    public function getEagerLoadingMap($sourceElements)
+    {
+        // Get the source element IDs
+        $sourceElementIds = array();
+
+        foreach ($sourceElements as $sourceElement) {
+            $sourceElementIds[] = $sourceElement->id;
+        }
+
+        // Return any relation data on these elements, defined with this field
+        $map = craft()->db->createCommand()
+            ->select('ownerId as source, id as target')
+            ->from('supertableblocks')
+            ->where(
+                array('and', 'fieldId=:fieldId', array('in', 'ownerId', $sourceElementIds)),
+                array(':fieldId' => $this->model->id)
+            )
+            ->order('sortOrder')
+            ->queryAll();
+
+        return array(
+            'elementType' => 'SuperTable_Block',
+            'map' => $map,
+            'criteria' => array('fieldId' => $this->model->id)
+        );
+    }
+
+
     // Protected Methods
     // =========================================================================
 
@@ -413,6 +441,7 @@ class SuperTableFieldType extends BaseFieldType
 
         return $settings;
     }
+
 
     // Private Methods
     // =========================================================================

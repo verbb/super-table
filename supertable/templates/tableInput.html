@@ -4,15 +4,33 @@
 
 <input type="hidden" name="{{ name }}" value="">
 
+{% set columnSettings = [] %}
+{% if settings is defined and settings %}
+    {% for col in settings.columns %}
+        {% set columnSettings = columnSettings | merge([col]) %}
+    {% endfor %}
+{% endif %}
+
 <div class="superTableContainer columnLayout">
     <div class="superTableColumn">
         <table id="{{ id }}" class="shadow-box editable superTable">
             <thead>
                 <tr>
                     <th class="hidden"></th>
+
                     {% if table %}
-                        {% for field in table.getFields() %}
-                            <th scope="col" class="col-header">
+                        {% for index, field in table.getFields() %}
+                            {% if columnSettings[index] is defined %}
+                                {% set width = columnSettings[index].width %}
+
+                                {% if width %}
+                                    {% if 'px' not in width and '%' not in width %}
+                                        {% set width = width ~ '%' %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+
+                            <th scope="col" class="col-header" {% if width is defined and width %}style="width: {{ width }}"{% endif %}>
                                 <span class="heading-text {% if field.required %}required{% endif %}">{{ field.name }}</span>
                             </th>
                         {% endfor %}
