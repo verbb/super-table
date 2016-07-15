@@ -79,9 +79,11 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
                         $field->type        = $fieldSettings['type'];
                         $field->required    = $fieldSettings['required'];
 
-                        $columns[$field->id] = array(
-                            'width' => $fieldSettings['width'],
-                        );
+                        if (isset($fieldSettings['width'])) {
+                            $columns[$field->id] = array(
+                                'width' => $fieldSettings['width'],
+                            );
+                        }
 
                         if (isset($fieldSettings['typesettings'])) {
                             $field->settings = $fieldSettings['typesettings'];

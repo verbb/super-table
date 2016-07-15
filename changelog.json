@@ -1,5 +1,13 @@
 [
     {
+        "version": "0.4.8",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.8.zip",
+        "date": "2016-07-16T00:00:00+10:00",
+        "notes": [
+            "[Fixed] Fixed minor issue where width column settings weren't being saved correctly."
+        ]
+    },
+    {
         "version": "0.4.7",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.7.zip",
         "date": "2016-07-10T13:00:00+10:00",
