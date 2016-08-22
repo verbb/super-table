@@ -855,6 +855,11 @@ class SuperTableService extends BaseApplicationComponent
                     // We're passed data in with the fieldHandle as the key to our data
                     $blockData = $data[$fieldHandle];
 
+                    // Check for static field
+                    if (!is_array($blockData)) {
+                        $blockData = array($blockData);
+                    }
+
                     foreach ($blockData as $i => $singleFieldData) {
                         $subFieldData = craft()->feedMe_fields->prepForFieldType($singleFieldData, $subFieldHandle, $subField);
 
