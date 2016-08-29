@@ -3,117 +3,192 @@
 {% includeCssResource 'supertable/css/SuperTableConfigurator.css' %}
 
 {% set blockTypeInput %}
-    <table id="{{ id }}" class="shadow-box editable">
-        <thead>
-            <tr>
-                <th scope="col" class="header">{{ 'Column Heading'|t }}</th>
-                <th scope="col" class="header">{{ 'Handle'|t }}</th>
-                <th scope="col" class="header">{{ 'Width'|t }}</th>
-                <th scope="col" class="header">{{ 'Required'|t }}</th>
-                <th scope="col" class="header">{{ 'Type'|t }}</th>
-                <th class="header" colspan="3"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for blockType in settings.getBlockTypes() %}
-                {% for field in blockType.getFields() %}
-                    {% set fieldId = field.id %}
-                    {% set fieldType = field.getFieldType() %}
-                    {% set fieldName = 'blockTypes['~blockType.id~'][fields]['~fieldId~']' %}
+    
+    <div class="stc-sidebar fields">
+        <div class="col-inner-container">
+            <div class="heading">
+                <h5>{{ "Fields" | t }}</h5>
+            </div>
 
-                    {# Additional field settings #}
-                    {% if settings.columns is defined %}
-                        {% if settings.columns[fieldId] is defined %}
-                            {% set width = (settings.columns[fieldId].width is defined) ? settings.columns[fieldId].width : '' %}
-                            {% set required = (settings.columns[fieldId].required is defined) ? settings.columns[fieldId].required : '' %}
-                        {% endif %}
-                    {% endif %}
+            <div class="field-items">
+                {% for blockType in settings.getBlockTypes() %}
+                    <div data-id="{{ blockType.id }}">
+                        {% for field in blockType.getFields() %}
+                            <div class="supertableconfigitem stci-field{% if field.hasErrors() or field.hasSettingErrors() %} error{% endif %} {% if loop.first %}sel{% endif %}" data-id="{{ field.id }}">
+                                <div class="name{% if field.required %} required{% endif %}">
+                                    {% if field.name %}
+                                        {{ field.name }}
+                                    {% else %}
+                                        <em class="light">{{ '(blank)' | t }}</em>
+                                    {% endif %}
+                                </div>
 
-                    <tr class="" data-id="{{ fieldId }}" data-blockType="{{ blockType.id }}">
-                        <td class="textual input {% if field.getErrors('name') %}errors{% endif %}">
-                            <textarea class="fullwidth" name="{{ fieldName }}[name]" rows="1">{{ field.name }}</textarea>
-                        </td>
+                                <div class="handle code">
+                                    {% if field.handle %}
+                                        {{ field.handle }}
+                                    {% else %}
+                                        &nbsp;
+                                    {% endif %}
+                                </div>
 
-                        <td class="textual code input {% if field.getErrors('handle') %}errors{% endif %}">
-                            <textarea class="code" name="{{ fieldName }}[handle]" rows="1">{{ field.handle }}</textarea>
-                        </td>
-
-                        <td class="textual code" width="50">
-                            <textarea name="{{ fieldName }}[width]" rows="1">{{ width is defined ? width : '' }}</textarea>
-                        </td>
-
-                        <td class="" width="20">
-                            <input type="hidden" name="{{ fieldName }}[required]">
-                            <input type="checkbox" name="{{ fieldName }}[required]" value="1"{% if field.required %} checked{% endif %}>
-                        </td>
-
-                        <td class="thin">
-                            {% include "_includes/forms/select" with {
-                                class: 'small',
-                                id: fieldId~'-type',
-                                name: fieldName~'[type]',
-                                options: fieldTypes,
-                                value: fieldType.getClassHandle(),
-                            } only %}
-                        </td>
-
-                        <td class="settings-col hidden">
-                            <div class="fieldtype-settings">
-                                <div>
-                                    {% namespace fieldName~'[typesettings]' %}
-                                        {{ fieldType.getSettingsHtml()|raw  }}
-                                    {% endnamespace %}
+                                <div class="actions">
+                                    <a class="move icon" title="{{ 'Reorder' | t }}" role="button"></a>
                                 </div>
                             </div>
-                        </td>
-
-                        <td class="thin action"><a class="settings icon" title="{{ 'Settings' | t }}"></a></td>
-                        <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
-                        <td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
-                    </tr>
-                {% endfor %}
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="btn add icon">{{ "Add a column"|t }}</div>
-
-    {% for blockType in settings.getBlockTypes() %}
-        {% for field in blockType.getFields() %}
-            {% if field.hasErrors() %}
-                <ul class="errors">
-                    {% for errors in field.getErrors() %}
-                        {% for error in errors %}
-                            <li>{{ error }}</li>
                         {% endfor %}
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endfor %}
-    {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <div class="btn add icon">{{ "New field" | t }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stc-settings">
+        <div class="col-inner-container">
+            <div class="heading">
+                <h5>{{ "Field Settings" | t }}</h5>
+            </div>
+
+            <div class="field-items">
+                {% for blockType in settings.getBlockTypes() %}
+                    <div data-id="{{ blockType.id }}">
+                        {% for field in blockType.getFields() %}
+                            {% set fieldId = field.id %}
+                            {% set fieldName = 'blockTypes[' ~ blockType.id ~ '][fields][' ~ fieldId ~ ']' %}
+
+                            {# Additional field settings #}
+                            {% if settings.columns is defined %}
+                                {% if settings.columns[fieldId] is defined %}
+                                    {% set width = (settings.columns[fieldId].width is defined) ? settings.columns[fieldId].width : '' %}
+                                    {% set required = (settings.columns[fieldId].required is defined) ? settings.columns[fieldId].required : '' %}
+                                {% endif %}
+                            {% endif %}
+
+                            <div data-id="{{ fieldId }}" {% if not loop.first %}class="hidden"{% endif %}>
+                                {{ forms.textField({
+                                    label: "Name" | t,
+                                    instructions: "What this field will be called in the CP." | t,
+                                    id: fieldId ~ '-name',
+                                    name: fieldName ~ '[name]',
+                                    value: (field.name != '__blank__' ? field.name),
+                                    errors: field.getErrors('name'),
+                                    required: true,
+                                    autofocus: true,
+                                }) }}
+
+                                {{ forms.textField({
+                                    label: "Handle" | t,
+                                    instructions: "How you’ll refer to this field in the templates." | t,
+                                    id: fieldId ~ '-handle',
+                                    class: 'code',
+                                    name: fieldName ~ '[handle]',
+                                    maxlength: 64,
+                                    value: field.handle,
+                                    errors: field.getErrors('handle'),
+                                    required: true,
+                                }) }}
+
+                                {{ forms.textareaField({
+                                    label: "Instructions" | t,
+                                    instructions: "Helper text to guide the author. Will appear as a small `info` icon in table headers." | t,
+                                    id: fieldId ~ '-instructions',
+                                    class: 'nicetext',
+                                    name: fieldName ~ '[instructions]',
+                                    value: field.instructions,
+                                    errors: field.getErrors('instructions'),
+                                }) }}
+
+                                {{ forms.textField({
+                                    label: "Column Width" | t,
+                                    instructions: "Only applies for Table Layout. Set the width for this column in either pixels or percentage. i.e. `10px` or `10%`." | t,
+                                    id: fieldId ~ '-width',
+                                    name: fieldName ~ '[width]',
+                                    size: 8,
+                                    value: width | default(''),
+                                }) }}
+
+                                {{ forms.checkboxField({
+                                    label: "This field is required" | t,
+                                    name: fieldName ~ '[required]',
+                                    checked: field.required
+                                }) }}
+
+                                {% if craft.isLocalized() %}
+                                    {{ forms.checkboxField({
+                                        label: "This field is translatable" | t,
+                                        name: fieldName ~ '[translatable]',
+                                        checked: field.translatable
+                                    }) }}
+                                {% endif %}
+
+                                <hr>
+
+                                {% set fieldType = field.getFieldType() %}
+                                {% set isFieldTypeMissing = not fieldType %}
+
+                                {% if isFieldTypeMissing %}
+                                    {% set fieldType = craft.fields.getFieldType('PlainText') %}
+                                {% endif %}
+
+                                {{ forms.selectField({
+                                    label: "Field Type" | t,
+                                    warning: (not field.isNew() ? "Changing this may result in data loss." | t),
+                                    id: fieldId~'-type',
+                                    name: fieldName ~ '[type]',
+                                    options: fieldTypes,
+                                    value: fieldType.getClassHandle(),
+                                    errors: (isFieldTypeMissing ? ["The fieldtype class “{class}” could not be found." | t({ class: field.type })] : null),
+                                }) }}
+
+                                <div class="fieldtype-settings">
+                                    <div>
+                                        {% namespace fieldName ~ '[typesettings]' %}
+                                            {# Special-case for Matrix at the moment - hopefully will not be needed after core alts #}
+                                            {# This is necessary to load our MatrixConfiguratorAlt.js rather than core Matrix JS #}
+                                            
+                                            {% if fieldType.getClassHandle() == 'Matrix' %}
+                                                {{ craft.superTable.getMatrixSettingsHtml(fieldType) | raw }}
+                                            {% else %}
+                                                {{ fieldType.getSettingsHtml() | raw }}
+                                            {% endif %}
+                                        {% endnamespace %}
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <a class="error delete">{{ "Delete" | t }}</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
 {% endset %}
 
 {{ forms.selectField({
-    label: "Field Layout"|t,
-    instructions: "Set how you want your fields to appear when editing. Table Layout displays fields vertically, while Row Layout displays fields horizontally."|t,
+    label: "Field Layout" | t,
+    instructions: "Set how fields are presented. Table Layout displays fields vertically in a table, while Row Layout displays fields horizontally." | t,
     id: 'fieldLayout',
     name: 'fieldLayout',
     options: {table: 'Table Layout', row: "Row Layout"},
     value: settings.fieldLayout,
 }) }}
 
-<div class="supertable-configurator">
+<div id="supertable-configurator" class="supertable-configurator">
     {{ forms.field({
-        label: "Configuration"|t,
-        instructions: "Define the columns your Super Table should have."|t,
+        label: "Configuration" | t,
+        instructions: "Define the fields your Super Table should have." | t,
         name: 'config'
     }, blockTypeInput) }}
 </div>
 
 {{ forms.textField({
-    label: "New Row Label"|t,
-    instructions: "Enter the text you want to appear in the button to create a new row."|t,
+    label: "New Row Label" | t,
+    instructions: "Enter the text you want to appear in the button to create a new row." | t,
     id: 'selectionLabel',
     name: 'selectionLabel',
     value: settings.selectionLabel,
@@ -122,8 +197,8 @@
 }) }}
 
 {{ forms.textField({
-    label: "Max Rows"|t,
-    instructions: "The maximum number of rows the field is allowed to have."|t,
+    label: "Max Rows" | t,
+    instructions: "The maximum number of rows the field is allowed to have." | t,
     id: 'maxRows',
     name: 'maxRows',
     value: settings.maxRows,
@@ -132,8 +207,8 @@
 }) }}
 
 {{ forms.lightswitchField({
-    label: "Static field"|t,
-    instructions: "A static field will only display a single row of fields."|t,
+    label: "Static field" | t,
+    instructions: "A static field will only display a single row of fields." | t,
     id: 'staticField',
     name: 'staticField',
     on: settings.staticField,

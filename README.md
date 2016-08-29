@@ -9,9 +9,7 @@ Super Table is a Craft CMS field type to allow you to create powerful tables. Yo
 
 <img src="https://raw.githubusercontent.com/engram-design/SuperTable/master/screenshots/settings.png" />
 
-Editing a Super Table is very similar to editing a Table. You define your columns, giving them a Name and Handle, and now have the option to select any installed field type.
-
-To edit the settings of a particular field, click on the small 'cog' icon on the far right of the table row. This will open a modal window where you can edit any settings for that field type. Don't forgot to hit Save button to save these field settings!
+Creating a Super Table field is very similar to a Matrix field. First, select your desired Field Layout, then use the Configuration to define your fields.
 
 
 ### Supported FieldTypes
@@ -69,10 +67,7 @@ A Super Table field can be set to be static, which turns the field into a non-re
 
 ## Roadmap
 
-- Test more third-party fieldtypes, purely for a complete list.
 - Add ability to collapse rows.
-- New settings layout, including drag/drop, full control over field layout. Allows you to set out the field exactly as you like.
-- Add template hook to allow other plugins to provide layouts for editing field.
 - Allow for SuperTable-in-SuperTable - because why not.
 - Support column duplication in SuperTable field settings.
 

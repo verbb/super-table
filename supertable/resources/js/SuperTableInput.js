@@ -220,8 +220,10 @@ Craft.SuperTableInputRow = Garnish.Base.extend({
         
         Craft.initUiElements($tr);
 
-        new Craft.SuperTableInputRow.Row(this, $tr);
+        var row = new Craft.SuperTableInputRow.Row(this, $tr);
         this.sorter.addItems($tr);
+
+        row.expand();
 
         this.updateAddBlockBtn();
     },
@@ -263,10 +265,40 @@ Craft.SuperTableInputRow.Row = Garnish.Base.extend({
 
     deleteRow: function() {
         this.table.sorter.removeItems(this.$tr);
-        this.$tr.remove();
+
+        this.contract(function() {
+            this.$tr.remove();
+        });
 
         this.table.updateAddBlockBtn();
     },
+
+    expand: function(callback) {
+        this.$tr
+            .css(this._getContractedStyles())
+            .velocity(this._getExpandedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
+    },
+
+    contract: function(callback) {
+        this.$tr
+            .css(this._getExpandedStyles())
+            .velocity(this._getContractedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
+    },
+
+    _getExpandedStyles: function() {
+        return {
+            opacity: 1,
+            marginBottom: 10
+        };
+    },
+
+    _getContractedStyles: function() {
+        return {
+            opacity: 0,
+            marginBottom: -(this.$tr.outerHeight())
+        };
+    },
+    
 });
 
 

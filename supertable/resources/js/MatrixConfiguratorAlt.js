@@ -5,7 +5,12 @@
 // Modification of default Craft.MatrixConfigurator that properly finds the required matrix dom element
 // This is especially an issue when using inside a table.
 //
-// We're only changing a single line - the this.$container needs to be namespaced at the very least.
+// addBlockType()
+// '<input class="hidden" name="types[Matrix][blockTypes]['+id+'][name]">' +
+// '<input class="hidden" name="types[Matrix][blockTypes]['+id+'][handle]">' +
+// to
+// '<input class="hidden" name="'+this.inputNamePrefix+'[blockTypes]['+id+'][name]">' +
+// '<input class="hidden" name="'+this.inputNamePrefix+'[blockTypes]['+id+'][handle]">' +
 //
 
 Craft.MatrixConfiguratorAlt = Garnish.Base.extend({
@@ -35,17 +40,15 @@ Craft.MatrixConfiguratorAlt = Garnish.Base.extend({
     blockTypeSort: null,
     totalNewBlockTypes: 0,
 
-    init: function(id, idPrefix, fieldTypeInfo, inputNamePrefix) {
-        this.id = id;
-        this.idPrefix = idPrefix;
+    init: function(fieldTypeInfo, inputNamePrefix) {
         this.fieldTypeInfo = fieldTypeInfo;
 
         this.inputNamePrefix = inputNamePrefix;
         this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
 
-        // Fix to support more than one Matrix in a single field
-        this.$container = $('#' + this.inputIdPrefix + '-matrix-configurator:first .input:first');
-        //this.$container = $('.matrix-configurator:first .input:first');
+        // Change the class of this alternative Matrix configuration - its got this special JS
+        // But without this change, the native Matrix configuration JS will hook onto this, binding things twice
+        this.$container = $('#'+this.inputIdPrefix+'-matrix-configurator:first .input:first');
 
         this.$blockTypesColumnContainer = this.$container.children('.block-types').children();
         this.$fieldsColumnContainer = this.$container.children('.fields').children();

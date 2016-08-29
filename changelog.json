@@ -1,5 +1,27 @@
 [
     {
+        "version": "1.0.0",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.0.zip",
+        "date": "2016-08-29T23:50:00+10:00",
+        "notes": [
+            "[Improved] Brand new (yet awfully familiar!) settings layout for Super Table. Provides much more flexibility, future growth and performance improvements.",
+            "[Improved] No more modal for editing field settings - now inline and Matrix-style.",
+            "[Improved] Added instructions field to Super Table. Appears as small `info` button on table headers.",
+            "[Improved] Allow fields to be translatable.",
+            "[Improved] Revert Row Layout `table-layout: fixed` behaviour. Row Layout labels will now fit to the longest label without word-breaking.",
+            "[Improved] Improved Linkit styling inside Super Table.",
+            "[Improved] Cleanup and organise css.",
+            "[Improved] Added sliding animation when adding/deleting blocks (thanks [@benjamminf](https://github.com/benjamminf)!)",
+            "[Fixed] Fixed performance issues with modal field settings (the modal no longer exists).",
+            "[Fixed] Fixed field settings validation not firing and providing feedback.",
+            "[Fixed] Fixed field validation when inside Matrix.",
+            "[Fixed] Fixed field validation when outside Matrix.",
+            "[Fixed] Fixed some issues with an inner Matrix field.",
+            "[Fixed] Update `prepForFeedMeFieldType` to handle static field option",
+            "[Fixed] Field names are now compulsary."
+        ]
+    },
+    {
         "version": "0.4.8",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.4.8.zip",
         "date": "2016-07-16T00:00:00+10:00",

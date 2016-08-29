@@ -92,11 +92,6 @@ class SuperTableService extends BaseApplicationComponent
         $contentService->fieldColumnPrefix = 'field_';
 
         foreach ($blockType->getFields() as $field) {
-            // Hack to allow blank field names
-            if (!$field->name) {
-                $field->name = '__blank__';
-            }
-
             craft()->fields->validateField($field);
 
             // Make sure the block type handle + field handle combo is unique for the whole field. This prevents us from
@@ -106,6 +101,29 @@ class SuperTableService extends BaseApplicationComponent
                 $validates = false;
 
                 $blockType->addErrors($field->getErrors());
+            }
+
+            if ($field->hasSettingErrors()) {
+                $blockType->hasFieldErrors = true;
+                $validates = false;
+
+                $blockType->addErrors($field->getSettingErrors());
+            }
+
+            // Special-case for validating child Matrix fields
+            if ($field->type == 'Matrix') {
+                $fieldType = $field->getFieldType();
+                $matrixBlockTypes = $fieldType->getSettings()->getBlockTypes();
+
+                foreach ($matrixBlockTypes as $matrixBlockType) {
+                    if ($matrixBlockType->hasFieldErrors) {
+                        $blockType->hasFieldErrors = true;
+                        $validates = false;
+
+                        // Store a generic error for our parent Super Table field to show a nested error exists
+                        $field->addErrors(array('field' => 'general'));
+                    }
+                }
             }
         }
 
@@ -185,11 +203,6 @@ class SuperTableService extends BaseApplicationComponent
                 $contentService->fieldColumnPrefix = 'field_';
 
                 foreach ($blockType->getFields() as $field) {
-                    // Hack to allow blank field names
-                    if (!$field->name) {
-                        $field->name = '__blank__';
-                    }
-
                     if (!$fieldsService->saveField($field, false)) {
                         throw new Exception(Craft::t('An error occurred while saving this SuperTable block type.'));
                     }
@@ -854,6 +867,11 @@ class SuperTableService extends BaseApplicationComponent
 
                     // We're passed data in with the fieldHandle as the key to our data
                     $blockData = $data[$fieldHandle];
+
+                    // Check for static field
+                    if (!is_array($blockData)) {
+                        $blockData = array($blockData);
+                    }
 
                     foreach ($blockData as $i => $singleFieldData) {
                         $subFieldData = craft()->feedMe_fields->prepForFieldType($singleFieldData, $subFieldHandle, $subField);

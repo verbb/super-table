@@ -31,7 +31,9 @@
                             {% endif %}
 
                             <th scope="col" class="col-header" {% if width is defined and width %}style="width: {{ width }}"{% endif %}>
-                                <span class="heading-text {% if field.required %}required{% endif %}">{{ field.name }}</span>
+                                <span class="heading-text {% if field.required %}required{% endif %}">
+                                    {{ field.name }} {% if field.instructions %}<span class="info">{{ field.instructions }}</span>{% endif %}
+                                </span>
                             </th>
                         {% endfor %}
                     {% endif %}

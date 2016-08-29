@@ -48,7 +48,7 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
         return craft()->templates->render('supertable/settings', array(
             'id'            => $tableId,
             'settings'      => $settings,
-            'fieldTypes'    => $fieldTypeOptions
+            'fieldTypes'    => $fieldTypeOptions,
         ));
     }
 
@@ -73,11 +73,13 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
                 if (!empty($blockTypeSettings['fields'])) {
                     foreach ($blockTypeSettings['fields'] as $fieldId => $fieldSettings) {
                         $field = new FieldModel();
-                        $field->id          = $fieldId;
-                        $field->name        = $fieldSettings['name'];
-                        $field->handle      = $fieldSettings['handle'];
-                        $field->type        = $fieldSettings['type'];
-                        $field->required    = $fieldSettings['required'];
+                        $field->id           = $fieldId;
+                        $field->name         = $fieldSettings['name'];
+                        $field->handle       = $fieldSettings['handle'];
+                        $field->instructions = $fieldSettings['instructions'];
+                        $field->required     = !empty($fieldSettings['required']);
+                        $field->translatable = !empty($fieldSettings['translatable']);
+                        $field->type         = $fieldSettings['type'];
 
                         if (isset($fieldSettings['width'])) {
                             $columns[$field->id] = array(
@@ -470,7 +472,7 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
             // A Matrix field will fetch all available fields, grabbing their Settings HTML. Then Super Table will do the same,
             // causing an infinite loop - extract some methods from MatrixFieldType
             if ($fieldTypeClass == 'Matrix') {
-                $settingsBodyHtml = craft()->templates->namespaceInputs($this->getMatrixSettingsHtml());
+                $settingsBodyHtml = craft()->templates->namespaceInputs(craft()->superTable_matrix->getMatrixSettingsHtml($fieldType));
             } else {
                 $settingsBodyHtml = craft()->templates->namespaceInputs($fieldType->getSettingsHtml());
             }
@@ -552,94 +554,6 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
         craft()->templates->setNamespace($originalNamespace);
 
         return $blockType;
-    }
-
-
-
-
-    //
-    // Extracted from MatrixFieldType - must be modified otherwise will create infinite loop
-    //
-
-    public function getMatrixSettingsHtml()
-    {
-        $matrixFieldType = craft()->fields->getFieldType('Matrix');
-
-        // Get the available field types data
-        $fieldTypeInfo = $this->_getMatrixFieldTypeInfoForConfigurator();
-
-        $settings = $this->getSettings();
-        $blockTypes = $settings->getBlockTypes();
-        $tableId = ($blockTypes) ? $blockTypes[0]->id : 'new';
-
-        craft()->templates->includeJsResource('supertable/js/MatrixConfiguratorAlt.js');
-        craft()->templates->includeJs('new Craft.MatrixConfiguratorAlt(' . 
-            '"'.$tableId.'", ' .
-            '"'.craft()->templates->namespaceInputId($tableId).'", ' .
-            JsonHelper::encode($fieldTypeInfo).', ' . 
-            '"'.craft()->templates->getNamespace().'"' .
-        ');');
-
-        craft()->templates->includeTranslations(
-            'What this block type will be called in the CP.',
-            'How you’ll refer to this block type in the templates.',
-            'Are you sure you want to delete this block type?',
-            'This field is required',
-            'This field is translatable',
-            'Field Type',
-            'Are you sure you want to delete this field?'
-        );
-
-        $fieldTypeOptions = array();
-
-        foreach (craft()->fields->getAllFieldTypes() as $fieldType)
-        {
-            // No Matrix-Inception, sorry buddy.
-            if ($fieldType->getClassHandle() != 'Matrix' && $fieldType->getClassHandle() != 'SuperTable') {
-                $fieldTypeOptions[] = array('label' => $fieldType->getName(), 'value' => $fieldType->getClassHandle());
-            }
-        }
-
-        return craft()->templates->render('_components/fieldtypes/Matrix/settings', array(
-            'settings'      => $matrixFieldType->getSettings(),
-            'fieldTypes'    => $fieldTypeOptions
-        ));
-    }
-
-    private function _getMatrixFieldTypeInfoForConfigurator()
-    {
-        $fieldTypes = array();
-
-        // Set a temporary namespace for these
-        $originalNamespace = craft()->templates->getNamespace();
-        $namespace = craft()->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
-        craft()->templates->setNamespace($namespace);
-
-        foreach (craft()->fields->getAllFieldTypes() as $fieldType)
-        {
-            $fieldTypeClass = $fieldType->getClassHandle();
-
-            // No Matrix-Inception, sorry buddy.
-            if ($fieldTypeClass == 'Matrix' || $fieldTypeClass == 'SuperTable')
-            {
-                continue;
-            }
-
-            craft()->templates->startJsBuffer();
-            $settingsBodyHtml = craft()->templates->namespaceInputs($fieldType->getSettingsHtml());
-            $settingsFootHtml = craft()->templates->clearJsBuffer();
-
-            $fieldTypes[] = array(
-                'type'             => $fieldTypeClass,
-                'name'             => $fieldType->getName(),
-                'settingsBodyHtml' => $settingsBodyHtml,
-                'settingsFootHtml' => $settingsFootHtml,
-            );
-        }
-
-        craft()->templates->setNamespace($originalNamespace);
-
-        return $fieldTypes;
     }
 
 

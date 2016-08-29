@@ -1,9 +1,21 @@
+/* ==========================================================================
+// Super Table Styles
+// ========================================================================== */
+
+.superTableContainer {
+    position: relative;
+}
+
+
+/* ==========================================================================
+// Column-Layout Styles
+// ========================================================================== */
+
 table.editable.superTable {
     margin-top: 10px;
 }
 
 table.editable.superTable tbody tr td {
-    /*background: #f9fafa;*/
     text-align: left;
 }
 
@@ -15,38 +27,12 @@ table.editable.superTable tbody tr td.action {
     background: #ebedef;
 }
 
-.superTableContainer {
-    position: relative;
-}
-
 body.ltr table.editable.superTable tbody tr td:nth-child(2) {
     border-left: none;
 }
 
-
-
-/* Provide special formatting for some third-party field types. Just to make things clean */
-
-.superTableContainer .field .linkit .linkit-type {
-    margin: 7px 0;
-}
-
-.superTableContainer .field .linkit .linkit-type-option,
-.superTableContainer .field .linkit .linkit-text,
-.superTableContainer .field .linkit .linkit-target {
-    margin-bottom: 7px;
-}
-
-
-/* Column Layout */
-
-/* Fix for inner matrix collapsed block text */
 .superTableColumn table.editable.superTable {
     table-layout: fixed;
-}
-
-.superTableColumn table.editable.superTable th.col-header {
-    /*width: 100%;*/
 }
 
 .superTableColumn table.editable.superTable th.col-header[colspan="2"] {
@@ -57,9 +43,22 @@ body.ltr table.editable.superTable tbody tr td:nth-child(2) {
     padding-left: 4px;
 }
 
+/* Tweak the required asterisks a little */
+.superTableColumn .col-header .heading-text.required:after {
+    margin: -4px 0 0 1px;
+}
+
+/* Tweak the info icon a little */
+.superTableColumn .col-header .heading-text .info:before {
+    margin: 1px 0 0 1px;
+}
 
 
-/* Row Layout */
+
+
+/* ==========================================================================
+// Row-Layout Styles
+// ========================================================================== */
 
 .superTableRow {
     margin: 10px 0;
@@ -67,7 +66,6 @@ body.ltr table.editable.superTable tbody tr td:nth-child(2) {
 
 .superTableRow table.editable.superTable {
     margin: 0;
-    table-layout: fixed;
 }
 
 .superTableRow .rowHeader {
@@ -79,9 +77,9 @@ body.ltr table.editable.superTable tbody tr td:nth-child(2) {
     border-radius: 3px 3px 0 0;
     padding: 8px 7px !important;
     text-align: left;
-    white-space: normal;
+    white-space: nowrap;
     background: #f9fafa;
-    width: 60px !important;
+
     -webkit-box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
     box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
@@ -90,6 +88,16 @@ body.ltr table.editable.superTable tbody tr td:nth-child(2) {
 .superTableRow .rowHeader .heading-text {
     min-height: 30px;
     display: block;
+}
+
+/* Tweak the required asterisks a little */
+.superTableRow .rowHeader .heading-text.required:after {
+    margin: -4px 0 0 1px;
+}
+
+/* Tweak the info icon a little */
+.superTableRow .rowHeader .heading-text .info:before {
+    margin: 1px 0 0 1px;
 }
 
 .superTableRow .placeholder {
@@ -158,5 +166,48 @@ body.ltr table.editable.superTable tbody tr td:nth-child(2) {
     margin: -7px 0 0 3px;
 }
 
+/* Special-case for inner Matrix fields for Row Layout. When collapsed, breaks out of the table container */
+/* so fix that was some positioning fixes */
+.superTableRow .matrixblock.collapsed .titlebar {
+    position: relative;
+}
+
+.superTableRow .matrixblock.collapsed .preview {
+    position: absolute;
+}
+
+.superTableRow .matrixblock.collapsed .actions {
+    background: #eef0f1;
+    right: 0;
+    padding-right: 5px;
+}
+
+
+
+
+
+/* ==========================================================================
+// Provide special formatting for some third-party field types. Just to make things clean
+// ========================================================================== */
+
+.superTableContainer .field .fruitlinkit .fruitlinkit-options,
+.superTableContainer .field .fruitlinkit .fruitlinkit-type,
+.superTableContainer .field .linkit .linkit-type {
+    margin: 7px 0;
+}
+
+.superTableContainer .field .fruitlinkit .fruitlinkit-type {
+    margin-right: 7px;
+}
+
+.superTableContainer .field .fruitlinkit .fruitlinkit-options,
+.superTableContainer .field .fruitlinkit .fruitlinkit-type-option,
+.superTableContainer .field .fruitlinkit .fruitlinkit-text,
+.superTableContainer .field .fruitlinkit .fruitlinkit-target,
+.superTableContainer .field .linkit .linkit-type-option,
+.superTableContainer .field .linkit .linkit-text,
+.superTableContainer .field .linkit .linkit-target {
+    margin-bottom: 7px;
+}
 
 

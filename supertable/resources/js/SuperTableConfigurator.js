@@ -1,58 +1,80 @@
-(function($){
+(function($) {
+
 
 Craft.SuperTableConfigurator = Garnish.Base.extend({
-    id: null,
-    idPrefix: null,
+    fieldTypeInfo: null,
+
     inputNamePrefix: null,
     inputIdPrefix: null,
-    fields: null,
-    totalNewFields: 0,
 
-    $table: null,
-    $tbody: null,
-    sorter: null,
-    fieldTypeInfo: null,
-    settings: {
-        rowIdPrefix: 'new',
-        onAddRow: $.noop,
-        onDeleteRow: $.noop,
-    },
+    blockTypeId: null,
+    blockTypeNamePrefix: null,
+    blockTypeIdPrefix: null,
+
+    $container: null,
+
+    $fieldsColumnContainer: null,
+    $fieldSettingsColumnContainer: null,
+
+    $fieldItemsContainer: null,
+    $fieldSettingItemsContainer: null,
+
+    $newFieldBtn: null,
+
+    fields: null,
+    selectedField: null,
+    fieldSort: null,
+    totalNewFields: 0,
+    fieldSettings: null,
 
     init: function(id, idPrefix, fieldTypeInfo, inputNamePrefix) {
-        this.id = id;
-        this.idPrefix = idPrefix;
         this.fieldTypeInfo = fieldTypeInfo;
 
-        this.inputNamePrefix = inputNamePrefix+'[blockTypes]['+this.id+']';
-        this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix)+'-blockTypes-'+this.id;
+        this.blockTypeId = id;
+        this.blockTypeNamePrefix = inputNamePrefix+'[blockTypes]['+this.blockTypeId+']';
+        this.blockTypeIdPrefix = Craft.formatInputId(this.blockTypeNamePrefix);
 
-        this.$table = $('#' + this.idPrefix);
-        this.$tbody = this.$table.children('tbody');
+        this.inputNamePrefix = inputNamePrefix;
+        this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
 
-        this.sorter = new Craft.DataTableSorter(this.$table, {
-            helperClass: 'editablecolumntablesorthelper',
-            copyDraggeeInputValuesToHelper: true
-        });
+        this.$container = $('#' + this.inputIdPrefix + '-supertable-configurator:first .input:first');
 
-        var $rows = this.$tbody.children('tr');
+        this.$fieldsColumnContainer = this.$container.children('.fields').children();
+        this.$fieldSettingsColumnContainer = this.$container.children('.stc-settings').children();
+        this.$fieldItemsOuterContainer = this.$fieldsColumnContainer.children('.field-items');
+        this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.field-items');
 
-        for (var i = 0; i < $rows.length; i++) {
-            new Craft.EditableTable.Row(this, $rows[i]);
+        this.$newFieldBtn = this.$fieldItemsOuterContainer.children('.btn');
+
+        // Find the field items container if it exists, otherwise create it
+        this.$fieldItemsContainer = this.$fieldItemsOuterContainer.children('[data-id="'+this.blockTypeId+'"]:first');
+
+        if (!this.$fieldItemsContainer.length) {
+            this.$fieldItemsContainer = $('<div data-id="'+this.blockTypeId+'"/>').insertBefore(this.$newFieldBtn);
         }
 
-        this.$addRowBtn = this.$table.next('.add');
-        this.addListener(this.$addRowBtn, 'activate', 'addRow');
+        // Find the field settings container if it exists, otherwise create it
+        this.$fieldSettingsContainer = this.$fieldSettingItemsContainer.children('[data-id="'+this.blockTypeId+'"]:first');
+
+        if (!this.$fieldSettingsContainer.length) {
+            this.$fieldSettingsContainer = $('<div data-id="'+this.blockTypeId+'"/>').appendTo(this.$fieldSettingItemsContainer);
+        }
 
         // Find the existing fields
         this.fields = {};
 
-        var $fieldItems = this.$tbody.children('tr');
+        var $fieldItems = this.$fieldItemsContainer.children();
 
         for (var i = 0; i < $fieldItems.length; i++) {
             var $fieldItem = $($fieldItems[i]),
                 id = $fieldItem.data('id');
 
-            this.fields[id] = new SuperTableField(this, $fieldItem);
+            this.fields[id] = new Craft.SuperTableField(this, $fieldItem);
+
+            // Pre-select first field
+            if (i == 0) {
+                this.selectedField = this.fields[id];
+            }
 
             // Is this a new field?
             var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
@@ -61,6 +83,25 @@ Craft.SuperTableConfigurator = Garnish.Base.extend({
                 this.totalNewFields = parseInt(newMatch[1]);
             }
         }
+
+        this.addListener(this.$newFieldBtn, 'click', 'addField');
+
+        this.fieldSort = new Garnish.DragSort($fieldItems, {
+            handle: '.move',
+            axis: 'y',
+            onSortChange: $.proxy(function() {
+                // Adjust the field setting containers to match the new sort order
+                for (var i = 0; i < this.fieldSort.$items.length; i++) {
+                    var $item = $(this.fieldSort.$items[i]),
+                        id = $item.data('id'),
+                        field = this.fields[id];
+
+                    if (field) {
+                        field.$fieldSettingsContainer.appendTo(this.$fieldSettingsContainer);
+                    }
+                }
+            }, this)
+        });
     },
 
     getFieldTypeInfo: function(type) {
@@ -71,23 +112,31 @@ Craft.SuperTableConfigurator = Garnish.Base.extend({
         }
     },
 
-    addRow: function() {
+    addField: function() {
         this.totalNewFields++;
         var id = 'new'+this.totalNewFields;
 
-        var rowHtml = '<tr data-id="'+id+'" data-blocktype="'+this.id+'"></tr>';
-        var $item = $(rowHtml).appendTo(this.$tbody);
+        var $item = $(
+            '<div class="supertableconfigitem stci-field" data-id="'+id+'">' +
+                '<div class="name"><em class="light">'+Craft.t('(blank)')+'</em>&nbsp;</div>' +
+                '<div class="handle code">&nbsp;</div>' +
+                '<div class="actions">' +
+                    '<a class="move icon" title="'+Craft.t('Reorder')+'"></a>' +
+                '</div>' +
+            '</div>'
+        ).appendTo(this.$fieldItemsContainer);
 
-        this.fields[id] = new SuperTableField(this, $item);
+        this.fields[id] = new Craft.SuperTableField(this, $item);
+        this.fields[id].select();
 
-        new Craft.EditableTable.Row(this, $item);
-        this.sorter.addItems($item);
+        this.fieldSort.addItems($item);
     },
+
 });
 
 
-SuperTableField = Garnish.Base.extend({
-    blockType: null,
+Craft.SuperTableField = Garnish.Base.extend({
+    configurator: null,
     id: null,
 
     inputNamePrefix: null,
@@ -97,72 +146,114 @@ SuperTableField = Garnish.Base.extend({
     initializedFieldTypeSettings: null,
 
     $item: null,
+    $nameLabel: null,
+    $handleLabel: null,
 
     $fieldSettingsContainer: null,
     $nameInput: null,
     $handleInput: null,
+    $requiredCheckbox: null,
     $typeSelect: null,
     $typeSettingsContainer: null,
-    $typeSettingsButton: null,
-    $typeSettingsCol: null,
+    $deleteBtn: null,
 
-    init: function(blockType, $item) {
-        this.blockType = blockType;
+    init: function(configurator, $item) {
+        this.configurator = configurator;
         this.$item = $item;
         this.id = this.$item.data('id');
 
-        this.inputNamePrefix = this.blockType.inputNamePrefix+'[fields]['+this.id+']';
-        this.inputIdPrefix = this.blockType.inputIdPrefix+'-fields-'+this.id;
+        this.inputNamePrefix = this.configurator.blockTypeNamePrefix+'[fields]['+this.id+']';
+        this.inputIdPrefix = this.configurator.blockTypeIdPrefix+'-fields-'+this.id;
 
         this.initializedFieldTypeSettings = {};
 
-        // Find the field settings container if it exists, otherwise create it
-        this.$fieldSettingsContainer = $item;
+        this.$nameLabel = this.$item.children('.name');
+        this.$handleLabel = this.$item.children('.handle');
 
-        var isNew = (!this.$fieldSettingsContainer.children().length);
+        // Find the field settings container if it exists, otherwise create it
+        this.$fieldSettingsContainer = this.configurator.$fieldSettingsContainer.children('[data-id="'+this.id+'"]:first');
+
+        var isNew = (!this.$fieldSettingsContainer.length);
 
         if (isNew) {
-            this.$fieldSettingsContainer = $(this.getDefaultFieldSettingsHtml()).appendTo(this.$fieldSettingsContainer).parent();
+            this.$fieldSettingsContainer = $(this.getDefaultFieldSettingsHtml()).appendTo(this.configurator.$fieldSettingsContainer);
         }
 
-        this.$nameInput = this.$fieldSettingsContainer.find('textarea[name$="[name]"]:first');
-        this.$handleInput = this.$fieldSettingsContainer.find('textarea[name$="[handle]"]:first');
+        this.$nameInput = this.$fieldSettingsContainer.find('input[name$="[name]"]:first');
+        this.$handleInput = this.$fieldSettingsContainer.find('input[name$="[handle]"]:first');
+        this.$requiredCheckbox = this.$fieldSettingsContainer.find('input[type="checkbox"][name$="[required]"]:first');
         this.$typeSelect = this.$fieldSettingsContainer.find('select[name$="[type]"]:first');
-        this.$typeSettingsContainer = this.$fieldSettingsContainer.find('.fieldtype-settings:first');
-        this.$typeSettingsButton = this.$fieldSettingsContainer.find('td.action a.settings.icon:first');
-        this.$typeSettingsCol = this.$fieldSettingsContainer.find('td.settings-col:first');
+        this.$typeSettingsContainer = this.$fieldSettingsContainer.children('.fieldtype-settings:first');
+        this.$deleteBtn = this.$fieldSettingsContainer.children('a.delete:first');
 
         if (isNew) {
             this.setFieldType('PlainText');
         } else {
             this.selectedFieldType = this.$typeSelect.val();
             this.initializedFieldTypeSettings[this.selectedFieldType] = this.$typeSettingsContainer.children();
+
+            //this.setFieldType(this.selectedFieldType);
         }
 
         if (!this.$handleInput.val()) {
             new Craft.HandleGenerator(this.$nameInput, this.$handleInput);
         }
 
+        this.addListener(this.$item, 'click', 'select');
+        this.addListener(this.$nameInput, 'textchange', 'updateNameLabel');
+        this.addListener(this.$handleInput, 'textchange', 'updateHandleLabel');
+        this.addListener(this.$requiredCheckbox, 'change', 'updateRequiredIcon');
         this.addListener(this.$typeSelect, 'change', 'onTypeSelectChange');
-        this.addListener(this.$typeSettingsButton, 'click', 'onTypeSettingsClick');
+        this.addListener(this.$deleteBtn, 'click', 'confirmDelete');
+    },
+
+    select: function() {
+        if (this.configurator.selectedField == this) {
+            return;
+        }
+
+        if (this.configurator.selectedField) {
+            this.configurator.selectedField.deselect();
+        }
+
+        this.configurator.$fieldSettingsContainer.removeClass('hidden');
+        this.$fieldSettingsContainer.removeClass('hidden');
+        this.$item.addClass('sel');
+        this.configurator.selectedField = this;
+
+        if (!Garnish.isMobileBrowser()) {
+            setTimeout($.proxy(function() {
+                this.$nameInput.focus()
+            }, this), 100);
+        }
+    },
+
+    deselect: function() {
+        this.$item.removeClass('sel');
+        this.configurator.$fieldSettingsContainer.addClass('hidden');
+        this.$fieldSettingsContainer.addClass('hidden');
+        this.configurator.selectedField = null;
+    },
+
+    updateNameLabel: function() {
+        var val = this.$nameInput.val();
+        this.$nameLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">'+Craft.t('(blank)')+'</em>')+'&nbsp;');
+    },
+
+    updateHandleLabel: function() {
+        this.$handleLabel.html(Craft.escapeHtml(this.$handleInput.val())+'&nbsp;');
+    },
+
+    updateRequiredIcon: function() {
+        if (this.$requiredCheckbox.prop('checked')) {
+            this.$nameLabel.addClass('required');
+        } else {
+            this.$nameLabel.removeClass('required');
+        }
     },
 
     onTypeSelectChange: function() {
         this.setFieldType(this.$typeSelect.val());
-    },
-
-    onTypeSettingsClick: function() {
-        var info = this.blockType.getFieldTypeInfo(this.selectedFieldType),
-            footHtml = this.getParsedFieldTypeHtml(info.settingsFootHtml),
-            settingsContainer = this.$typeSettingsContainer;
-
-        this.$typeSettingsContainer.remove();
-
-        new Craft.SuperTableSettingsModal(this, footHtml, settingsContainer);
-    },
-
-    restoreSettingsHtml: function($html) {
-        this.$typeSettingsCol.html($html);
     },
 
     setFieldType: function(type) {
@@ -176,7 +267,7 @@ SuperTableField = Garnish.Base.extend({
         var firstTime = (typeof this.initializedFieldTypeSettings[type] == 'undefined');
 
         if (firstTime) {
-            var info = this.blockType.getFieldTypeInfo(type),
+            var info = this.configurator.getFieldTypeInfo(type),
                 bodyHtml = this.getParsedFieldTypeHtml(info.settingsBodyHtml),
                 footHtml = this.getParsedFieldTypeHtml(info.settingsFootHtml),
                 $body = $('<div>'+bodyHtml+'</div>');
@@ -192,13 +283,16 @@ SuperTableField = Garnish.Base.extend({
             Craft.initUiElements($body);
             Garnish.$bod.append(footHtml);
         }
+
+        // Firefox might have been sleeping on the job.
+        this.$typeSettingsContainer.trigger('resize');
     },
 
     getParsedFieldTypeHtml: function(html) {
         var newHtml = html;
 
         if (typeof newHtml == 'string') {
-            newHtml = newHtml.replace(/__BLOCK_TYPE_ST__/g, this.blockType.id);
+            newHtml = newHtml.replace(/__BLOCK_TYPE_ST__/g, this.configurator.blockTypeId);
             newHtml = newHtml.replace(/__FIELD_ST__/g, this.id);
         } else {
             newHtml = '';
@@ -208,118 +302,105 @@ SuperTableField = Garnish.Base.extend({
     },
 
     getDefaultFieldSettingsHtml: function() {
-        var html = '<td class="textual">' +
-                '<textarea name="'+this.inputNamePrefix+'[name]" rows="1"></textarea>' +
-            '</td>' +
-            '<td class="textual code">' +
-                '<textarea name="'+this.inputNamePrefix+'[handle]" rows="1"></textarea>' +
-            '</td>' +
-            '<td class="textual code" width="50">' +
-                '<textarea name="'+this.inputNamePrefix+'[width]" rows="1"></textarea>' +
-            '</td>' +
-            '<td width="20">' +
-                '<input type="hidden" name="'+this.inputNamePrefix+'[required]">' +
-                '<input type="checkbox" name="'+this.inputNamePrefix+'[required]" value="1">' +
-            '</td>' +
-            '<td class="thin">' +
-                '<div class="select small">' + 
-                    '<select id="type" class="fieldtoggle" name="'+this.inputNamePrefix+'[type]">';
-                        for (var i = 0; i < this.blockType.fieldTypeInfo.length; i++) {
-                            var info = this.blockType.fieldTypeInfo[i], selected = (info.type == 'PlainText');
-                            html += '<option value="'+info.type+'"'+(selected ? ' selected=""' : '')+'>'+info.name+'</option>';
-                        }
-                    html += '</select>' + 
-                '</div>' + 
-            '</td>' +
-            '<td class="settings-col hidden">' +
-                '<div class="fieldtype-settings" name="'+this.inputNamePrefix+'[typesettings]"></div>' +
-            '</td>' +
-            '<td class="thin action"><a class="settings icon" title="'+Craft.t('Settings')+'"></a></td>' +
-            '<td class="thin action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
-            '<td class="thin action"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>';
+        var html = '<div data-id="'+this.id+'">' +
+            '<div class="field" id="'+this.inputIdPrefix+'-name-field">' +
+                '<div class="heading">' +
+                    '<label class="required" for="'+this.inputIdPrefix+'-name">'+Craft.t('Name')+'</label>' +
+                    '<div class="instructions"><p>'+Craft.t('What this field will be called in the CP.')+'</p></div>' +
+                '</div>' +
+                '<div class="input">' +
+                    '<input class="text fullwidth" type="text" id="'+this.inputIdPrefix+'-name" name="'+this.inputNamePrefix+'[name]" autofocus="" autocomplete="off"/>' +
+                '</div>' +
+            '</div>' +
+            '<div class="field" id="'+this.inputIdPrefix+'-handle-field">' +
+                '<div class="heading">' +
+                    '<label class="required" for="'+this.inputIdPrefix+'-handle">'+Craft.t('Handle')+'</label>' +
+                    '<div class="instructions"><p>'+Craft.t('How you’ll refer to this field in the templates.')+'</p></div>' + 
+                '</div>' +
+                '<div class="input">' +
+                    '<input class="text fullwidth code" type="text" id="'+this.inputIdPrefix+'-handle" name="'+this.inputNamePrefix+'[handle]" autofocus="" autocomplete="off"/>' +
+                '</div>' +
+            '</div>' +
+            '<div class="field" id="'+this.inputIdPrefix+'-instructions-field">' +
+                '<div class="heading">' +
+                    '<label for="'+this.inputIdPrefix+'-instructions">'+Craft.t('Instructions')+'</label>' +
+                    '<div class="instructions"><p>'+Craft.t('Helper text to guide the author. Will appear as a small <code>info</code> icon in table headers.')+'</p></div>' +
+                '</div>' +
+                '<div class="input">' +
+                    '<textarea class="text nicetext fullwidth" rows="2" cols="50" id="'+this.inputIdPrefix+'-instructions" name="'+this.inputNamePrefix+'[instructions]"></textarea>' +
+                '</div>' +
+            '</div>' +
+            '<div class="field" id="'+this.inputIdPrefix+'-width-field">' +
+                '<div class="heading">' +
+                    '<label for="'+this.inputIdPrefix+'-width">'+Craft.t('Column Width')+'</label>' +
+                    '<div class="instructions"><p>'+Craft.t('Only applies for Table Layout. Set the width for this column in either pixels or percentage. i.e. <code>10px</code> or <code>10%</code>.')+'</p></div>' +
+                '</div>' +
+                '<div class="input ltr">' +
+                    '<input class="text" type="text" id="'+this.inputIdPrefix+'-width" size="4" name="'+this.inputNamePrefix+'[width]" autocomplete="off">' +
+                '</div>' +
+            '</div>' +
+            '<div class="field checkboxfield">' +
+                '<label>' +
+                    '<input type="hidden" name="'+this.inputNamePrefix+'[required]" value=""/>' +
+                    '<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[required]"/> ' +
+                    Craft.t('This field is required') +
+                '</label>' +
+            '</div>';
+
+            if (Craft.isLocalized) {
+                html += '<div class="field checkboxfield">' +
+                    '<label>' +
+                        '<input type="hidden" name="'+this.inputNamePrefix+'[translatable]" value=""/>' +
+                        '<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[translatable]"/> ' +
+                        Craft.t('This field is translatable') +
+                    '</label>' +
+                '</div>';
+            }
+
+            html += '<hr/>' +
+                '<div class="field" id="type-field">' +
+                    '<div class="heading">' +
+                        '<label for="type">'+Craft.t('Field Type')+'</label>' +
+                    '</div>' +
+                    '<div class="input">' +
+                        '<div class="select">' +
+                            '<select id="type" class="fieldtoggle" name="'+this.inputNamePrefix+'[type]">';
+                                for (var i = 0; i < this.configurator.fieldTypeInfo.length; i++) {
+                                    var info = this.configurator.fieldTypeInfo[i],
+                                        selected = (info.type == 'PlainText');
+
+                                    html += '<option value="'+info.type+'"'+(selected ? ' selected=""' : '')+'>'+info.name+'</option>';
+                                }
+
+                                html +=
+                        '</select>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="fieldtype-settings"/>' +
+            '<hr/>' +
+            '<a class="error delete">'+Craft.t('Delete')+'</a>' +
+        '</div>';
 
         return html;
     },
 
+    confirmDelete: function() {
+        if (confirm(Craft.t('Are you sure you want to delete this field?'))) {
+            this.selfDestruct();
+        }
+    },
+
+    selfDestruct: function() {
+        this.deselect();
+        this.$item.remove();
+        this.$fieldSettingsContainer.remove();
+
+        this.configurator.fields[this.id] = null;
+        delete this.configurator.fields[this.id];
+    }
+
 });
-
-
-Craft.SuperTableSettingsModal = Garnish.Modal.extend({
-    field: null,
-    fieldTypeFootHtml: null,
-    $settingsContainer: null,
-
-    $body: null,
-    $buttons: null,
-    $closeBtn: null,
-    $saveBtn: null,
-    $fieldSettings: null,
-
-    init: function(field, fieldTypeFootHtml, $settingsContainer) {
-        this.field = field;
-        this.fieldTypeFootHtml = fieldTypeFootHtml;
-        this.$settingsContainer = $settingsContainer;
-
-        // Build the modal
-        var $container = $('<div class="modal fieldsettingsmodal"></div>').appendTo(Garnish.$bod),
-            $body = $('<div class="body"></div>').appendTo($container),
-            $content = $('<div class="content"></div>').appendTo($body),
-            $main = $('<div class="main"></div>').appendTo($content),
-            $footer = $('<div class="footer"/>').appendTo($container);
-
-        this.base($container, this.settings);
-
-        this.$buttons = $('<div class="buttons rightalign first"/>').appendTo($footer);
-        this.$closeBtn = $('<div class="btn">'+Craft.t('Close')+'</div>').appendTo(this.$buttons);
-
-        this.$fieldSettings = this.$settingsContainer.appendTo($main);
-
-        this.addListener(this.$closeBtn, 'activate', 'closeModal');
-    },
-
-    restoreSettingsToTable: function() {
-
-        // Special case for Matrix - reset field back to defaults, otherwise causes UI havok
-        this.$fieldSettings.find('.matrixconfigitem.sel').removeClass('sel');
-        this.$fieldSettings.find('.mc-sidebar.fields .col-inner-container').addClass('hidden');
-        this.$fieldSettings.find('.field-settings .col-inner-container').addClass('hidden');
-        this.$fieldSettings.find('.field-settings .col-inner-container .items div[data-id]').addClass('hidden');
-
-        this.field.restoreSettingsHtml(this.$fieldSettings);
-    },
-
-    onFadeOut: function() {
-        this.restoreSettingsToTable();
-
-        this.destroy();
-        this.$shade.remove();
-        this.$container.remove();
-
-        this.removeListener(this.$closeBtn, 'click');
-        this.removeListener(this.$saveBtn, 'click');
-    },
-
-    onFadeIn: function() {
-        // Give the modal window some time to get it together
-        setTimeout($.proxy(function() {
-            Craft.initUiElements(this.$fieldSettings);
-            Garnish.$bod.append(this.fieldTypeFootHtml);
-        }, this), 1);
-    },
-
-    closeModal: function() {
-        this.hide();
-    },
-
-    saveSettings: function() {
-        this.hide();
-    },
-
-    show: function() {
-        this.base();
-    },
-});
-
 
 
 })(jQuery);
