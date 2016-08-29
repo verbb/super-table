@@ -1,5 +1,13 @@
 [
     {
+        "version": "1.0.1",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.1.zip",
+        "date": "2016-08-30T00:15:00+10:00",
+        "notes": [
+            "[Fixed] Minor layout fix for Matrix-ST-Matrix in Safari."
+        ]
+    },
+    {
         "version": "1.0.0",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.0.zip",
         "date": "2016-08-29T23:50:00+10:00",
