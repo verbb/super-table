@@ -146,13 +146,17 @@ body.rtl .supertable-configurator .stc-settings {
 /* This actually applies to all Matrix fields everywhere, but testing hasn't proved any issues yet... */
 .matrix-configurator > .field > .input {
     overflow-x: auto;
-    width: 100%;
 
     /* Safari Fix */
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 }
+
+.matrix-configurator > .field > .input > .field-settings {
+    width: 100%;
+}
+
 
 
 
