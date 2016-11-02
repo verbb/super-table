@@ -185,6 +185,8 @@ Craft.SuperTableInputRow = Garnish.Base.extend({
         if (settings.staticField && this.$rows.length == 0) {
             this.$addRowBtn.trigger('activate');
         }
+
+        this.addListener(this.$div, 'resize', 'onResize');
     },
 
     addRow: function() {
@@ -226,6 +228,8 @@ Craft.SuperTableInputRow = Garnish.Base.extend({
         row.expand();
 
         this.updateAddBlockBtn();
+
+        this.onResize();
     },
 
     getParsedBlockHtml: function(html, id) {
@@ -238,6 +242,30 @@ Craft.SuperTableInputRow = Garnish.Base.extend({
 
     canAddMoreRows: function() {
         return (!this.settings.maxRows || this.$divInner.children('.superTableRow').length < this.settings.maxRows);
+    },
+
+    onResize: function() {
+        // A minor fix if this row contains a Matrix field. For Matrix fields with lots of blocks,
+        // we need to make sure we trigger the resize-handling, which turns the Add Block buttons into a dropdown
+        // otherwise, we get a nasty overflow of buttons.
+
+        // Get the Super Table overall width, with some padding
+        var actionBtnWidth = this.$divInner.find('tfoot tr').width();
+        var rowHeaderWidth = this.$divInner.find('td.rowHeader').width();
+        var rowWidth = this.$divInner.width() - actionBtnWidth - rowHeaderWidth - 20;
+        var $matrixFields = this.$divInner.find('.matrix.matrix-field');
+
+        if ($matrixFields.length) {
+            $.each($matrixFields, function(i, element) {
+                var $matrixField = $(element);
+                var matrixButtonWidth = $matrixField.find('.buttons').outerWidth(true);
+
+                if (matrixButtonWidth > rowWidth) {
+                    // showNewBlockBtn is a custom function in MatrixInputAlt.js for minor impact
+                    $matrixField.trigger('showNewBlockBtn');
+                }
+            });
+        }
     },
 
     updateAddBlockBtn: function() {

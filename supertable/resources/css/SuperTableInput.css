@@ -66,6 +66,7 @@ body.ltr table.editable.superTable tbody tr td:nth-child(2) {
 
 .superTableRow table.editable.superTable {
     margin: 0;
+    display: block;
 }
 
 .superTableRow .rowHeader {

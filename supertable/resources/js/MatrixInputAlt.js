@@ -126,6 +126,15 @@ Craft.MatrixInputAlt = Garnish.Base.extend(
         this.updateAddBlockBtn();
 
         this.addListener(this.$container, 'resize', 'setNewBlockBtn');
+        this.addListener(this.$container, 'showNewBlockBtn', 'showNewBlockBtn');
+    },
+
+    // CRAWF - An added event handler to allow Super Table field to trigger the 'responsive'
+    // add block button. setNewBlockBtn is a little overkill and unperformant...
+    showNewBlockBtn: function() {
+        this.$addBlockBtnGroup.addClass('hidden');
+        this.$addBlockMenuBtn.removeClass('hidden');
+        this.showingAddBlockMenu = true;
     },
 
     setNewBlockBtn: function()
