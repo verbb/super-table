@@ -123,7 +123,7 @@
     },
     {
         "version": "0.3.8",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.3.8.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
             "Ensure Craft 2.3.2615 is minimum required version."
@@ -131,7 +131,7 @@
     },
     {
         "version": "0.3.7",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.3.7.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
             "Added relations support, thanks to [joshangell](https://github.com/joshangell)."
@@ -139,7 +139,7 @@
     },
     {
         "version": "0.3.6",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.3.6.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
             "Fix for validation when inside a Matrix field."
@@ -147,25 +147,25 @@
     },
     {
         "version": "0.3.5",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.3.5.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
-            "Change to content table naming when inside Matrix field. When two Super Table fields in different Matrix fields had the same handle, when one ST field was deleted, content for both would be deleted. Now prefixes tables with Matrix field id - ie: `supertablecontent_matrixId_fieldhandle`. See [notes](https://github.com/engram-design/SuperTable/blob/master/README.md#updating-from-034-to-035)."
+            "Change to content table naming when inside Matrix field. When two Super Table fields in different Matrix fields had the same handle, when one ST field was deleted, content for both would be deleted. Now prefixes tables with Matrix field id - ie: `supertablecontent_matrixId_fieldhandle`. See [notes](https://github.com/engram-design/SuperTable/blob/master/README.md#updating-from-034-to-035).",
             "Fix for some UI elements not initializing for Matrix > Super Table > Matrix layout [#28](https://github.com/engram-design/SuperTable/issues/28)."
         ]
     },
     {
         "version": "0.3.4",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.3.4.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
-            "Minor visual fix for Row layout and table overflow [#24](https://github.com/engram-design/SuperTable/issues/24)."
+            "Minor visual fix for Row layout and table overflow [#24](https://github.com/engram-design/SuperTable/issues/24).",
             "Fix for Table layout and deleting element select items [#25](https://github.com/engram-design/SuperTable/issues/25)."
         ]
     },
     {
         "version": "0.3.3",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.3.3.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
             "Minor fixes to issues introduced accidentally in 0.3.2."
@@ -173,7 +173,7 @@
     },
     {
         "version": "0.3.2",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.3.2.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
             "Fix for Matrix-SuperTable-Matrix field configuration and correct namespacing. Caused numerous inner-Matrix issues."
@@ -181,39 +181,39 @@
     },
     {
         "version": "0.3.1",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.3.1.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
-            "Fix for field labels on inner-Matrix field being hidden [#16](https://github.com/engram-design/SuperTable/issues/16)."
-            "Latest Redactor version fixes [#3](https://github.com/engram-design/SuperTable/issues/3)."
-            "Fix for width not being applied for columns [#15](https://github.com/engram-design/SuperTable/issues/15)."
+            "Fix for field labels on inner-Matrix field being hidden [#16](https://github.com/engram-design/SuperTable/issues/16).",
+            "Latest Redactor version fixes [#3](https://github.com/engram-design/SuperTable/issues/3).",
+            "Fix for width not being applied for columns [#15](https://github.com/engram-design/SuperTable/issues/15).",
             "Fix issues with multiple Matrix Configurators causing many javascript issues [see Craft 2.4.2677](https://buildwithcraft.com/updates#build2677)."
         ]
     },
     {
         "version": "0.3.0",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.3.0.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
-            "Added composer support."
+            "Added composer support.",
             "Improved performance (thanks to [@boboldehampsink](https://github.com/boboldehampsink) and [@takobell](https://github.com/takobell))"
         ]
     },
     {
         "version": "0.2.9",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.2.9.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
-            "Added Static option for fields. Allows for blocks to be non-repeatable [see more](https://github.com/engram-design/SuperTable#staticoption)."
-            "Fixed validation when creating Super Table fields."
-            "Added option to set the 'Add a row' button text."
-            "Added Max Rows option."
+            "Added Static option for fields. Allows for blocks to be non-repeatable [see more](https://github.com/engram-design/SuperTable#staticoption).",
+            "Fixed validation when creating Super Table fields.",
+            "Added option to set the 'Add a row' button text.",
+            "Added Max Rows option.",
             "Added required option for fields."
         ]
     },
     {
         "version": "0.2.8",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.2.8.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
             "Minor fix for Row Layout and Element Selection fields. Clicking delete on an element select would remove the entire row."
@@ -221,7 +221,7 @@
     },
     {
         "version": "0.2.7",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.2.7.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
             "Full support for Matrix."
@@ -229,27 +229,27 @@
     },
     {
         "version": "0.2.6",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.2.6.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
-            "Added Row layout option [see example](https://github.com/engram-design/SuperTable#layout)"
+            "Added Row layout option [see example](https://github.com/engram-design/SuperTable#layout)",
             "Removed background colouring for cells."
         ]
     },
     {
         "version": "0.2.5",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.2.5.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
-            "Added width option to each column."
-            "Added Label field type."
-            "Fixed some minor validation bugs."
+            "Added width option to each column.",
+            "Added Label field type.",
+            "Fixed some minor validation bugs.",
             "Fixed namespacing issues for element-selects and some other fields inside Matrix blocks."
         ]
     },
     {
         "version": "0.2",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.2.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
             "Major refactor of field settings JS. Caused namespacing issues for certain field types."
@@ -257,7 +257,7 @@
     },
     {
         "version": "0.1",
-        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0..zip",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/0.1.zip",
         "date": "2015-12-01T00:00:00+10:00",
         "notes": [
             "Initial release."
