@@ -221,6 +221,8 @@ Craft.SuperTableField = Garnish.Base.extend({
         this.$item.addClass('sel');
         this.configurator.selectedField = this;
 
+        this.setFieldType(this.selectedFieldType);
+
         if (!Garnish.isMobileBrowser()) {
             setTimeout($.proxy(function() {
                 this.$nameInput.focus()
