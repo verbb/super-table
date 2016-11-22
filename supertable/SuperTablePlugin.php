@@ -48,9 +48,16 @@ class SuperTablePlugin extends BasePlugin
     }
 
     public function onBeforeInstall()
-    {   
+    {
+        $version = craft()->getVersion();
+
+        // Craft 2.6.2951 deprecated `craft()->getBuild()`, so get the version number consistently
+        if (version_compare(craft()->getVersion(), '2.6.2951', '<')) {
+            $version = craft()->getVersion() . '.' . craft()->getBuild();
+        }
+
         // Craft 2.3.2615 getFieldsForElementsQuery()
-        if (version_compare(craft()->getVersion() . '.' . craft()->getBuild(), '2.3.2615', '<')) {
+        if (version_compare($version, '2.3.2615', '<')) {
             throw new Exception($this->getName() . ' requires Craft CMS 2.3.2615+ in order to run.');
         }
     }
