@@ -296,9 +296,9 @@ Craft.SuperTableInputRow.Row = Garnish.Base.extend({
 
         this.contract(function() {
             this.$tr.remove();
-        });
 
-        this.table.updateAddBlockBtn();
+            this.table.updateAddBlockBtn();
+        });
     },
 
     expand: function(callback) {
