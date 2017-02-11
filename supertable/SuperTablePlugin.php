@@ -62,27 +62,22 @@ class SuperTablePlugin extends BasePlugin
         }
     }
 
+    public function init()
+    {
+        Craft::import('plugins.supertable.integrations.feedme.fields.SuperTableFeedMeFieldType');
+    }
+
 
     // =========================================================================
     // HOOKS
     // =========================================================================
 
-    // FeedMe 1.4.0
-    public function registerFeedMeMappingOptions()
+    // FeedMe 2.0.0
+    public function registerFeedMeFieldTypes()
     {
         return array(
-            'SuperTable' => 'supertable/_plugins/feedMeOptions',
+            new SuperTableFeedMeFieldType(),
         );
-    }
-
-    public function prepForFeedMeFieldType($field, &$data, $handle)
-    {
-        craft()->superTable->prepForFeedMeFieldType($field, $data, $handle);
-    }
-
-    public function postForFeedMeFieldType(&$fieldData)
-    {
-        craft()->superTable->postForFeedMeFieldType($fieldData);
     }
 
     // Export 0.5.8

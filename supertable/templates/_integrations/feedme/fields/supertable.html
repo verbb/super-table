@@ -1,0 +1,17 @@
+{% for blocktype in craft.superTable.getSuperTableBlocks(field.id) %}
+    {% for blocktypefield in blocktype.getFields() %}
+
+        {% set variables = {
+            field: blocktypefield,
+            fieldtype: blocktypefield,
+            feed: feed,
+            feedData: feedData,
+            handlePrefix: field.handle ~ '--' ~ blocktype.id ~ '--',
+            labelName: field.name ~ ': ' ~ blocktypefield.name,
+            labelHandle: field.handle ~ '[' ~ blocktypefield.handle ~ ']',
+        } %}
+        
+        {% include 'feedme/_includes/field' with variables %}
+
+    {% endfor %}
+{% endfor %}
