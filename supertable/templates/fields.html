@@ -8,8 +8,11 @@
             <tr data-id="">
                 <td class="thin rowHeader">
                     <span class="heading-text {% if field.required %}required{% endif %}">
-                        {{ field.getField().name }}
-                        {% if field.getField().instructions %}<span class="info">{{ field.getField().instructions }}</span>{% endif %}
+                        {{ field.getField().name | t }}
+
+                        {% if field.getField().instructions %}
+                            <span class="info">{{ field.getField().instructions | t }}</span>
+                        {% endif %}
                     </span>
                 </td>
 
