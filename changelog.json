@@ -1,5 +1,17 @@
 [
     {
+        "version": "1.0.3",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.3.zip",
+        "date": "2017-02-27T23:00:00+10:00",
+        "notes": [
+            "[Added] [Feed Me](http://sgroup.com.au/plugins/feedme) 2.0 support.",
+            "[Improved] Support for Craft 2.6.2951.",
+            "[Fixed] Fix Row Layout and limit rows issue. Wait for removal contract function to fire before updating the `canAddMoreRows()` function. Otherwise, button stays disabled when blocks can still be added.",
+            "[Fixed] Fix for selected fieldtype JS not firing on select in settings.",
+            "[Fixed] Fix lack of translation for field titles and instructions."
+        ]
+    },
+    {
         "version": "1.0.2",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.2.zip",
         "date": "2016-11-03T00:15:00+10:00",
