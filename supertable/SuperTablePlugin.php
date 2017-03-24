@@ -65,6 +65,11 @@ class SuperTablePlugin extends BasePlugin
     public function init()
     {
         Craft::import('plugins.supertable.integrations.feedme.fields.SuperTableFeedMeFieldType');
+
+        // Hook on to (any) element deletion event to cleanup Super Table Blocks for that element
+        craft()->on('elements.onBeforeDeleteElements', function(Event $event) {
+            craft()->superTable->onBeforeDeleteElements($event);
+        });
     }
 
 

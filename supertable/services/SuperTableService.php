@@ -653,6 +653,32 @@ class SuperTableService extends BaseApplicationComponent
         return $this->_parentSuperTableFields[$superTableField->id];
     }
 
+    public function onBeforeDeleteElements($event)
+    {
+        // Check on every Element-deletion if there are any child-elements that are Super Table fields
+        // if there are, we need to delete Super Table Blocks as part of the cleanup process. Otherwise, these
+        // blocks stick around orphaned. Note that native Matrix fields do this automatically via Craft-core.
+
+        $elementIds = $event->params['elementIds'];
+
+        if (count($elementIds) == 1) {
+            $superTableBlockCondition = array('ownerId' => $elementIds[0]);
+        } else {
+            $superTableBlockCondition = array('in', 'ownerId', $elementIds);
+        }
+
+        // First delete any Matrix blocks that belong to this element(s)
+        $superTableBlockIds = craft()->db->createCommand()
+            ->select('id')
+            ->from('supertableblocks')
+            ->where($superTableBlockCondition)
+            ->queryColumn();
+
+        if ($superTableBlockIds) {
+            craft()->superTable->deleteBlockById($superTableBlockIds);
+        }
+    }
+
 
 
 
