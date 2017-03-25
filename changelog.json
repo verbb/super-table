@@ -1,5 +1,15 @@
 [
     {
+        "version": "1.0.4",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.4.zip",
+        "date": "2017-03-26T09:00:00+10:00",
+        "notes": [
+            "[Added] Added Minimum Rows field setting.",
+            "[Improved] `type` is now a reserved field handle.",
+            "[Improved] Blocks are now deleted when an owner is deleted (think deleting an entry also deletes blocks for that entry). Otherwise, end up with orphaned blocks."
+        ]
+    },
+    {
         "version": "1.0.3",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.3.zip",
         "date": "2017-02-27T23:00:00+10:00",
