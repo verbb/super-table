@@ -73,6 +73,8 @@ class SuperTableService extends BaseApplicationComponent
     {
         $validates = true;
 
+        $reservedHandles = array('type');
+
         $blockTypeRecord = $this->_getBlockTypeRecord($blockType);
         $blockTypeRecord->fieldId = $blockType->fieldId;
 
@@ -108,6 +110,14 @@ class SuperTableService extends BaseApplicationComponent
                 $validates = false;
 
                 $blockType->addErrors($field->getSettingErrors());
+            }
+
+            // `type` is a restricted handle
+            if (in_array($field->handle, $reservedHandles)) {
+                $blockType->hasFieldErrors = true;
+                $validates = false;
+
+                $field->addErrors(array('handle' => Craft::t('"{handle}" is a reserved word.', array('handle' => $field->handle))));
             }
 
             // Special-case for validating child Matrix fields
