@@ -197,6 +197,16 @@
 }) }}
 
 {{ forms.textField({
+    label: "Min Rows" | t,
+    instructions: "The minimum number of rows the field must to have." | t,
+    id: 'minRows',
+    name: 'minRows',
+    value: settings.minRows,
+    size: 3,
+    errors: settings.getErrors('minRows')
+}) }}
+
+{{ forms.textField({
     label: "Max Rows" | t,
     instructions: "The maximum number of rows the field is allowed to have." | t,
     id: 'maxRows',

@@ -117,8 +117,11 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
             $superTableSettings->selectionLabel = $settings['selectionLabel'];
         }
 
-        if (!empty($settings['maxRows']))
-        {
+        if (!empty($settings['minRows'])) {
+            $superTableSettings->minRows = $settings['minRows'];
+        }
+
+        if (!empty($settings['maxRows'])) {
             $superTableSettings->maxRows = $settings['maxRows'];
         }
 
@@ -348,6 +351,16 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
                 $errors[] = Craft::t('There can’t be more than one row.');
             } else {
                 $errors[] = Craft::t('There can’t be more than {max} rows.', array('max' => $maxRows));
+            }
+        }
+
+        $minRows = $this->getSettings()->minRows;
+
+        if ($minRows && count($blocks) < $minRows) {
+            if ($minRows == 1) {
+                $errors[] = Craft::t('There must be at least one row.');
+            } else {
+                $errors[] = Craft::t('There must be at least {min} rows.', array('min' => $minRows));
             }
         }
 

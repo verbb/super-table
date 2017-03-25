@@ -63,6 +63,7 @@ class SuperTable_SettingsModel extends BaseModel
             'staticField' => AttributeType::Bool,
             'selectionLabel' => AttributeType::String,
             'maxRows' => AttributeType::Number,
+            'minRows' => AttributeType::Number,
         );
     }
 }
