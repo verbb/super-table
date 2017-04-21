@@ -104,7 +104,7 @@ Thanks go to [@brandonkelly](https://github.com/brandonkelly) and [@benparizek](
 
 ## Requirements
 
-- Craft 2.3.2615+.
+- Craft 2.6.2771+.
 - PHP 5.4+
 
 
