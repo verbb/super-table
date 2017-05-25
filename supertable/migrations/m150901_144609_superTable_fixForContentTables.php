@@ -41,6 +41,10 @@ class m150901_144609_superTable_fixForContentTables extends BaseMigration
             if (!craft()->db->tableExists($newContentTable)) {
                 $oldContentTable = str_replace('_'.$parentFieldId, '', $newContentTable);
 
+                if (!craft()->db->tableExists($oldContentTable)) {
+                    continue;
+                }
+
                 // Grab all existing data from old table
                 $tableData = craft()->db->createCommand()
                     ->select('*')
