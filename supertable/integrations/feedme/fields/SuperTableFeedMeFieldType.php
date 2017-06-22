@@ -21,94 +21,34 @@ class SuperTableFeedMeFieldType extends BaseFeedMeFieldType
     public function prepFieldData($element, $field, $fieldData, $handle, $options)
     {
         $preppedData = array();
-        $sortedData = array();
 
         $data = Hash::get($fieldData, 'data');
 
         if (empty($data)) {
-            return;
+            return array();
         }
-
-        // Because of how mapping works, we need to do some extra work here, which is a pain!
-        // This is to ensure blocks are ordered as they are provided. Data will be provided as:
-        // blockhandle = [
-        //   fieldHandle = [
-        //     orderIndex = [
-        //       data
-        //     ]
-        //   ]
-        // ]
-        //
-        // We change it to:
-        //
-        // orderIndex = [
-        //   blockhandle = [
-        //     orderIndex = [
-        //       data
-        //     ]
-        //   ]
-        // ]
-        //
-        $optionsArray = array();
-        $flatten = Hash::flatten($data);
-
-        foreach ($flatten as $keyedIndex => $value) {
-            $tempArray = explode('.', $keyedIndex);
-
-            // Save field options for later - they're a special case
-            if (strstr($keyedIndex, '.options.')) {
-                FeedMeArrayHelper::arraySet($optionsArray, $tempArray, $value);
-            } else {
-                preg_match_all('/data.(\d*)/', $keyedIndex, $blockKeys);
-                $blockKey = $blockKeys[1];
-    
-                // Single Row
-                if (!$blockKey) {
-                    $tempArray[] = 0;
-                    $blockKey = 0;
-                }
-
-                // Remove the index from inside [data], to the front
-                array_splice($tempArray, 0, 0, $blockKey);
-
-                // Check for nested data (elements, table)
-                if (preg_match('/data.(\d*\.\d*)/', $keyedIndex)) {
-                    unset($tempArray[count($tempArray) - 2]);
-                } else {
-                    array_pop($tempArray);
-                }
-
-                FeedMeArrayHelper::arraySet($sortedData, $tempArray, $value);
-            }
-        }
-
-        // Now a special case for field options. Because of the way field-mapping stored them, we need to
-        // loop through and apply across all blocks of this type. This also makes field-processing easier
-        foreach ($sortedData as $blockOrder => $blockData) {
-            foreach ($blockData as $blockHandle => $innerData) {
-                $optionData = Hash::get($optionsArray, $blockHandle);
-
-                if ($optionData) {
-                    $sortedData[$blockOrder][$blockHandle] = Hash::merge($innerData, $optionData);
-                }
-            }
-        }
-
-        // Sort by the new ordering we've set
-        ksort($sortedData);
 
         // Store the fields for this Matrix - can't use the fields service due to context
         $blockTypes = craft()->superTable->getBlockTypesByFieldId($field->id, 'id');
+        $blockType = reset($blockTypes);
 
-        $count = 0;
-        $allPreppedFieldData = array();
+        $prePreppedData = array();
 
-        foreach ($sortedData as $sortKey => $sortData) {
+        foreach (Hash::flatten($data) as $key => $value) {
+            if (preg_match('/^\d+\.\d+/', $key)) {
+                $prePreppedData[$key] = $value;
+            } else {
+                $prePreppedData['0.' . $key] = $value;
+            }
+        }
+
+        $data = Hash::expand($prePreppedData);
+
+        foreach ($data as $sortKey => $sortData) {
+            $preppedFieldData = array();
+
             foreach ($sortData as $blockHandle => $blockFieldData) {
                 foreach ($blockFieldData as $blockFieldHandle => $blockFieldContent) {
-
-                    // Get the Matrix-contexted field for our regular field-prepping function
-                    $blockType = $blockTypes[$blockHandle];
 
                     foreach ($blockType->getFields() as $f) {
                         if ($f->handle == $blockFieldHandle) {
@@ -124,47 +64,35 @@ class SuperTableFeedMeFieldType extends BaseFeedMeFieldType
                         'field' => $subField,
                     );
 
+                    // Special-case for table!
+                    if ($subField->type == 'Table') {
+                        $blockFieldContent = array('data' => $blockFieldContent);
+                    }
+
                     // Parse this inner-field's data, just like a regular field
                     $parsedData = craft()->feedMe_fields->prepForFieldType(null, $blockFieldContent, $blockFieldHandle, $fieldOptions);
 
+                    // Fire any post-processing for the field type
+                    $posted = craft()->feedMe_fields->postForFieldType(null, $parsedData, $blockFieldHandle, $subField);
+
+                    if ($posted) {
+                        $parsedData = $parsedData[$blockFieldHandle];
+                    }
+
                     if ($parsedData) {
-                        // Special-case for inner table - not a great solution at the moment, needs to be more flexible
-                        if ($subField->type == 'Table') {
-                            foreach ($parsedData as $i => $tableFieldRow) {
-                                $next = reset($tableFieldRow);
-
-                                if (!is_array($next)) {
-                                    $tableFieldRow = array($i => $tableFieldRow);
-                                }
-
-                                foreach ($tableFieldRow as $j => $tableFieldColumns) {
-                                    foreach ($tableFieldColumns as $k => $tableFieldColumn) {
-                                        $allPreppedFieldData[$k][$blockHandle][$blockFieldHandle][$j][$sortKey] = $tableFieldColumn;
-                                    }
-                                }
-                            }
-                        } else {
-                            $allPreppedFieldData[$sortKey][$blockHandle][$blockFieldHandle] = $parsedData;
-                        }
+                        $preppedFieldData[$blockFieldHandle] = $parsedData;
                     }
                 }
             }
-        }
 
-        // Now we've got a bit more sane data - its a simple (regular) import
-        if ($allPreppedFieldData) {
-            foreach ($allPreppedFieldData as $key => $preppedBlockFieldData) {
-                foreach ($preppedBlockFieldData as $blockHandle => $preppedFieldData) {
-                    $preppedData['new'.($count+1)] = array(
-                        'type' => $blockHandle,
-                        'order' => ($count+1),
-                        'enabled' => true,
-                        'fields' => $preppedFieldData,
-                    );
+            $order = $sortKey + 1;
 
-                    $count++;
-                }
-            }
+            $preppedData['new' . $order] = array(
+                'type' => $blockHandle,
+                'order' => $order,
+                'enabled' => true,
+                'fields' => $preppedFieldData,
+            );
         }
 
         return $preppedData;
