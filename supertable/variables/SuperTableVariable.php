@@ -69,7 +69,8 @@ class SuperTableVariable
 
         // Get the Super Table Blocks that are related to that field
         $superTableBlocks = craft()->elements->getCriteria('SuperTable_Block', array(
-            'relatedTo' => $params['relatedTo']
+            'relatedTo' => $params['relatedTo'],
+            'limit' => null
         ));
 
         // Loop over the returned Super Table Blocks and save their owner ids
