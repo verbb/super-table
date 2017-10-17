@@ -4,7 +4,8 @@
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.6.zip",
         "date": "2017-10-18T00:00:00+10:00",
         "notes": [
-            "[Added] Verbb marketing (new plugin icon, readme, etc)."
+            "[Added] Verbb marketing (new plugin icon, readme, etc).",
+            "[Improved] Improved [Feed Me](http://sgroup.com.au/plugins/feedme) inside Matrix support.",
         ]
     },
     {
