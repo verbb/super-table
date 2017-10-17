@@ -14,7 +14,7 @@ class SuperTablePlugin extends BasePlugin
 
     public function getVersion()
     {
-        return '1.0.5';
+        return '1.0.6';
     }
 
     public function getSchemaVersion()
@@ -24,17 +24,17 @@ class SuperTablePlugin extends BasePlugin
 
     public function getDeveloper()
     {
-        return 'S. Group';
+        return 'Verbb';
     }
 
     public function getDeveloperUrl()
     {
-        return 'http://sgroup.com.au';
+        return 'https://verbb.io';
     }
 
     public function getPluginUrl()
     {
-        return 'https://github.com/engram-design/SuperTable';
+        return 'https://github.com/verbb/super-table';
     }
 
     public function getDocumentationUrl()
@@ -44,7 +44,7 @@ class SuperTablePlugin extends BasePlugin
 
     public function getReleaseFeedUrl()
     {
-        return 'https://raw.githubusercontent.com/engram-design/SuperTable/master/changelog.json';
+        return 'https://raw.githubusercontent.com/verbb/super-table/master/changelog.json';
     }
 
     public function onBeforeInstall()

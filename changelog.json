@@ -1,5 +1,13 @@
 [
     {
+        "version": "1.0.6",
+        "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.6.zip",
+        "date": "2017-10-18T00:00:00+10:00",
+        "notes": [
+            "[Added] Verbb marketing (new plugin icon, readme, etc)."
+        ]
+    },
+    {
         "version": "1.0.5",
         "downloadUrl": "https://github.com/engram-design/SuperTable/archive/1.0.5.zip",
         "date": "2017-06-23T09:00:00+10:00",
