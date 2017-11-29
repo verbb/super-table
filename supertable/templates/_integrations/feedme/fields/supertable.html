@@ -2,7 +2,7 @@
     {% for blocktypefield in blocktype.getFields() %}
 
         {# Special-case when inside Matrix #}
-        {% if parentField is defined and parentField.type == 'Matrix' %}
+        {% if parentField is defined and parentField.type is defined and parentField.type == 'Matrix' %}
             {% set handlePrefix = parentField.handle ~ '--' ~ parentBlocktype.handle ~ '--' ~ field.handle ~ '--' ~ blocktype.id ~ '--' %}
             {% set labelName = parentField.name ~ ': ' ~ parentBlocktype.name ~ ': ' ~ field.name ~ ': ' ~ blocktypefield.name %}
             {% set labelHandle = parentField.handle ~ '[' ~ parentBlocktype.handle ~ '][' ~ field.handle ~ '][' ~ blocktypefield.handle ~ ']' %}
