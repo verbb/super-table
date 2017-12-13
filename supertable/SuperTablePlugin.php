@@ -39,12 +39,12 @@ class SuperTablePlugin extends BasePlugin
 
     public function getDocumentationUrl()
     {
-        return $this->getPluginUrl() . '/blob/master/README.md';
+        return 'https://verbb.io/craft-plugins/super-table/docs';
     }
 
     public function getReleaseFeedUrl()
     {
-        return 'https://raw.githubusercontent.com/verbb/super-table/master/changelog.json';
+        return 'https://raw.githubusercontent.com/verbb/super-table/craft-2/changelog.json';
     }
 
     public function onBeforeInstall()
