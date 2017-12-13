@@ -1,9 +1,0 @@
-{% import "_includes/forms" as forms %}
-
-{{ forms.textField({
-    label: "Value"|t,
-    id: 'value',
-    name: 'value',
-    value: settings.value,
-    errors: settings.getErrors('value')
-}) }}
