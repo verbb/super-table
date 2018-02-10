@@ -18,6 +18,7 @@
 .idea
 .project
 .settings
+.map
 *.esproj
 *.sublime-workspace
 *.sublime-project

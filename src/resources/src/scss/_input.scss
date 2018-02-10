@@ -1,0 +1,226 @@
+/* ==========================================================================
+// Super Table Styles
+// ========================================================================== */
+
+.superTableContainer {
+    position: relative;
+}
+
+.superTable-table {
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+}
+
+.superTable-table tbody tr td {
+    vertical-align: middle;
+    text-align: left;
+    background: #fff;
+}
+
+.superTable-table tbody tr td:not(:first-child),
+.superTable-table tbody tr th ~ td:not(.hidden) ~ td {
+    border-left: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.superTable-table tbody tr:not(:first-child) td {
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.superTable-table tbody tr td:not(.textual) {
+    padding: 4px 10px;
+}
+
+.superTable-table tbody tr td > .field > .heading {
+    display: none;
+}
+
+.superTable-table tbody tr td.action {
+    background: #ebedef;
+    padding: 4px 7px;
+}
+
+.superTable-table tbody tr td.action + td.action {
+    padding-left: 3px;
+    border-left: none;
+}
+
+
+/* ==========================================================================
+// Column-Layout Styles
+// ========================================================================== */
+
+.superTable-layout-table {
+    table-layout: fixed;
+}
+
+.superTable-layout-table thead tr th {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.superTable-layout-table thead tr th,
+.superTable-layout-table tbody tr th {
+    padding: 6px 10px;
+    white-space: nowrap;
+}
+
+.superTable-layout-table th,
+.superTable-layout-table td.action {
+    color: #8f98a3;
+    font-weight: normal;
+    background: #ebedef;
+}
+
+.superTable-layout-table th.col-header[colspan="2"] {
+    width: 29px;
+}
+
+/* Tweak the required asterisks a little */
+.superTable-layout-table .col-header .heading-text.required:after {
+    margin: -4px 0 0 1px;
+}
+
+/* Tweak the info icon a little */
+.superTable-layout-table .col-header .heading-text .info:before {
+    margin: 1px 0 0 1px;
+}
+
+.superTable-layout-table + .btn.add {
+    display: block;
+    border-radius: 0 0 2px 2px;
+    border: 1px dashed rgba(0, 0, 20, 0.4);
+    border-top-width: 0;
+    background: none;
+    box-shadow: none;
+}
+
+
+
+
+/* ==========================================================================
+// Row-Layout Styles
+// ========================================================================== */
+
+.superTableRow {
+    margin: 10px 0;
+}
+
+.superTableRow .rowHeader {
+    font-weight: bold;
+    vertical-align: top;
+    font-size: 11px;
+    line-height: 1.2;
+    color: rgba(0, 0, 0, 0.5);
+    border-radius: 3px 3px 0 0;
+    padding: 8px 7px !important;
+    text-align: left;
+    white-space: nowrap;
+    background: #f9fafa;
+    box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+}
+
+.superTableRow .rowHeader .heading-text {
+    min-height: 30px;
+    display: block;
+}
+
+/* Tweak the required asterisks a little */
+.superTableRow .rowHeader .heading-text.required:after {
+    margin: -4px 0 0 1px;
+}
+
+/* Tweak the info icon a little */
+.superTableRow .rowHeader .heading-text .info:before {
+    margin: 1px 0 0 1px;
+}
+
+.superTableRow .placeholder {
+    width: 25px !important;
+}
+
+.superTableRow table {
+    position: relative;
+}
+
+.superTableRow tfoot tr {
+    right: 0;
+    width: 45px;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    text-align: center;
+    background: #ebedef;
+    opacity: 1;
+
+    border-left: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.superTableRow .floating .icon.move:before {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -7px 0 0 -17px;
+}
+
+.superTableRow .floating .icon.delete:before {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -7px 0 0 3px;
+}
+
+/* Special-case for inner Matrix fields for Row Layout. When collapsed, breaks out of the table container */
+/* so fix that was some positioning fixes */
+.superTableRow .matrixblock.collapsed .titlebar {
+    position: relative;
+}
+
+.superTableRow .matrixblock.collapsed .preview {
+    position: absolute;
+}
+
+.superTableRow .matrixblock.collapsed .actions {
+    background: #eef0f1;
+    right: 0;
+    padding-right: 5px;
+}
+
+
+
+
+
+/* ==========================================================================
+// Provide special formatting for some field types.
+// ========================================================================== */
+
+
+
+
+/* ==========================================================================
+// Provide special formatting for some third-party field types. Just to make things clean
+// ========================================================================== */
+
+.superTableContainer .field .fruitlinkit .fruitlinkit-options,
+.superTableContainer .field .fruitlinkit .fruitlinkit-type,
+.superTableContainer .field .linkit .linkit-type {
+    margin: 7px 0;
+}
+
+.superTableContainer .field .fruitlinkit .fruitlinkit-type {
+    margin-right: 7px;
+}
+
+.superTableContainer .field .fruitlinkit .fruitlinkit-options,
+.superTableContainer .field .fruitlinkit .fruitlinkit-type-option,
+.superTableContainer .field .fruitlinkit .fruitlinkit-text,
+.superTableContainer .field .fruitlinkit .fruitlinkit-target,
+.superTableContainer .field .linkit .linkit-type-option,
+.superTableContainer .field .linkit .linkit-text,
+.superTableContainer .field .linkit .linkit-target {
+    margin-bottom: 7px;
+}
+
+

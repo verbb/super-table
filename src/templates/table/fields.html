@@ -1,0 +1,15 @@
+{% if element is not defined %}{% set element = null %}{% endif %}
+{% if namespace is not defined %}{% set namespace = 'fields' %}{% endif %}
+
+{% namespace namespace %}
+    {% for field in fields %}
+        <td>
+            {% include "super-table/field" with {
+                field:    field,
+                required: field.required,
+                element:  element,
+                static:   (static is defined ? static : null)
+            } only %}
+        </td>
+    {% endfor %}
+{% endnamespace %}

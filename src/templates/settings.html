@@ -1,0 +1,242 @@
+{% import "_includes/forms" as forms %}
+
+{% set blockTypeInput %}
+    
+    <div class="stc-sidebar fields">
+        <div class="col-inner-container">
+            <div class="heading">
+                <h5>{{ "Fields" | t('super-table') }}</h5>
+            </div>
+
+            <div class="field-items">
+                {% for blockType in supertableField.getBlockTypes() %}
+                    <div data-id="{{ blockType.id }}">
+                        {% for field in blockType.getFields() %}
+                            <div class="supertableconfigitem stci-field{% if field.hasErrors() %} error{% endif %} {% if loop.first %}sel{% endif %}" data-id="{{ field.id }}">
+                                <div class="name{% if field.required %} required{% endif %}">
+                                    {% if field.name %}
+                                        {{ field.name }}
+                                    {% else %}
+                                        <em class="light">{{ '(blank)' | t('super-table') }}</em>
+                                    {% endif %}
+                                </div>
+
+                                <div class="handle code">
+                                    {% if field.handle %}
+                                        {{ field.handle }}
+                                    {% else %}
+                                        &nbsp;
+                                    {% endif %}
+                                </div>
+
+                                <div class="actions">
+                                    <a class="move icon" title="{{ 'Reorder' | t('super-table') }}" role="button"></a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <div class="btn add icon">{{ "New field" | t('super-table') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stc-settings">
+        <div class="col-inner-container">
+            <div class="heading">
+                <h5>{{ "Field Settings" | t('super-table') }}</h5>
+            </div>
+
+            <div class="field-items">
+                {% for blockType in supertableField.getBlockTypes() %}
+                    <div data-id="{{ blockType.id }}">
+                        {% for field in blockType.getFields() %}
+                            {% set fieldId = field.id %}
+
+                            <div data-id="{{ fieldId }}" {% if not loop.first %}class="hidden"{% endif %}>
+                                {% namespace 'blockTypes[' ~ blockType.id ~ '][fields][' ~ fieldId ~ ']' %}
+                                    {{ forms.textField({
+                                        label: "Name" | t('super-table'),
+                                        id: 'name',
+                                        name: 'name',
+                                        value: (field.name != '__blank__' ? field.name),
+                                        errors: field.getErrors('name'),
+                                        autofocus: true
+                                    }) }}
+
+                                    {{ forms.textField({
+                                        label: "Handle" | t('super-table'),
+                                        id: 'handle',
+                                        class: 'code',
+                                        name: 'handle',
+                                        maxlength: 64,
+                                        value: field.handle,
+                                        errors: field.getErrors('handle'),
+                                        required: true,
+                                    }) }}
+
+                                    {{ forms.textareaField({
+                                        label: "Instructions" | t('super-table'),
+                                        id: 'instructions',
+                                        class: 'nicetext',
+                                        name: 'instructions',
+                                        value: field.instructions,
+                                        errors: field.getErrors('instructions'),
+                                    }) }}
+
+                                    {#{{ forms.textField({
+                                        label: "Column Width" | t('super-table'),
+                                        instructions: "Only applies for Table Layout. Set the width for this column in either pixels or percentage. i.e. `10px` or `10%`." | t('super-table'),
+                                        id: 'width',
+                                        name: 'width',
+                                        size: 8,
+                                        value: field.width,
+                                    }) }}#}
+
+                                    {{ forms.checkboxField({
+                                        label: "This field is required" | t('super-table'),
+                                        id: 'required',
+                                        name: 'required',
+                                        checked: field.required
+                                    }) }}
+
+                                    {{ forms.selectField({
+                                        label: "Field Type" | t('super-table'),
+                                        warning: (not field.isNew() and not field.hasErrors('type') ? "Changing this may result in data loss." | t('super-table')),
+                                        id: 'type',
+                                        name: 'type',
+                                        options: field.id and field.id[0:3] != 'new' ? fieldTypes[field.id] : fieldTypes.new,
+                                        value: className(field),
+                                        errors: field.getErrors('type') ?? null
+                                    }) }}
+
+                                    {% if craft.app.getIsMultiSite() %}
+                                        {% set translationMethods = field.supportedTranslationMethods %}
+
+                                        {% if translationMethods | length > 1 %}
+                                            <div id="translation-settings">
+                                                {{ forms.selectField({
+                                                    label: "Translation Method" | t('super-table'),
+                                                    id: 'translation-method',
+                                                    name: 'translationMethod',
+                                                    options: [
+                                                        'none' in translationMethods ? { value: 'none', label: "Not translatable" | t('super-table') },
+                                                        'language' in translationMethods ? { value: 'language', label: "Translate for each language" | t('super-table') },
+                                                        'site' in translationMethods ? { value: 'site', label: "Translate for each site" | t('super-table') },
+                                                        'custom' in translationMethods ? { value: 'custom', label: "Custom…" | t('super-table') }
+                                                    ] | filter,
+                                                    value: field.translationMethod,
+                                                    toggle: true,
+                                                    targetPrefix: 'translation-method-'
+                                                }) }}
+
+                                                {% if 'custom' in translationMethods %}
+                                                    <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
+                                                        {{ forms.textField({
+                                                            label: "Translation Key Format" | t('super-table'),
+                                                            id: 'translation-key-format',
+                                                            name: 'translationKeyFormat',
+                                                            value: field.translationKeyFormat,
+                                                            errors: field.getErrors('translationKeyFormat')
+                                                        }) }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endnamespace %}
+
+                                <hr>
+
+                                <div class="fieldtype-settings">
+                                    <div>
+                                        {% namespace 'blockTypes[' ~ blockType.id ~ '][fields][' ~ fieldId ~ '][typesettings]' %}
+                                            {# Special-case for Matrix at the moment - hopefully will not be needed after core alts #}
+                                            {# This is necessary to load our MatrixConfiguratorAlt.js rather than core Matrix JS #}
+                                            
+                                            {% if field.displayName() == 'Matrix' %}
+                                                {{ craft.superTable.getMatrixSettingsHtml(field) | raw }}
+                                            {% else %}
+                                                {{ field.getSettingsHtml() | raw }}
+                                            {% endif %}
+                                        {% endnamespace %}
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <a class="error delete">{{ "Delete" | t('super-table') }}</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+{% endset %}
+
+{{ forms.selectField({
+    label: "Field Layout" | t('super-table'),
+    instructions: "Set how fields are presented. Table Layout displays fields vertically in a table, while Row Layout displays fields horizontally." | t('super-table'),
+    id: 'fieldLayout',
+    name: 'fieldLayout',
+    options: {table: 'Table Layout', row: "Row Layout"},
+    value: supertableField.fieldLayout,
+}) }}
+
+<div id="supertable-configurator" class="supertable-configurator">
+    {{ forms.field({
+        label: "Configuration" | t,
+        instructions: "Define the fields your Super Table should have." | t('super-table'),
+        name: 'config'
+    }, blockTypeInput) }}
+</div>
+
+{% if craft.app.getIsMultiSite() %}
+    {{ forms.checkboxField({
+        label: "Manage blocks on a per-site basis" | t('super-table'),
+        id: 'localize-blocks',
+        name: 'localizeBlocks',
+        checked: supertableField.localizeBlocks
+    }) }}
+{% endif %}
+
+{{ forms.textField({
+    label: "New Row Label" | t('super-table'),
+    instructions: "Enter the text you want to appear in the button to create a new row." | t('super-table'),
+    id: 'selectionLabel',
+    name: 'selectionLabel',
+    value: supertableField.selectionLabel,
+    placeholder: supertableField.defaultSelectionLabel(),
+    errors: supertableField.getErrors('selectionLabel')
+}) }}
+
+{{ forms.textField({
+    label: "Min Rows" | t('super-table'),
+    instructions: "The minimum number of rows the field must to have." | t('super-table'),
+    id: 'minRows',
+    name: 'minRows',
+    value: supertableField.minRows,
+    size: 3,
+    errors: supertableField.getErrors('minRows')
+}) }}
+
+{{ forms.textField({
+    label: "Max Rows" | t('super-table'),
+    instructions: "The maximum number of rows the field is allowed to have." | t('super-table'),
+    id: 'maxRows',
+    name: 'maxRows',
+    value: supertableField.maxRows,
+    size: 3,
+    errors: supertableField.getErrors('maxRows')
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Static field" | t('super-table'),
+    instructions: "A static field will only display a single row of fields." | t('super-table'),
+    id: 'staticField',
+    name: 'staticField',
+    on: supertableField.staticField,
+}) }}

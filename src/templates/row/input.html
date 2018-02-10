@@ -1,0 +1,44 @@
+<div id="{{ id }}" class="superTableContainer rowLayout">
+    <div class="rowLayoutContainer">
+        {% set totalNewBlocks = 0 %}
+
+        {% for block in blocks %}
+            {% set blockId = block.id %}
+
+            {% if not blockId %}
+                {% set totalNewBlocks = totalNewBlocks + 1 %}
+                {% set blockId = 'new' ~ totalNewBlocks %}
+            {% endif %}
+
+            <div class="superTableRow" data-id="{{ blockId }}">
+                <input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
+
+                <table class="superTable-table superTable-layout-row">
+                    <tbody>
+                        {% include "super-table/row/fields" with {
+                            namespace: name ~ '[' ~ blockId ~ '][fields]',
+                            element: block,
+                            fields: block.getType().getFieldLayout().getFields(),
+                            settings: supertableField,
+                        } %}
+                    </tbody>
+
+                    {% if not staticBlocks %}
+                        <tfoot>
+                            <tr>
+                                <td class="floating reorder"><a class="move icon" title="{{ 'Reorder' | t('site') }}"></a></td>
+                                <td class="floating delete"><a class="delete icon" title="{{ 'Delete' | t('site') }}"></a></td>
+                            </tr>
+                        </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if not staticBlocks %}
+        <div class="superTableAddRow btn add icon">
+            {{ supertableField.selectionLabel | default("Add a row") | t('site') }}
+        </div>
+    {% endif %}
+</div>

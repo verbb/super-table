@@ -1,0 +1,522 @@
+if (typeof Craft.SuperTable === typeof undefined) {
+    Craft.SuperTable = {};
+}
+
+(function($) {
+
+
+Craft.SuperTable.Configurator = Garnish.Base.extend({
+    fieldTypeInfo: null,
+
+    inputNamePrefix: null,
+    inputIdPrefix: null,
+
+    blockTypeId: null,
+    blockTypeNamePrefix: null,
+    blockTypeIdPrefix: null,
+
+    $container: null,
+
+    $fieldsColumnContainer: null,
+    $fieldSettingsColumnContainer: null,
+
+    $fieldItemsContainer: null,
+    $fieldSettingItemsContainer: null,
+
+    $newFieldBtn: null,
+
+    fields: null,
+    selectedField: null,
+    fieldSort: null,
+    totalNewFields: 0,
+    fieldSettings: null,
+
+    init: function(id, fieldTypeInfo, inputNamePrefix) {
+        this.fieldTypeInfo = fieldTypeInfo;
+        this.id = id;
+
+        this.inputNamePrefix = inputNamePrefix + '[blockTypes][' + this.id + ']';
+        this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
+
+        this.$container = $('#' + Craft.formatInputId(inputNamePrefix) + '-supertable-configurator:first .input:first');
+
+        this.$fieldsColumnContainer = this.$container.children('.fields').children();
+        this.$fieldSettingsColumnContainer = this.$container.children('.stc-settings').children();
+        this.$fieldItemsOuterContainer = this.$fieldsColumnContainer.children('.field-items');
+        this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.field-items');
+        
+        this.$newFieldBtn = this.$fieldItemsOuterContainer.children('.btn');
+
+        // Find the field items container if it exists, otherwise create it
+        this.$fieldItemsContainer = this.$fieldItemsOuterContainer.children('[data-id="' + this.id + '"]:first');
+
+        if (!this.$fieldItemsContainer.length) {
+            this.$fieldItemsContainer = $('<div data-id="' + this.id + '"/>').insertBefore(this.$newFieldBtn);
+        }
+
+        // Find the field settings container if it exists, otherwise create it
+        this.$fieldSettingsContainer = this.$fieldSettingItemsContainer.children('[data-id="' + this.id + '"]:first');
+
+        if (!this.$fieldSettingsContainer.length) {
+            this.$fieldSettingsContainer = $('<div data-id="' + this.id + '"/>').appendTo(this.$fieldSettingItemsContainer);
+        }
+
+        // Find the existing fields
+        this.fields = {};
+
+        var $fieldItems = this.$fieldItemsContainer.children();
+
+        for (var i = 0; i < $fieldItems.length; i++) {
+            var $fieldItem = $($fieldItems[i]),
+                id = $fieldItem.data('id');
+
+            this.fields[id] = new Craft.SuperTable.Field(this, this, $fieldItem);
+
+            // Pre-select first field
+            if (i == 0) {
+                this.selectedField = this.fields[id];
+            }
+
+            // Is this a new field?
+            var newMatch = (typeof id === 'string' && id.match(/new(\d+)/));
+
+            if (newMatch && newMatch[1] > this.totalNewFields) {
+                this.totalNewFields = parseInt(newMatch[1]);
+            }
+        }
+
+        this.addListener(this.$newFieldBtn, 'click', 'addField');
+
+        this.fieldSort = new Garnish.DragSort($fieldItems, {
+            handle: '.move',
+            axis: 'y',
+            onSortChange: $.proxy(function() {
+                // Adjust the field setting containers to match the new sort order
+                for (var i = 0; i < this.fieldSort.$items.length; i++) {
+                    var $item = $(this.fieldSort.$items[i]),
+                        id = $item.data('id'),
+                        field = this.fields[id];
+
+                    field.$fieldSettingsContainer.appendTo(this.$fieldSettingsContainer);
+                }
+            }, this)
+        });
+    },
+
+    getFieldTypeInfo: function(type) {
+        for (var i = 0; i < this.fieldTypeInfo.length; i++) {
+            if (this.fieldTypeInfo[i].type === type) {
+                return this.fieldTypeInfo[i];
+            }
+        }
+    },
+
+    addField: function() {
+        this.totalNewFields++;
+        var id = 'new' + this.totalNewFields;
+
+        var $item = $(
+            '<div class="supertableconfigitem stci-field" data-id="' + id + '">' +
+                '<div class="name"><em class="light">' + Craft.t('super-table', '(blank)') + '</em>&nbsp;</div>' +
+                '<div class="handle code">&nbsp;</div>' +
+                '<div class="actions">' +
+                    '<a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a>' +
+                '</div>' +
+            '</div>'
+        ).appendTo(this.$fieldItemsContainer);
+
+        this.fields[id] = new Craft.SuperTable.Field(this, this, $item);
+        this.fields[id].select();
+
+        this.fieldSort.addItems($item);
+    },
+
+    // selfDestruct: function() {
+    //     this.deselect();
+    //     this.$item.remove();
+    //     this.$fieldItemsContainer.remove();
+    //     this.$fieldSettingsContainer.remove();
+
+    //     this.configurator.blockTypes[this.id] = null;
+    //     delete this.configurator.blockTypes[this.id];
+    // },
+
+});
+
+
+Craft.SuperTable.Field = Garnish.Base.extend({
+    configurator: null,
+    blockType: null,
+    id: null,
+
+    inputNamePrefix: null,
+    inputIdPrefix: null,
+
+    selectedFieldType: null,
+    initializedFieldTypeSettings: null,
+
+    $item: null,
+    $nameLabel: null,
+    $handleLabel: null,
+
+    $fieldSettingsContainer: null,
+    $nameInput: null,
+    $handleInput: null,
+    $requiredCheckbox: null,
+    $typeSelect: null,
+    $typeSettingsContainer: null,
+    $deleteBtn: null,
+
+    init: function(configurator, blockType, $item) {
+        this.configurator = configurator;
+        this.blockType = blockType;
+        this.$item = $item;
+        this.id = this.$item.data('id');
+
+        this.inputNamePrefix = this.blockType.inputNamePrefix + '[fields][' + this.id + ']';
+        this.inputIdPrefix = this.blockType.inputIdPrefix + '-fields-' + this.id;
+
+        this.initializedFieldTypeSettings = {};
+
+        this.$nameLabel = this.$item.children('.name');
+        this.$handleLabel = this.$item.children('.handle');
+
+        // Find the field settings container if it exists, otherwise create it
+        this.$fieldSettingsContainer = this.blockType.$fieldSettingsContainer.children('[data-id="' + this.id + '"]:first');
+
+        var isNew = (!this.$fieldSettingsContainer.length);
+
+        if (isNew) {
+            this.$fieldSettingsContainer = this.getDefaultFieldSettings().appendTo(this.blockType.$fieldSettingsContainer);
+        }
+
+        this.$nameInput = $('#' + this.inputIdPrefix + '-name');
+        this.$handleInput = $('#' + this.inputIdPrefix + '-handle');
+        this.$requiredCheckbox = $('#' + this.inputIdPrefix + '-required');
+        this.$typeSelect = $('#' + this.inputIdPrefix + '-type');
+        this.$translationSettingsContainer = $('#' + this.inputIdPrefix + '-translation-settings');
+        this.$typeSettingsContainer = this.$fieldSettingsContainer.children('.fieldtype-settings:first');
+        this.$deleteBtn = this.$fieldSettingsContainer.children('a.delete:first');
+
+        if (isNew) {
+            this.setFieldType('craft\\fields\\PlainText');
+        } else {
+            this.selectedFieldType = this.$typeSelect.val();
+            this.initializedFieldTypeSettings[this.selectedFieldType] = this.$typeSettingsContainer.children();
+        }
+
+        if (!this.$handleInput.val()) {
+            new Craft.HandleGenerator(this.$nameInput, this.$handleInput);
+        }
+
+        this.addListener(this.$item, 'click', 'select');
+        this.addListener(this.$nameInput, 'textchange', 'updateNameLabel');
+        this.addListener(this.$handleInput, 'textchange', 'updateHandleLabel');
+        this.addListener(this.$requiredCheckbox, 'change', 'updateRequiredIcon');
+        this.addListener(this.$typeSelect, 'change', 'onTypeSelectChange');
+        this.addListener(this.$deleteBtn, 'click', 'confirmDelete');
+    },
+
+    select: function() {
+        if (this.blockType.selectedField === this) {
+            return;
+        }
+
+        if (this.blockType.selectedField) {
+            this.blockType.selectedField.deselect();
+        }
+
+        this.configurator.$fieldSettingsColumnContainer.removeClass('hidden').trigger('resize');
+        this.blockType.$fieldSettingsContainer.removeClass('hidden');
+        this.$fieldSettingsContainer.removeClass('hidden');
+        this.$item.addClass('sel');
+        this.blockType.selectedField = this;
+
+        if (!Garnish.isMobileBrowser()) {
+            setTimeout($.proxy(function() {
+                this.$nameInput.focus();
+            }, this), 100);
+        }
+    },
+
+    deselect: function() {
+        this.$item.removeClass('sel');
+        this.configurator.$fieldSettingsColumnContainer.addClass('hidden').trigger('resize');
+        this.blockType.$fieldSettingsContainer.addClass('hidden');
+        this.$fieldSettingsContainer.addClass('hidden');
+        this.blockType.selectedField = null;
+    },
+
+    updateNameLabel: function() {
+        var val = this.$nameInput.val();
+        this.$nameLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">' + Craft.t('super-table', '(blank)') + '</em>') + '&nbsp;');
+    },
+
+    updateHandleLabel: function() {
+        this.$handleLabel.html(Craft.escapeHtml(this.$handleInput.val()) + '&nbsp;');
+    },
+
+    updateRequiredIcon: function() {
+        if (this.$requiredCheckbox.prop('checked')) {
+            this.$nameLabel.addClass('required');
+        }
+        else {
+            this.$nameLabel.removeClass('required');
+        }
+    },
+
+    onTypeSelectChange: function() {
+        this.setFieldType(this.$typeSelect.val());
+    },
+
+    setFieldType: function(type) {
+        // Update the Translation Method settings
+        Craft.updateTranslationMethodSettings(type, this.$translationSettingsContainer);
+
+        if (this.selectedFieldType) {
+            this.initializedFieldTypeSettings[this.selectedFieldType].detach();
+        }
+
+        this.selectedFieldType = type;
+        this.$typeSelect.val(type);
+
+        var firstTime = (typeof this.initializedFieldTypeSettings[type] === 'undefined'),
+            $body,
+            footHtml;
+
+        if (firstTime) {
+            var info = this.configurator.getFieldTypeInfo(type),
+                bodyHtml = this.getParsedFieldTypeHtml(info.settingsBodyHtml);
+
+            footHtml = this.getParsedFieldTypeHtml(info.settingsFootHtml);
+            $body = $('<div>' + bodyHtml + '</div>');
+
+            this.initializedFieldTypeSettings[type] = $body;
+        }
+        else {
+            $body = this.initializedFieldTypeSettings[type];
+        }
+
+        $body.appendTo(this.$typeSettingsContainer);
+
+        if (firstTime) {
+            Craft.initUiElements($body);
+            Garnish.$bod.append(footHtml);
+        }
+
+        // Firefox might have been sleeping on the job.
+        this.$typeSettingsContainer.trigger('resize');
+    },
+
+    getParsedFieldTypeHtml: function(html) {
+        if (typeof html === 'string') {
+            html = html.replace(/__BLOCK_TYPE_ST__/g, this.blockType.id);
+            html = html.replace(/__FIELD_ST__/g, this.id);
+        }
+        else {
+            html = '';
+        }
+
+        return html;
+    },
+
+    getDefaultFieldSettings: function() {
+        var $container = $('<div/>', {
+            'data-id': this.id
+        });
+
+        Craft.ui.createTextField({
+            label: Craft.t('super-table', 'Name'),
+            id: this.inputIdPrefix + '-name',
+            name: this.inputNamePrefix + '[name]'
+        }).appendTo($container);
+
+        Craft.ui.createTextField({
+            label: Craft.t('super-table', 'Handle'),
+            id: this.inputIdPrefix + '-handle',
+            'class': 'code',
+            name: this.inputNamePrefix + '[handle]',
+            maxlength: 64,
+            required: true
+        }).appendTo($container);
+
+        Craft.ui.createTextareaField({
+            label: Craft.t('super-table', 'Instructions'),
+            id: this.inputIdPrefix + '-instructions',
+            'class': 'nicetext',
+            name: this.inputNamePrefix + '[instructions]'
+        }).appendTo($container);
+
+        Craft.ui.createCheckboxField({
+            label: Craft.t('super-table', 'This field is required'),
+            id: this.inputIdPrefix + '-required',
+            name: this.inputNamePrefix + '[required]'
+        }).appendTo($container);
+
+        var fieldTypeOptions = [];
+
+        for (var i = 0; i < this.configurator.fieldTypeInfo.length; i++) {
+            fieldTypeOptions.push({
+                value: this.configurator.fieldTypeInfo[i].type,
+                label: this.configurator.fieldTypeInfo[i].name
+            });
+        }
+
+        Craft.ui.createSelectField({
+            label: Craft.t('super-table', 'Field Type'),
+            id: this.inputIdPrefix + '-type',
+            name: this.inputNamePrefix + '[type]',
+            options: fieldTypeOptions,
+            value: 'craft\\fields\\PlainText'
+        }).appendTo($container);
+
+        if (Craft.isMultiSite) {
+            var $translationSettingsContainer = $('<div/>', {
+                id: this.inputIdPrefix + '-translation-settings'
+            }).appendTo($container);
+
+            Craft.ui.createSelectField({
+                label: Craft.t('super-table', 'Translation Method'),
+                id: this.inputIdPrefix + '-translation-method',
+                name: this.inputNamePrefix + '[translationMethod]',
+                options: [],
+                value: 'none',
+                toggle: true,
+                targetPrefix: this.inputIdPrefix + '-translation-method-'
+            }).appendTo($translationSettingsContainer);
+
+            var $translationKeyFormatContainer = $('<div/>', {
+                id: this.inputIdPrefix + '-translation-method-custom',
+                'class': 'hidden'
+            }).appendTo($translationSettingsContainer);
+
+            Craft.ui.createTextField({
+                label: Craft.t('super-table', 'Translation Key Format'),
+                id: this.inputIdPrefix + '-translation-key-format',
+                name: this.inputNamePrefix + '[translationKeyFormat]'
+            }).appendTo($translationKeyFormatContainer);
+        }
+
+        $('<hr/>').appendTo($container);
+
+        $('<div/>', {
+            'class': 'fieldtype-settings'
+        }).appendTo($container);
+
+        $('<hr/>').appendTo($container);
+
+        $('<a/>', {
+            'class': 'error delete',
+            text: Craft.t('super-table', 'Delete')
+        }).appendTo($container);
+
+        return $container;
+
+
+
+
+
+
+
+        // var html = '<div data-id="'+this.id+'">' +
+        //     '<div class="field" id="'+this.inputIdPrefix+'-name-field">' +
+        //         '<div class="heading">' +
+        //             '<label class="required" for="'+this.inputIdPrefix+'-name">'+Craft.t('super-table', 'Name')+'</label>' +
+        //             '<div class="instructions"><p>'+Craft.t('super-table', 'What this field will be called in the CP.')+'</p></div>' +
+        //         '</div>' +
+        //         '<div class="input">' +
+        //             '<input class="text fullwidth" type="text" id="'+this.inputIdPrefix+'-name" name="'+this.inputNamePrefix+'[name]" autofocus="" autocomplete="off"/>' +
+        //         '</div>' +
+        //     '</div>' +
+        //     '<div class="field" id="'+this.inputIdPrefix+'-handle-field">' +
+        //         '<div class="heading">' +
+        //             '<label class="required" for="'+this.inputIdPrefix+'-handle">'+Craft.t('super-table', 'Handle')+'</label>' +
+        //             '<div class="instructions"><p>'+Craft.t('super-table', 'How you’ll refer to this field in the templates.')+'</p></div>' + 
+        //         '</div>' +
+        //         '<div class="input">' +
+        //             '<input class="text fullwidth code" type="text" id="'+this.inputIdPrefix+'-handle" name="'+this.inputNamePrefix+'[handle]" autofocus="" autocomplete="off"/>' +
+        //         '</div>' +
+        //     '</div>' +
+        //     '<div class="field" id="'+this.inputIdPrefix+'-instructions-field">' +
+        //         '<div class="heading">' +
+        //             '<label for="'+this.inputIdPrefix+'-instructions">'+Craft.t('super-table', 'Instructions')+'</label>' +
+        //             '<div class="instructions"><p>'+Craft.t('super-table', 'Helper text to guide the author. Will appear as a small <code>info</code> icon in table headers.')+'</p></div>' +
+        //         '</div>' +
+        //         '<div class="input">' +
+        //             '<textarea class="text nicetext fullwidth" rows="2" cols="50" id="'+this.inputIdPrefix+'-instructions" name="'+this.inputNamePrefix+'[instructions]"></textarea>' +
+        //         '</div>' +
+        //     '</div>' +
+        //     '<div class="field" id="'+this.inputIdPrefix+'-width-field">' +
+        //         '<div class="heading">' +
+        //             '<label for="'+this.inputIdPrefix+'-width">'+Craft.t('super-table', 'Column Width')+'</label>' +
+        //             '<div class="instructions"><p>'+Craft.t('super-table', 'Only applies for Table Layout. Set the width for this column in either pixels or percentage. i.e. <code>10px</code> or <code>10%</code>.')+'</p></div>' +
+        //         '</div>' +
+        //         '<div class="input ltr">' +
+        //             '<input class="text" type="text" id="'+this.inputIdPrefix+'-width" size="4" name="'+this.inputNamePrefix+'[width]" autocomplete="off">' +
+        //         '</div>' +
+        //     '</div>' +
+        //     '<div class="field checkboxfield">' +
+        //         '<label>' +
+        //             '<input type="hidden" name="'+this.inputNamePrefix+'[required]" value=""/>' +
+        //             '<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[required]"/> ' +
+        //             Craft.t('super-table', 'This field is required') +
+        //         '</label>' +
+        //     '</div>';
+
+        //     if (Craft.isLocalized) {
+        //         html += '<div class="field checkboxfield">' +
+        //             '<label>' +
+        //                 '<input type="hidden" name="'+this.inputNamePrefix+'[translatable]" value=""/>' +
+        //                 '<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[translatable]"/> ' +
+        //                 Craft.t('super-table', 'This field is translatable') +
+        //             '</label>' +
+        //         '</div>';
+        //     }
+
+        //     html += '<hr/>' +
+        //         '<div class="field" id="type-field">' +
+        //             '<div class="heading">' +
+        //                 '<label for="type">'+Craft.t('super-table', 'Field Type')+'</label>' +
+        //             '</div>' +
+        //             '<div class="input">' +
+        //                 '<div class="select">' +
+        //                     '<select id="type" class="fieldtoggle" name="'+this.inputNamePrefix+'[type]">';
+        //                         for (var i = 0; i < this.configurator.fieldTypeInfo.length; i++) {
+        //                             var info = this.configurator.fieldTypeInfo[i],
+        //                                 selected = (info.type == 'PlainText');
+
+        //                             html += '<option value="'+info.type+'"'+(selected ? ' selected=""' : '')+'>'+info.name+'</option>';
+        //                         }
+
+        //                         html +=
+        //                 '</select>' +
+        //             '</div>' +
+        //         '</div>' +
+        //     '</div>' +
+        //     '<div class="fieldtype-settings"/>' +
+        //     '<hr/>' +
+        //     '<a class="error delete">'+Craft.t('super-table', 'Delete')+'</a>' +
+        // '</div>';
+
+        // return html;
+    },
+
+    confirmDelete: function() {
+        if (confirm(Craft.t('super-table', 'Are you sure you want to delete this field?'))) {
+            this.selfDestruct();
+        }
+    },
+
+    selfDestruct: function() {
+        this.deselect();
+        this.$item.remove();
+        this.$fieldSettingsContainer.remove();
+
+        this.blockType.fields[this.id] = null;
+        delete this.blockType.fields[this.id];
+    }
+
+});
+
+
+})(jQuery);

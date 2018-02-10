@@ -1,0 +1,75 @@
+// ==========================================================================
+// Plugin Footer
+// ==========================================================================
+
+#plugin-footer .footer-left {
+    float: left;
+}
+
+#plugin-footer .footer-right {
+    float: right;
+}
+
+.plugin-credit {
+    position: relative;
+    width: 78px;
+    height: 29px;
+    display: block;
+}
+
+.plugin-credit .credit-love {
+    position: absolute;
+    top: 0;
+    left: -104px;
+    color: #8f98a3;
+    opacity: 0;
+    padding: 5px 9px 5px 0;
+    transition: all 0.3s ease 0s;
+    transform: translateY(5px);
+}
+
+.plugin-credit .credit-pill {
+    float: right;
+    display: inline-block;
+    background: lighten(#b9bfc6, 10%);
+    border-radius: 25px;
+    padding: 8px 10px 8px 5px;
+    transition: all 0.3s ease;
+}
+
+.plugin-credit .credit-mask {
+    width: 12px;
+    overflow: hidden;
+    padding-left: 3px;
+    margin-right: -1px;
+    transform: skewX(-25deg);
+    transition: all 0.3s ease;
+}
+
+.plugin-credit .credit-wrap {
+    width: 60px;
+    height: 13px;
+    transform: skewX(25deg);
+
+    svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+}
+
+.plugin-credit:hover {
+    .credit-pill {
+        background: #4b308c;
+    }
+
+    .credit-love {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 0.4s;
+    }
+
+    .credit-mask {
+        width: 61px;
+    }
+}
