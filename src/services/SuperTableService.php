@@ -253,7 +253,6 @@ class SuperTableService extends Component
 
                 // Set the basic info on the new block type record
                 $blockTypeRecord->fieldId = $blockType->fieldId;
-                $blockTypeRecord->sortOrder = $blockType->sortOrder;
 
                 // Save it, minus the field layout for now
                 $blockTypeRecord->save(false);
@@ -465,15 +464,11 @@ class SuperTableService extends Component
                 }
 
                 // Save the new ones
-                $sortOrder = 0;
-
                 $originalContentTable = Craft::$app->getContent()->contentTable;
                 Craft::$app->getContent()->contentTable = $newContentTable;
 
                 foreach ($supertableField->getBlockTypes() as $blockType) {
-                    $sortOrder++;
                     $blockType->fieldId = $supertableField->id;
-                    $blockType->sortOrder = $sortOrder;
                     $this->saveBlockType($blockType, false);
                 }
 
@@ -741,10 +736,8 @@ class SuperTableService extends Component
                 'id',
                 'fieldId',
                 'fieldLayoutId',
-                'sortOrder',
             ])
-            ->from(['{{%supertableblocktypes}}'])
-            ->orderBy(['sortOrder' => SORT_ASC]);
+            ->from(['{{%supertableblocktypes}}']);
     }
 
     /**

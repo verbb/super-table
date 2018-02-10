@@ -26,11 +26,6 @@ class SuperTableBlockTypeModel extends Model
      * @var int|null Field layout ID
      */
     public $fieldLayoutId;
-    
-    /**
-     * @var int|null Sort order
-     */
-    public $sortOrder;
 
     /**
      * @var bool
@@ -59,7 +54,7 @@ class SuperTableBlockTypeModel extends Model
     public function rules()
     {
         return [
-            [['id', 'fieldId', 'sortOrder'], 'number', 'integerOnly' => true],
+            [['id', 'fieldId'], 'number', 'integerOnly' => true],
         ];
     }
 
