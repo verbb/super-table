@@ -291,26 +291,9 @@ class SuperTableBlockQuery extends ElementQuery
      */
     protected function customFields(): array
     {
-        $blockTypes = SuperTable::$plugin->service->getBlockTypesByFieldId($this->fieldId);
-
-        // Preload all of the fields up front to save ourselves some DB queries, and discard
-        $contexts = [];
-        foreach ($blockTypes as $blockType) {
-            $contexts[] = 'supertableBlockType:'.$blockType->id;
-        }
-        Craft::$app->getFields()->getAllFields($contexts);
-
-        // Now assemble the actual fields list
-        $fields = [];
-        foreach ($blockTypes as $blockType) {
-            $fieldColumnPrefix = 'field_';
-            foreach ($blockType->getFields() as $field) {
-                /** @var Field $field */
-                $field->columnPrefix = $fieldColumnPrefix;
-                $fields[] = $field;
-            }
-        }
-
-        return $fields;
+        // This method won't get called if $this->fieldId isn't set to a single int
+        /** @var SuperTableField $supertableField */
+        $supertableField = Craft::$app->getFields()->getFieldById($this->fieldId);
+        return $supertableField->getBlockTypeFields();
     }
 }
