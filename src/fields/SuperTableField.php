@@ -476,7 +476,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 $block = new SuperTableBlockElement();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
-                $block->fieldLayoutId = $blockType->fieldLayoutId;
                 $block->siteId = $element->siteId;
                 $value[] = $block;
             }
@@ -766,7 +765,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             $block = new SuperTableBlockElement();
             $block->fieldId = $this->id;
             $block->typeId = $blockType->id;
-            $block->fieldLayoutId = $blockType->fieldLayoutId;
 
             if ($element) {
                 $block->setOwner($element);
@@ -879,7 +877,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 $block = new SuperTableBlockElement();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
-                $block->fieldLayoutId = $blockType->fieldLayoutId;
                 $block->ownerId = $ownerId;
                 $block->siteId = $element->siteId;
             } else {

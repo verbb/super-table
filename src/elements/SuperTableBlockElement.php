@@ -198,6 +198,14 @@ class SuperTableBlockElement extends Element
     /**
      * @inheritdoc
      */
+    public function getFieldLayout()
+    {
+        return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getType()
     {
         if ($this->typeId === null) {
@@ -283,17 +291,6 @@ class SuperTableBlockElement extends Element
 
     // Events
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave(bool $isNew): bool
-    {
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $this->getType()->fieldLayoutId;
-
-        return parent::beforeSave($isNew);
-    }
 
     /**
      * @inheritdoc
