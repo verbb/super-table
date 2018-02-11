@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.2 - 2018-02-11
+
+### Added
+- Added migration to handle converting existing field and element types to new namespaced format
+
 ## 2.0.1 - 2018-02-11
 
 ### Fixed
