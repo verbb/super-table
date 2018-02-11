@@ -4,6 +4,7 @@
 
 ### Added
 - Added migration to handle converting existing field and element types to new namespaced format
+- Add some field properties for backward-compatibility with Craft 2 upgrades
 
 ## 2.0.1 - 2018-02-11
 
