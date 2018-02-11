@@ -1,9 +1,15 @@
 <?php
 namespace verbb\supertable\migrations;
 
+use verbb\supertable\SuperTable;
+use verbb\supertable\fields\SuperTableField;
+
+use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\MigrationHelper;
+use craft\helpers\Component as ComponentHelper;
+use craft\helpers\StringHelper;
 
 class m180210_000000_migrate_content_tables extends Migration
 {
@@ -20,9 +26,13 @@ class m180210_000000_migrate_content_tables extends Migration
 
         if (!empty($fields)) {
             foreach ($fields as $key => $fieldId) {
-                $field = Craft::$app->fields->getFieldById($fieldId);
+                $fieldQuery =  (new Query())
+                    ->select(['*'])
+                    ->from(['{{%fields}} fields'])
+                    ->where(['id' => $fieldId])
+                    ->one();
 
-                $newContentTable = SuperTable::$plugin->service->getContentTableName($field);
+                $newContentTable = $this->getContentTableName($fieldQuery);
                 $oldContentTable = str_replace('stc_', 'supertablecontent_', $newContentTable);
 
                 if (Craft::$app->db->tableExists($oldContentTable)) {
@@ -36,5 +46,30 @@ class m180210_000000_migrate_content_tables extends Migration
     {
         echo "m180210_000000_migrate_content_tables cannot be reverted.\n";
         return false;
+    }
+
+    public function getContentTableName($supertableField)
+    {
+        $name = '';
+        $parentFieldId = '';
+
+        $handle = $supertableField['handle'];
+
+        // Check if this field is inside a Matrix - we need to prefix this content table if so.
+        if ($supertableField['context'] != 'global') {
+            $parentFieldContext = explode(':', $supertableField['context']);
+
+            if ($parentFieldContext[0] == 'matrixBlockType') {
+                $parentFieldId = $parentFieldContext[1];
+            }
+        }
+
+        $name = '_'.StringHelper::toLowerCase($handle).$name;
+
+        if ($parentFieldId) {
+            $name = '_'.$parentFieldId.$name;
+        }
+
+        return '{{%stc'.$name.'}}';
     }
 }
