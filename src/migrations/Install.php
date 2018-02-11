@@ -35,6 +35,7 @@ class Install extends Migration
             'ownerSiteId' => $this->integer(),
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
