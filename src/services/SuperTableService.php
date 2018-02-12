@@ -54,7 +54,7 @@ class SuperTableService extends Component
     /**
      * @var string[]
      */
-    private $_uniqueBlockTypeAndFieldHandles = [];
+    private $_uniqueFieldHandles = [];
 
     /**
      * @var
@@ -151,6 +151,24 @@ class SuperTableService extends Component
         $contentService->fieldColumnPrefix = 'field_';
 
         foreach ($blockType->getFields() as $field) {
+            $field->validate();
+
+            if ($field->handle) {
+                if (in_array($field->handle, $this->_uniqueFieldHandles, true)) {
+                    // This error *might* not be entirely accurate, but it's such an edge case that it's probably better
+                    // for the error to be worded for the common problem (two duplicate handles within the same block
+                    // type).
+                    $error = Craft::t('app', '{attribute} "{value}" has already been taken.', [
+                        'attribute' => Craft::t('app', 'Handle'),
+                        'value' => $field->handle
+                    ]);
+
+                    $field->addError('handle', $error);
+                } else {
+                    $this->_uniqueFieldHandles[] = $field->handle;
+                }
+            }
+
             if ($field->hasErrors()) {
                 $blockType->hasFieldErrors = true;
                 $validates = false;
