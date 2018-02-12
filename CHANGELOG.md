@@ -1,10 +1,19 @@
 # Changelog
 
+## 2.0.3 - 2018-02-12
+
+### Fixed
+- Ensure field names are required
+- Fix missing field validation
+- Fix plugin icon in some circumstances
+
 ## 2.0.2 - 2018-02-11
 
 ### Added
 - Added migration to handle converting existing field and element types to new namespaced format
 - Add some field properties for backward-compatibility with Craft 2 upgrades
+
+### Fixed
 - Fix missing `sortOrder` column in install migration
 
 ## 2.0.1 - 2018-02-11
