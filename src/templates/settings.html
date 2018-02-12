@@ -60,9 +60,10 @@
                                         label: "Name" | t('super-table'),
                                         id: 'name',
                                         name: 'name',
-                                        value: (field.name != '__blank__' ? field.name),
+                                        value: field.name,
                                         errors: field.getErrors('name'),
-                                        autofocus: true
+                                        autofocus: true,
+                                        required: true,
                                     }) }}
 
                                     {{ forms.textField({

@@ -273,11 +273,6 @@ class SuperTableService extends Component
                 $contentService->fieldColumnPrefix = 'field_';
 
                 foreach ($blockType->getFields() as $field) {
-                    // Hack to allow blank field names
-                    if (!$field->name) {
-                        $field->name = '__blank__';
-                    }
-
                     if (!$fieldsService->saveField($field, false)) {
                         throw new Exception('An error occurred while saving this SuperTable block type.');
                     }
