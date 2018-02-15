@@ -79,6 +79,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     private $_blockTypes;
 
     /**
+     * @var SuperTableBlockType[]|null The block types' fields
+     */
+    private $_blockTypeFields;
+
+    /**
      * @var bool Whether this field is a Static type layout
      */
     public $staticField;
@@ -120,6 +125,54 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         }
 
         return $this->_blockTypes = SuperTable::$plugin->service->getBlockTypesByFieldId($this->id);
+    }
+
+    /**
+     * Returns all of the block types' fields.
+     *
+     * @return FieldInterface[]
+     */
+    public function getBlockTypeFields(): array
+    {
+        if ($this->_blockTypeFields !== null) {
+            return $this->_blockTypeFields;
+        }
+
+        if (empty($blockTypes = $this->getBlockTypes())) {
+            return $this->_blockTypeFields = [];
+        }
+
+        // Get the fields & layout IDs
+        $contexts = [];
+        $layoutIds = [];
+        foreach ($blockTypes as $blockType) {
+            $contexts[] = 'supertableBlockType:'.$blockType->id;
+            $layoutIds[] = $blockType->fieldLayoutId;
+        }
+
+        /** @var Field[] $fieldsById */
+        $fieldsById = ArrayHelper::index(Craft::$app->getFields()->getAllFields($contexts), 'id');
+
+        // Get all the field IDs grouped by layout ID
+        $fieldIdsByLayoutId = Craft::$app->getFields()->getFieldIdsByLayoutIds($layoutIds);
+
+        // Assemble the fields
+        $this->_blockTypeFields = [];
+
+        foreach ($blockTypes as $blockType) {
+            if (isset($fieldIdsByLayoutId[$blockType->fieldLayoutId])) {
+                $fieldColumnPrefix = 'field_';
+
+                foreach ($fieldIdsByLayoutId[$blockType->fieldLayoutId] as $fieldId) {
+                    if (isset($fieldsById[$fieldId])) {
+                        $fieldsById[$fieldId]->columnPrefix = $fieldColumnPrefix;
+                        $this->_blockTypeFields[] = $fieldsById[$fieldId];
+                    }
+                }
+            }
+        }
+
+        return $this->_blockTypeFields;
     }
 
     /**
@@ -428,7 +481,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 $block = new SuperTableBlockElement();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
-                $block->fieldLayoutId = $blockType->fieldLayoutId;
                 $block->siteId = $element->siteId;
                 $value[] = $block;
             }
@@ -718,7 +770,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             $block = new SuperTableBlockElement();
             $block->fieldId = $this->id;
             $block->typeId = $blockType->id;
-            $block->fieldLayoutId = $blockType->fieldLayoutId;
 
             if ($element) {
                 $block->setOwner($element);
@@ -831,7 +882,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 $block = new SuperTableBlockElement();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
-                $block->fieldLayoutId = $blockType->fieldLayoutId;
                 $block->ownerId = $ownerId;
                 $block->siteId = $element->siteId;
             } else {

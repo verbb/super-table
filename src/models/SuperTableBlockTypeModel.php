@@ -77,26 +77,4 @@ class SuperTableBlockTypeModel extends Model
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
     }
-
-    /**
-     * Returns the fields associated with this block type.
-     *
-     * @return FieldInterface[]
-     */
-    public function getFields(): array
-    {
-        return $this->getFieldLayout()->getFields();
-    }
-
-    /**
-     * Sets the fields associated with this block type.
-     *
-     * @param FieldInterface[] $fields
-     *
-     * @return void
-     */
-    public function setFields(array $fields)
-    {
-        $this->getFieldLayout()->setFields($fields);
-    }
 }
