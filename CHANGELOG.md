@@ -11,6 +11,7 @@
 
 ### Fixed
 - Fixed an issue caused when upgrading a multi-locale site from Craft 2 to Craft 3.
+- Fixed typo in Super Table's field context column
 
 ## 2.0.3 - 2018-02-12
 
