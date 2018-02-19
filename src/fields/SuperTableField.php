@@ -146,7 +146,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         $contexts = [];
         $layoutIds = [];
         foreach ($blockTypes as $blockType) {
-            $contexts[] = 'supertableBlockType:'.$blockType->id;
+            $contexts[] = 'superTableBlockType:'.$blockType->id;
             $layoutIds[] = $blockType->fieldLayoutId;
         }
 
