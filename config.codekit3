@@ -7,7 +7,7 @@
 		"uuidString": "ECE3F09A-2816-43C6-9715-3F4A30BD28C5"
 		}
 	],
-"creatorBuild": "26261",
+"creatorBuild": "26268",
 "files": {
 	"\/.github\/ISSUE_TEMPLATE": {
 		"cB": 0,
@@ -316,6 +316,7 @@
 	"animateCSSInjections": 0,
 	"autoBuildNewItems": 1,
 	"autoprefixerBrowserString": "> 1%, last 2 versions, Firefox ESR, Opera 12.1",
+	"autoprefixerEnableIEGrid": 0,
 	"babelAuxiliaryCommentAfter": "",
 	"babelAuxiliaryCommentBefore": "",
 	"babelConfigFileHandlingType": 0,

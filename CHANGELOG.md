@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.0.4
+
+### Added
+- Minimum requirement for Super Table is now `^3.0.0-RC10`
+
+### Improved
+- Make use of `FieldLayoutBehavior::getFields()` and `setFields()`
+- No longer executes two queries per block type when preparing a Super Table block query.
+
+### Fixed
+- Fixed an issue caused when upgrading a multi-locale site from Craft 2 to Craft 3.
+
 ## 2.0.3 - 2018-02-12
 
 ### Fixed
