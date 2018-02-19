@@ -92,7 +92,7 @@ class SuperTableBlockElement extends Element
         // Set the field context
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'supertableBlockType:' . $blockType->id;
+        $contentService->fieldContext = 'superTableBlockType:' . $blockType->id;
 
         $map = parent::eagerLoadingMap($sourceElements, $fieldHandle);
 
@@ -274,7 +274,7 @@ class SuperTableBlockElement extends Element
      */
     public function getFieldContext(): string
     {
-        return 'supertableBlockType:' . $this->typeId;
+        return 'superTableBlockType:' . $this->typeId;
     }
 
     /**

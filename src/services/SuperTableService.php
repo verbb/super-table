@@ -241,7 +241,7 @@ class SuperTableService extends Component
 
                     $oldBlockType = new SuperTableBlockTypeModel($result);
 
-                    $contentService->fieldContext = 'supertableBlockType:'.$blockType->id;
+                    $contentService->fieldContext = 'superTableBlockType:'.$blockType->id;
                     $contentService->fieldColumnPrefix = 'field_';
                     $fieldsService->oldFieldColumnPrefix = 'field_';
 
@@ -287,7 +287,7 @@ class SuperTableService extends Component
                 $sortOrder = 0;
 
                 // Resetting the fieldContext here might be redundant if this isn't a new blocktype but whatever
-                $contentService->fieldContext = 'supertableBlockType:'.$blockType->id;
+                $contentService->fieldContext = 'superTableBlockType:'.$blockType->id;
                 $contentService->fieldColumnPrefix = 'field_';
 
                 foreach ($blockType->getFields() as $field) {
