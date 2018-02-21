@@ -36,7 +36,7 @@ class m180210_000000_migrate_content_tables extends Migration
                 $oldContentTable = str_replace('stc_', 'supertablecontent_', $newContentTable);
 
                 if (Craft::$app->db->tableExists($oldContentTable)) {
-                    MigrationHelper::renameTable($oldContentTable, $newContentTable);
+                    $this->renameTable($oldContentTable, $newContentTable);
                 }
             }
         }
