@@ -55,17 +55,20 @@ class m180219_000000_sites extends Migration
                     MigrationHelper::renameColumn($tableName, 'locale__siteId', 'siteId');
                 }
 
+                // Delete the Indexes
                 MigrationHelper::dropAllForeignKeysOnTable($tableName);
-                MigrationHelper::dropAllIndexesOnTable($tableName);
 
+                // There's actually an issue here in the MigrationHelper::dropAllIndexesOnTable class, not using the current migration
+                // as context to find existing indexes. This is important, because the indexes have changed from their current names
+                $this->dropAllIndexesOnTable($tableName);
+
+                // Add them back (like creating a new Matrix would)
                 $this->createIndex(null, $tableName, ['elementId', 'siteId'], true);
+                $this->addForeignKey(null, $tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
                 $this->addForeignKey(null, $tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
 
                 // Delete the old FK, indexes, and column
                 if ($this->db->columnExists($tableName, 'locale')) {
-                    MigrationHelper::dropForeignKeyIfExists($tableName, ['locale'], $this);
-                    MigrationHelper::dropIndexIfExists($tableName, ['elementId', 'locale'], true, $this);
-                    MigrationHelper::dropIndexIfExists($tableName, ['locale'], false, $this);
                     $this->dropColumn($tableName, 'locale');
                 }
             }
@@ -116,5 +119,15 @@ class m180219_000000_sites extends Migration
         echo "m180219_000000_sites cannot be reverted.\n";
 
         return false;
+    }
+
+    public function dropAllIndexesOnTable(string $tableName)
+    {
+        $rawTableName = $this->db->getSchema()->getRawTableName($tableName);
+        $allIndexes = $this->db->getSchema()->findIndexes($tableName);
+ 
+        foreach ($allIndexes as $indexName => $indexColumns) {
+            $this->dropIndex($indexName, $rawTableName);
+        }
     }
 }
