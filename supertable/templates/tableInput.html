@@ -72,11 +72,11 @@
                             settings: settings,
                         } %}
 
-                        <td class="thin action super-table-action {% if settings.staticField %}hidden{% endif %}">
+                        <td class="thin action super-table-action {% if settings.staticField or static %}hidden{% endif %}">
                             <a class="move icon" title="{{ 'Reorder'|t }}"></a>
                         </td>
 
-                        <td class="thin action super-table-action {% if settings.staticField %}hidden{% endif %}">
+                        <td class="thin action super-table-action {% if settings.staticField or static %}hidden{% endif %}">
                             <a class="delete icon" title="{{ 'Delete'|t }}"></a>
                         </td>
                     </tr>
@@ -84,7 +84,7 @@
             </tbody>
         </table>
 
-        <div class="btn add icon" {% if settings.staticField %}style="display: none;"{% endif %}>{{ settings.selectionLabel | default("Add a row") | t }}</div>
+        <div class="btn add icon" {% if settings.staticField or static %}style="display: none;"{% endif %}>{{ settings.selectionLabel | default("Add a row") | t }}</div>
     </div>
 </div>
 

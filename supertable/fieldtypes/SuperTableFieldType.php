@@ -209,6 +209,10 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
     {
         $id = craft()->templates->formatInputId($name);
         $settings = $this->getSettings();
+
+        if ($this->element !== null && $this->element->hasEagerLoadedElements($name)) {
+            $value = $this->element->getEagerLoadedElements($name);
+        }
         
         if ($value instanceof ElementCriteriaModel) {
             $value->limit = null;
@@ -225,6 +229,7 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
             'table' => $table,
             'blocks' => $value,
             'settings'  => $settings,
+            'static'  => false,
         ));
 
         // Get the block types data
@@ -411,6 +416,28 @@ class SuperTableFieldType extends BaseFieldType implements IEagerLoadingFieldTyp
     public function onAfterElementSave()
     {
         craft()->superTable->saveField($this);
+    }
+
+    public function getStaticHtml($value)
+    {
+        if ($value) {
+            $settings = $this->getSettings();
+            $id = StringHelper::randomString();
+
+            $blockTypes = $settings->getBlockTypes();
+            $table = ($blockTypes) ? $blockTypes[0] : null;
+
+            return craft()->templates->render('supertable/' . $settings->fieldLayout . 'Input', array(
+                'id' => $id,
+                'name' => $id,
+                'table' => $table,
+                'blocks' => $value,
+                'settings'  => $settings,
+                'static' => true,
+            ));
+        } else {
+            return '<p class="light">' . Craft::t('No rows.') . '</p>';
+        }
     }
 
     public function getEagerLoadingMap($sourceElements)

@@ -35,7 +35,7 @@
                         } %}
                     </tbody>
 
-                    <tfoot {% if settings.staticField %}style="display: none;"{% endif %}>
+                    <tfoot {% if settings.staticField or static %}style="display: none;"{% endif %}>
                         <tr>
                             <td class="floating reorder"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
                             <td class="floating delete"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
@@ -46,5 +46,5 @@
         {% endfor %}
     </div>
 
-    <div class="superTableAddRow btn add icon" {% if settings.staticField %}style="display: none;"{% endif %}>{{ settings.selectionLabel | default("Add a row") | t }}</div>
+    <div class="superTableAddRow btn add icon" {% if settings.staticField or static %}style="display: none;"{% endif %}>{{ settings.selectionLabel | default("Add a row") | t }}</div>
 </div>
