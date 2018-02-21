@@ -52,14 +52,12 @@ class m180219_000000_sites extends Migration
             if (StringHelper::startsWith($tableName, $superTableTablePrefix)) {
                 // Rename column
                 if ($this->db->columnExists($tableName, 'locale__siteId')) {
-                    MigrationHelper::renameColumn($tableName, 'locale__siteId', 'siteId');
+                    $this->renameColumn($tableName, 'locale__siteId', 'siteId');
                 }
-
-                // Delete the Indexes
-                MigrationHelper::dropAllForeignKeysOnTable($tableName);
 
                 // There's actually an issue here in the MigrationHelper::dropAllIndexesOnTable class, not using the current migration
                 // as context to find existing indexes. This is important, because the indexes have changed from their current names
+                $this->dropAllForeignKeysOnTable($tableName);
                 $this->dropAllIndexesOnTable($tableName);
 
                 // Add them back (like creating a new Matrix would)
@@ -67,7 +65,7 @@ class m180219_000000_sites extends Migration
                 $this->addForeignKey(null, $tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
                 $this->addForeignKey(null, $tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
 
-                // Delete the old FK, indexes, and column
+                // Delete the old column
                 if ($this->db->columnExists($tableName, 'locale')) {
                     $this->dropColumn($tableName, 'locale');
                 }
@@ -119,6 +117,16 @@ class m180219_000000_sites extends Migration
         echo "m180219_000000_sites cannot be reverted.\n";
 
         return false;
+    }
+
+    public function dropAllForeignKeysOnTable(string $tableName)
+    {
+        $rawTableName = $this->db->getSchema()->getRawTableName($tableName);
+        $table = $this->db->getSchema()->getTableSchema($rawTableName);
+
+        foreach ($table->foreignKeys as $foreignKeyName => $fk) {
+            $this->dropForeignKey($foreignKeyName, $tableName);
+        }
     }
 
     public function dropAllIndexesOnTable(string $tableName)
