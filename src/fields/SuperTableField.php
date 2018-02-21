@@ -870,11 +870,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 continue;
             }
 
-            // Skip disabled blocks on Live Preview requests
-            if ($isLivePreview && empty($blockData['enabled'])) {
-                continue;
-            }
-
             $blockType = $blockTypes[$blockData['type']];
 
             // Is this new? (Or has it been deleted?)
@@ -889,7 +884,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             }
 
             $block->setOwner($element);
-            $block->enabled = (isset($blockData['enabled']) ? (bool)$blockData['enabled'] : true);
 
             // Set the content post location on the block if we can
             $fieldNamespace = $element->getFieldParamNamespace();
