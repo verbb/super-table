@@ -147,12 +147,13 @@ class SuperTableBlockElement extends Element
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function extraFields()
     {
-        $attributes = parent::attributes();
-        $attributes[] = 'owner';
-
-        return $attributes;
+        $names = parent::extraFields();
+        $names[] = 'owner';
+        $names[] = 'type';
+        
+        return $names;
     }
 
     /**
