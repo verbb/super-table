@@ -80,7 +80,7 @@ class SuperTableBlockElement extends Element
     {
         // Get the block type
         $supertableFieldId = $sourceElements[0]->fieldId;
-        $blockTypes = ArrayHelper::index(SuperTable::$plugin->service->getBlockTypesByFieldId($supertableFieldId));
+        $blockTypes = SuperTable::$plugin->service->getBlockTypesByFieldId($supertableFieldId);
 
         if (!isset($blockTypes[0])) {
             // Not a valid block type handle (assuming all $sourceElements are blocks from the same SuperTable field)
@@ -94,7 +94,7 @@ class SuperTableBlockElement extends Element
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'superTableBlockType:' . $blockType->id;
 
-        $map = parent::eagerLoadingMap($sourceElements, $fieldHandle);
+        $map = parent::eagerLoadingMap($sourceElements, $handle);
 
         $contentService->fieldContext = $originalFieldContext;
 
