@@ -519,7 +519,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function isEmpty($value): bool
+    public function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var SuperTableBlockQuery $value */
         return $value->count() === 0;
