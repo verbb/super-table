@@ -526,28 +526,25 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     }
 
     /**
-     * @inheritdoc
+     * Validates an owner element’s Super Table blocks.
+     *
+     * @param ElementInterface $element
      */
     public function validateBlocks(ElementInterface $element)
     {
         /** @var Element $element */
         /** @var SuperTableBlockQuery $value */
         $value = $element->getFieldValue($this->handle);
-        $blocksValidate = true;
 
-        foreach ($value->all() as $block) {
+        foreach ($value->all() as $i => $block) {
             /** @var SuperTableBlock $block */
             if ($element->getScenario() === Element::SCENARIO_LIVE) {
                 $block->setScenario(Element::SCENARIO_LIVE);
             }
 
             if (!$block->validate()) {
-                $blocksValidate = false;
+                $element->addModelErrors($block, "{$this->handle}[{$i}]");
             }
-        }
-
-        if (!$blocksValidate) {
-            $element->addError($this->handle, Craft::t('super-table', 'Correct the errors listed above.'));
         }
     }
 
