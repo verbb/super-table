@@ -6,10 +6,10 @@
         <tr data-id="">
             <td class="thin rowHeader">
                 <span class="heading-text {% if field.required %}required{% endif %}">
-                    {{ field.name | t('super-table') }}
+                    {{ field.name | t('site') }}
 
                     {% if field.instructions %}
-                        <span class="info">{{ field.instructions | t('super-table') }}</span>
+                        <span class="info">{{ field.instructions | t('site') }}</span>
                     {% endif %}
                 </span>
             </td>
