@@ -4,589 +4,766 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
 (function($) {
 
-Craft.SuperTable.Input = Garnish.Base.extend({
-    id: null,
-    blockType: null,
-    inputNamePrefix: null,
+    Craft.SuperTable.Input = Garnish.Base.extend({
+        id: null,
+        blockType: null,
+        inputNamePrefix: null,
 
-    totalNewBlocks: 0,
+        totalNewBlocks: 0,
 
-    sorter: null,
+        sorter: null,
 
-    $div: null,
-    $divInner: null,
+        $div: null,
+        $divInner: null,
 
-    $table: null,
-    $tbody: null,
-    $addRowBtn: null,
+        $table: null,
+        $tbody: null,
+        $addRowBtn: null,
 
-    init: function(id, blockType, inputNamePrefix, settings) {
-        blockType = blockType[0]; 
+        init: function(id, blockType, inputNamePrefix, settings) {
+            blockType = blockType[0];
 
-        if (settings.fieldLayout == 'table') {
-            new Craft.SuperTable.InputTable(id, blockType, inputNamePrefix, settings);
-        } else {
-            new Craft.SuperTable.InputRow(id, blockType, inputNamePrefix, settings);
-        }
-    }
-});
-
-Craft.SuperTable.InputTable = Garnish.Base.extend({
-    id: null,
-    blockType: null,
-    inputNamePrefix: null,
-
-    totalNewBlocks: 0,
-
-    sorter: null,
-
-    $div: null,
-    $divInner: null,
-
-    $table: null,
-    $tbody: null,
-    $addRowBtn: null,
-
-    init: function(id, blockType, inputNamePrefix, settings) {
-        this.id = id
-        this.blockType = blockType;
-        this.inputNamePrefix = inputNamePrefix;
-        this.setSettings(settings, {
-            rowIdPrefix: '',
-            onAddRow: $.noop,
-            onDeleteRow: $.proxy(this, 'deleteRow')
-        });
-
-        this.$table = $('table#' + id);
-        this.$tbody = this.$table.children('tbody');
-
-        this.sorter = new Craft.DataTableSorter(this.$table, {
-            handle: 'td.super-table-action .move',
-            helperClass: 'editablesupertablesorthelper',
-            copyDraggeeInputValuesToHelper: true
-        });
-
-        this.$addRowBtn = this.$table.next('.add');
-        this.addListener(this.$addRowBtn, 'activate', 'addRow');
-
-        var $rows = this.$tbody.children();
-
-        for (var i = 0; i < $rows.length; i++) {
-            new Craft.EditableTable.Row(this, $rows[i]);
-
-            var $block = $($rows[i]),
-                id = $block.data('id');
-                
-            // Is this a new block?
-            var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
-
-            if (newMatch && newMatch[1] > this.totalNewBlocks) {
-                this.totalNewBlocks = parseInt(newMatch[1]);
+            if (settings.fieldLayout == 'table') {
+                new Craft.SuperTable.InputTable(id, blockType, inputNamePrefix, settings);
+            } else if (settings.fieldLayout == 'row') {
+                new Craft.SuperTable.InputRow(id, blockType, inputNamePrefix, settings);
+            } else {
+                new Craft.SuperTable.InputMatrix(id, blockType, inputNamePrefix, settings);
             }
         }
+    });
 
-        this.updateAddBlockBtn();
-    },
+    Craft.SuperTable.InputTable = Garnish.Base.extend({
+        id: null,
+        blockType: null,
+        inputNamePrefix: null,
 
-    addRow: function() {
-        var type = this.blockType.type;
+        totalNewBlocks: 0,
 
-        this.totalNewBlocks++;
+        sorter: null,
 
-        var id = 'new'+this.totalNewBlocks;
+        $div: null,
+        $divInner: null,
 
-        var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
-            footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
+        $table: null,
+        $tbody: null,
+        $addRowBtn: null,
 
-        var html = '<tr data-id="' + id + '">' +
-            '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][type]" value="' + type + '" />' +
-            '' + bodyHtml + '' +
-            '<td class="thin action super-table-action"><a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a></td>' +
-            '<td class="thin action super-table-action"><a class="delete icon" title="' + Craft.t('super-table', 'Delete') + '"></a></td>' +
-        '</tr>';
+        init: function(id, blockType, inputNamePrefix, settings) {
+            this.id = id
+            this.blockType = blockType;
+            this.inputNamePrefix = inputNamePrefix;
+            this.setSettings(settings, {
+                rowIdPrefix: '',
+                onAddRow: $.noop,
+                onDeleteRow: $.proxy(this, 'deleteRow')
+            });
 
-        var $tr = $(html).appendTo(this.$tbody);
+            this.$table = $('table#' + id);
+            this.$tbody = this.$table.children('tbody');
 
-        Garnish.$bod.append(footHtml);
-        
-        Craft.initUiElements($tr);
+            this.sorter = new Craft.DataTableSorter(this.$table, {
+                handle: 'td.super-table-action .move',
+                helperClass: 'editablesupertablesorthelper',
+                copyDraggeeInputValuesToHelper: true
+            });
 
-        new Craft.EditableTable.Row(this, $tr);
-        this.sorter.addItems($tr);
+            this.$addRowBtn = this.$table.next('.add');
+            this.addListener(this.$addRowBtn, 'activate', 'addRow');
 
-        this.updateAddBlockBtn();
-    },
+            var $rows = this.$tbody.children();
 
-    getParsedBlockHtml: function(html, id) {
-        if (typeof html == 'string') {
-            return html.replace(/__BLOCK_ST__/g, id);
-        } else {
-            return '';
-        }
-    },
+            for (var i = 0; i < $rows.length; i++) {
+                new Craft.EditableTable.Row(this, $rows[i]);
 
-    canAddMoreRows: function() {
-        return (!this.settings.maxRows || this.$tbody.children().length < this.settings.maxRows);
-    },
+                var $block = $($rows[i]),
+                    id = $block.data('id');
 
-    updateAddBlockBtn: function() {
-        if (this.canAddMoreRows()) {
-            this.$addRowBtn.removeClass('disabled');
-        } else {
-            this.$addRowBtn.addClass('disabled');
-        }
-    },
+                // Is this a new block?
+                var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
 
-    deleteRow: function() {
-        this.updateAddBlockBtn();
-    },
-
-});
-
-
-
-
-
-
-Craft.SuperTable.InputRow = Garnish.Base.extend({
-    id: null,
-    blockType: null,
-    inputNamePrefix: null,
-    settings: null,
-
-    totalNewBlocks: 0,
-
-    sorter: null,
-
-    $div: null,
-    $divInner: null,
-    $rows: null,
-
-    $table: null,
-    $tbody: null,
-    $addRowBtn: null,
-
-    init: function(id, blockType, inputNamePrefix, settings) {
-        this.id = id
-        this.blockType = blockType;
-        this.inputNamePrefix = inputNamePrefix;
-        this.settings = settings;
-
-        this.$div = $('div#'+id);
-        this.$divInner = this.$div.children('.rowLayoutContainer');
-
-        this.$rows = this.$divInner.children('.superTableRow');
-        collapsedRows = Craft.SuperTable.InputRow.getCollapsedBlockIds();
-
-        this.sorter = new Garnish.DragSort(this.$rows, {
-            handle: '.actions .move',
-            axis: 'y',
-            collapseDraggees: true,
-            magnetStrength: 4,
-            helperLagBase: 1.5,
-            helperOpacity: 0.9,
-        });
-
-        for (var i = 0; i < this.$rows.length; i++) {
-            var row = new Craft.SuperTable.InputRow.Row(this, this.$rows[i]);
-
-            var $block = $(this.$rows[i]),
-                id = $block.data('id');
-
-            // Is this a new block?
-            var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
-
-            if (newMatch && newMatch[1] > this.totalNewBlocks) {
-                this.totalNewBlocks = parseInt(newMatch[1]);
+                if (newMatch && newMatch[1] > this.totalNewBlocks) {
+                    this.totalNewBlocks = parseInt(newMatch[1]);
+                }
             }
 
-            if (id && $.inArray('' + id, collapsedRows) !== -1) {
-                row.collapse();
+            this.updateAddBlockBtn();
+        },
+
+        addRow: function() {
+            var type = this.blockType.type;
+
+            this.totalNewBlocks++;
+
+            var id = 'new'+this.totalNewBlocks;
+
+            var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
+                footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
+
+            var html = '<tr data-id="' + id + '">' +
+                '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][type]" value="' + type + '" />' +
+                '' + bodyHtml + '' +
+                '<td class="thin action super-table-action"><a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a></td>' +
+                '<td class="thin action super-table-action"><a class="delete icon" title="' + Craft.t('super-table', 'Delete') + '"></a></td>' +
+                '</tr>';
+
+            var $tr = $(html).appendTo(this.$tbody);
+
+            Garnish.$bod.append(footHtml);
+
+            Craft.initUiElements($tr);
+
+            new Craft.EditableTable.Row(this, $tr);
+            this.sorter.addItems($tr);
+
+            this.updateAddBlockBtn();
+        },
+
+        getParsedBlockHtml: function(html, id) {
+            if (typeof html == 'string') {
+                return html.replace(/__BLOCK_ST__/g, id);
+            } else {
+                return '';
             }
-        }
+        },
 
-        this.$addRowBtn = this.$divInner.next('.add');
-        this.addListener(this.$addRowBtn, 'activate', 'addRow');
+        canAddMoreRows: function() {
+            return (!this.settings.maxRows || this.$tbody.children().length < this.settings.maxRows);
+        },
 
-        this.updateAddBlockBtn();
+        updateAddBlockBtn: function() {
+            if (this.canAddMoreRows()) {
+                this.$addRowBtn.removeClass('disabled');
+            } else {
+                this.$addRowBtn.addClass('disabled');
+            }
+        },
 
-        this.addListener(this.$div, 'resize', 'onResize');
-        Garnish.$doc.ready($.proxy(this, 'onResize'));
-    },
+        deleteRow: function() {
+            this.updateAddBlockBtn();
+        },
 
-    addRow: function() {
-        var type = this.blockType.type;
+    });
 
-        this.totalNewBlocks++;
 
-        var id = 'new'+this.totalNewBlocks;
 
-        var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
-            footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
 
-        var html = '<div class="superTableRow" data-id="'+id+'">' +
-            '<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'">' +
-            '<table id="'+id+'" class="superTable-table superTable-layout-row">' +
+
+
+    Craft.SuperTable.InputRow = Garnish.Base.extend({
+        id: null,
+        blockType: null,
+        inputNamePrefix: null,
+        settings: null,
+
+        totalNewBlocks: 0,
+
+        sorter: null,
+
+        $div: null,
+        $divInner: null,
+        $rows: null,
+
+        $table: null,
+        $tbody: null,
+        $addRowBtn: null,
+
+        init: function(id, blockType, inputNamePrefix, settings) {
+            this.id = id
+            this.blockType = blockType;
+            this.inputNamePrefix = inputNamePrefix;
+            this.settings = settings;
+
+            this.$div = $('div#'+id);
+            this.$divInner = this.$div.children('.rowLayoutContainer');
+
+            this.$rows = this.$divInner.children('.superTableRow');
+
+            this.sorter = new Garnish.DragSort(this.$rows, {
+                handle: 'tfoot .reorder .move',
+                axis: 'y',
+                collapseDraggees: true,
+                magnetStrength: 4,
+                helperLagBase: 1.5,
+                helperOpacity: 0.9,
+            });
+
+            for (var i = 0; i < this.$rows.length; i++) {
+                new Craft.SuperTable.InputRow.Row(this, this.$rows[i]);
+
+                var $block = $(this.$rows[i]),
+                    id = $block.data('id');
+
+                // Is this a new block?
+                var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
+
+                if (newMatch && newMatch[1] > this.totalNewBlocks) {
+                    this.totalNewBlocks = parseInt(newMatch[1]);
+                }
+            }
+
+            this.$addRowBtn = this.$divInner.next('.add');
+            this.addListener(this.$addRowBtn, 'activate', 'addRow');
+
+            this.updateAddBlockBtn();
+
+            this.addListener(this.$div, 'resize', 'onResize');
+            Garnish.$doc.ready($.proxy(this, 'onResize'));
+        },
+
+        addRow: function() {
+            var type = this.blockType.type;
+
+            this.totalNewBlocks++;
+
+            var id = 'new'+this.totalNewBlocks;
+
+            var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
+                footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
+
+            var html = '<div class="superTableRow" data-id="'+id+'">' +
+                '<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'">' +
+                '<table id="'+id+'" class="superTable-table superTable-layout-row">' +
                 '<tbody>' +
-                    '' + bodyHtml + '' +
+                '' + bodyHtml + '' +
                 '</tbody>' +
                 '<tfoot>' +
-                    '<tr>' +
-                        '<td class="floating reorder"><a class="move icon" title="'+Craft.t('super-table', 'Reorder')+'"></a></td>' +
-                        '<td class="floating delete"><a class="delete icon" title="'+Craft.t('super-table', 'Delete')+'"></a></td>' +
-                    '</tr>' +
+                '<tr>' +
+                '<td class="floating reorder"><a class="move icon" title="'+Craft.t('super-table', 'Reorder')+'"></a></td>' +
+                '<td class="floating delete"><a class="delete icon" title="'+Craft.t('super-table', 'Delete')+'"></a></td>' +
+                '</tr>' +
                 '</tfoot>' +
-            '</table>' +
-        '</div>';
+                '</table>' +
+                '</div>';
 
-        var $tr = $(html).appendTo(this.$divInner);
+            var $tr = $(html).appendTo(this.$divInner);
 
-        Garnish.$bod.append(footHtml);
-        
-        Craft.initUiElements($tr);
+            Garnish.$bod.append(footHtml);
 
-        var row = new Craft.SuperTable.InputRow.Row(this, $tr);
-        this.sorter.addItems($tr);
+            Craft.initUiElements($tr);
 
-        row.expand();
+            var row = new Craft.SuperTable.InputRow.Row(this, $tr);
+            this.sorter.addItems($tr);
 
-        this.updateAddBlockBtn();
-    },
+            row.expand();
 
-    getParsedBlockHtml: function(html, id) {
-        if (typeof html == 'string') {
-            return html.replace(/__BLOCK_ST__/g, id);
-        } else {
-            return '';
-        }
-    },
+            this.updateAddBlockBtn();
+        },
 
-    canAddMoreRows: function() {
-        return (!this.settings.maxRows || this.$divInner.children('.superTableRow').length < this.settings.maxRows);
-    },
+        getParsedBlockHtml: function(html, id) {
+            if (typeof html == 'string') {
+                return html.replace(/__BLOCK_ST__/g, id);
+            } else {
+                return '';
+            }
+        },
 
-    onResize: function() {
-        // A minor fix if this row contains a Matrix field. For Matrix fields with lots of blocks,
-        // we need to make sure we trigger the resize-handling, which turns the Add Block buttons into a dropdown
-        // otherwise, we get a nasty overflow of buttons.
+        canAddMoreRows: function() {
+            return (!this.settings.maxRows || this.$divInner.children('.superTableRow').length < this.settings.maxRows);
+        },
 
-        // Get the Super Table overall width, with some padding
-        var actionBtnWidth = this.$divInner.find('tfoot tr').width();
-        var rowHeaderWidth = this.$divInner.find('td.rowHeader').width();
-        var rowWidth = this.$divInner.width() - actionBtnWidth - rowHeaderWidth - 20;
-        var $matrixFields = this.$divInner.find('.matrix.matrix-field');
+        onResize: function() {
+            // A minor fix if this row contains a Matrix field. For Matrix fields with lots of blocks,
+            // we need to make sure we trigger the resize-handling, which turns the Add Block buttons into a dropdown
+            // otherwise, we get a nasty overflow of buttons.
 
-        if ($matrixFields.length) {
-            $.each($matrixFields, function(i, element) {
-                var $matrixField = $(element);
-                var matrixButtonWidth = $matrixField.find('.buttons').outerWidth(true);
+            // Get the Super Table overall width, with some padding
+            var actionBtnWidth = this.$divInner.find('tfoot tr').width();
+            var rowHeaderWidth = this.$divInner.find('td.rowHeader').width();
+            var rowWidth = this.$divInner.width() - actionBtnWidth - rowHeaderWidth - 20;
+            var $matrixFields = this.$divInner.find('.matrix.matrix-field');
 
-                if (matrixButtonWidth > rowWidth) {
-                    // showNewBlockBtn is a custom function in MatrixInputAlt.js for minor impact
-                    $matrixField.trigger('showNewBlockBtn');
-                }
+            if ($matrixFields.length) {
+                $.each($matrixFields, function(i, element) {
+                    var $matrixField = $(element);
+                    var matrixButtonWidth = $matrixField.find('.buttons').outerWidth(true);
+
+                    if (matrixButtonWidth > rowWidth) {
+                        // showNewBlockBtn is a custom function in MatrixInputAlt.js for minor impact
+                        $matrixField.trigger('showNewBlockBtn');
+                    }
+                });
+            }
+        },
+
+        updateAddBlockBtn: function() {
+            if (this.canAddMoreRows()) {
+                this.$addRowBtn.removeClass('disabled');
+            } else {
+                this.$addRowBtn.addClass('disabled');
+            }
+        },
+    });
+
+    Craft.SuperTable.InputRow.Row = Garnish.Base.extend({
+        table: null,
+
+        $tr: null,
+        $deleteBtn: null,
+
+        init: function(table, tr) {
+            this.table = table;
+            this.$tr = $(tr);
+
+            var $deleteBtn = this.$tr.children().last().find('tfoot .delete');
+            this.addListener($deleteBtn, 'click', 'deleteRow');
+        },
+
+        deleteRow: function() {
+            this.table.sorter.removeItems(this.$tr);
+
+            this.contract(function() {
+                this.$tr.remove();
+
+                this.table.updateAddBlockBtn();
             });
-        }
-    },
+        },
 
-    updateAddBlockBtn: function() {
-        if (this.canAddMoreRows()) {
-            this.$addRowBtn.removeClass('disabled');
-        } else {
-            this.$addRowBtn.addClass('disabled');
-        }
-    },
-}, {
-    collapsedBlockStorageKey: 'Craft-' + Craft.systemUid + '.SuperTable.InputRow.collapsedBlocks',
+        expand: function(callback) {
+            this.$tr
+                .css(this._getContractedStyles())
+                .velocity(this._getExpandedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
+        },
 
-    getCollapsedBlockIds: function() {
-        if (typeof localStorage[Craft.SuperTable.InputRow.collapsedBlockStorageKey] === 'string') {
-            return Craft.filterArray(localStorage[Craft.SuperTable.InputRow.collapsedBlockStorageKey].split(','));
-        }
-        else {
-            return [];
-        }
-    },
+        contract: function(callback) {
+            this.$tr
+                .css(this._getExpandedStyles())
+                .velocity(this._getContractedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
+        },
 
-    setCollapsedBlockIds: function(ids) {
-        localStorage[Craft.SuperTable.InputRow.collapsedBlockStorageKey] = ids.join(',');
-    },
+        _getExpandedStyles: function() {
+            return {
+                opacity: 1,
+                marginBottom: 10
+            };
+        },
 
-    rememberCollapsedBlockId: function(id) {
-        if (typeof Storage !== 'undefined') {
-            var collapsedBlocks = Craft.SuperTable.InputRow.getCollapsedBlockIds();
+        _getContractedStyles: function() {
+            return {
+                opacity: 0,
+                marginBottom: -(this.$tr.outerHeight())
+            };
+        },
 
-            if ($.inArray('' + id, collapsedBlocks) === -1) {
-                collapsedBlocks.push(id);
-                Craft.SuperTable.InputRow.setCollapsedBlockIds(collapsedBlocks);
+    });
+
+
+
+
+
+    Craft.SuperTable.InputMatrix = Garnish.Base.extend({
+        id: null,
+        blockType: null,
+        inputNamePrefix: null,
+        settings: null,
+
+        totalNewBlocks: 0,
+
+        sorter: null,
+
+        $div: null,
+        $divInner: null,
+        $rows: null,
+
+        $table: null,
+        $tbody: null,
+        $addRowBtn: null,
+
+        init: function(id, blockType, inputNamePrefix, settings) {
+            this.id = id
+            this.blockType = blockType;
+            this.inputNamePrefix = inputNamePrefix;
+            this.settings = settings;
+
+            this.$div = $('div#'+id);
+            this.$divInner = this.$div.children('.matrixLayoutContainer');
+
+            this.$rows = this.$divInner.children('.superTableMatrix');
+            collapsedRows = Craft.SuperTable.InputMatrix.getCollapsedBlockIds();
+
+            this.sorter = new Garnish.DragSort(this.$rows, {
+                handle: '.actions .move',
+                axis: 'y',
+                collapseDraggees: true,
+                magnetStrength: 4,
+                helperLagBase: 1.5,
+                helperOpacity: 0.9,
+            });
+
+            for (var i = 0; i < this.$rows.length; i++) {
+                var row = new Craft.SuperTable.InputMatrix.Row(this, this.$rows[i]);
+
+                var $block = $(this.$rows[i]),
+                    id = $block.data('id');
+
+                // Is this a new block?
+                var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
+
+                if (newMatch && newMatch[1] > this.totalNewBlocks) {
+                    this.totalNewBlocks = parseInt(newMatch[1]);
+                }
+
+                if (id && $.inArray('' + id, collapsedRows) !== -1) {
+                    row.collapse();
+                }
             }
-        }
-    },
 
-    forgetCollapsedBlockId: function(id) {
-        if (typeof Storage !== 'undefined') {
-            var collapsedBlocks = Craft.SuperTable.InputRow.getCollapsedBlockIds(),
-                collapsedBlocksIndex = $.inArray('' + id, collapsedBlocks);
+            this.$addRowBtn = this.$divInner.next('.add');
+            this.addListener(this.$addRowBtn, 'activate', 'addRow');
 
-            if (collapsedBlocksIndex !== -1) {
-                collapsedBlocks.splice(collapsedBlocksIndex, 1);
-                Craft.SuperTable.InputRow.setCollapsedBlockIds(collapsedBlocks);
+            this.updateAddBlockBtn();
+
+            this.addListener(this.$div, 'resize', 'onResize');
+            Garnish.$doc.ready($.proxy(this, 'onResize'));
+        },
+
+        addRow: function() {
+            var type = this.blockType.type;
+
+            this.totalNewBlocks++;
+
+            var id = 'new'+this.totalNewBlocks;
+
+            var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
+                footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
+
+            var html = '<div class="superTableMatrix matrixblock" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %}>' +
+                '<input type="hidden" name="'+this.inputNamePrefix+'['+id+'][type]" value="'+type+'">' +
+                '<div class="titlebar">' +
+                '<div class="blocktype"></div>' +
+                '<div class="preview"></div>' +
+                '</div>' +
+                '<div class="actions">' +
+                '<a class="settings icon menubtn" title="'+Craft.t('app', 'Actions')+'" role="button"></a>' +
+                '<div class="menu">' +
+                '<ul class="padded">' +
+                '<li><a data-icon="collapse" data-action="collapse">'+Craft.t('app', 'Colapse')+'</a></li>' +
+                '<li class="hidden"><a data-icon="expand" data-action="expand">'+Craft.t('app', 'Expand')+'</a></li>' +
+                '</ul>' +
+                '<hr class="padded">' +
+                '<ul class="padded">' +
+                '<li><a class="error" data-icon="remove" data-action="delete">'+Craft.t('super-table', 'Delete')+'</a></li>' +
+                '</ul>' +
+                '</div>' +
+                '<a class="move icon" title="'+Craft.t('super-table', 'Reorder')+'" role="button"></a>' +
+                '</div>' +
+                '<div class="fields">' + bodyHtml + '</div>' +
+                '</div>';
+
+            var $tr = $(html).appendTo(this.$divInner);
+
+            Garnish.$bod.append(footHtml);
+
+            Craft.initUiElements($tr);
+
+            var row = new Craft.SuperTable.InputMatrix.Row(this, $tr);
+            this.sorter.addItems($tr);
+
+            row.expand();
+
+            this.updateAddBlockBtn();
+        },
+
+        getParsedBlockHtml: function(html, id) {
+            if (typeof html == 'string') {
+                return html.replace(/__BLOCK_ST__/g, id);
+            } else {
+                return '';
             }
-        }
-    }
-});
+        },
 
-Craft.SuperTable.InputRow.Row = Garnish.Base.extend({
-    table: null,
+        canAddMoreRows: function() {
+            return (!this.settings.maxRows || this.$divInner.children('.superTableMatrix').length < this.settings.maxRows);
+        },
 
-    $tr: null,
-    $deleteBtn: null,
-    $titlebar: null,
-    $actionMenu: null,
+        onResize: function() {
+            // A minor fix if this row contains a Matrix field. For Matrix fields with lots of blocks,
+            // we need to make sure we trigger the resize-handling, which turns the Add Block buttons into a dropdown
+            // otherwise, we get a nasty overflow of buttons.
 
-    id: null,
-    collapsed: false,
-    $previewContainer: null,
-    $fieldsContainer: null,
+            // Get the Super Table overall width, with some padding
+            var rowWidth = this.$divInner.width() - 20;
+            var $matrixFields = this.$divInner.find('.matrix.matrix-field');
 
-    init: function(table, tr) {
-        this.table = table;
-        this.$tr = $(tr);
-        this.id = this.$tr.data('id');
+            if ($matrixFields.length) {
+                $.each($matrixFields, function(i, element) {
+                    var $matrixField = $(element);
+                    var matrixButtonWidth = $matrixField.find('.buttons').outerWidth(true);
 
-        var $deleteBtn = this.$tr.children().last().find('tfoot .delete');
-        this.addListener($deleteBtn, 'click', 'deleteRow');
-
-        this.$titlebar = this.$tr.children('.titlebar');
-        this.$previewContainer = this.$titlebar.children('.preview');
-        this.$fieldsContainer = this.$tr.children('.fields');
-        var $menuBtn = this.$tr.find('> .actions > .settings'),
-            menuBtn = new Garnish.MenuBtn($menuBtn);
-
-        this.$actionMenu = menuBtn.menu.$container;
-
-        menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
-
-        // Was this block already collapsed?
-        if (Garnish.hasAttr(this.$tr, 'data-collapsed')) {
-            this.collapse();
-        }
-
-        this._handleTitleBarClick = function(ev) {
-            ev.preventDefault();
-            this.toggle();
-        };
-
-        this.addListener(this.$titlebar, 'doubletap', this._handleTitleBarClick);
-    },
-
-    deleteRow: function() {
-        this.table.sorter.removeItems(this.$tr);
-
-        this.contract(function() {
-            this.$tr.remove();
-
-            this.table.updateAddBlockBtn();
-        });
-    },
-
-    expand: function(callback) {
-        this.$tr
-            .css(this._getContractedStyles())
-            .velocity(this._getExpandedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
-    },
-
-    contract: function(callback) {
-        this.$tr
-            .css(this._getExpandedStyles())
-            .velocity(this._getContractedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
-    },
-
-    _getExpandedStyles: function() {
-        return {
-            opacity: 1,
-            marginBottom: 10
-        };
-    },
-
-    _getContractedStyles: function() {
-        return {
-            opacity: 0,
-            marginBottom: -(this.$tr.outerHeight())
-        };
-    },
-
-    toggle: function() {
-        if (this.collapsed) {
-            this.expand();
-        }
-        else {
-            this.collapse(true);
-        }
-    },
-
-    collapse: function(animate) {
-        if (this.collapsed) {
-            return;
-        }
-
-        this.$tr.addClass('collapsed');
-
-        var previewHtml = '',
-            $fields = this.$fieldsContainer.children();
-
-        for (var i = 0; i < $fields.length; i++) {
-            var $field = $($fields[i]),
-                $inputs = $field.children('.input').find('select,input[type!="hidden"],textarea,.label'),
-                inputPreviewText = '';
-
-            for (var j = 0; j < $inputs.length; j++) {
-                var $input = $($inputs[j]),
-                    value;
-
-                if ($input.hasClass('label')) {
-                    var $maybeLightswitchContainer = $input.parent().parent();
-
-                    if ($maybeLightswitchContainer.hasClass('lightswitch') && (
-                            ($maybeLightswitchContainer.hasClass('on') && $input.hasClass('off')) ||
-                            (!$maybeLightswitchContainer.hasClass('on') && $input.hasClass('on'))
-                        )) {
-                        continue;
+                    if (matrixButtonWidth > rowWidth) {
+                        // showNewBlockBtn is a custom function in MatrixInputAlt.js for minor impact
+                        $matrixField.trigger('showNewBlockBtn');
                     }
-
-                    value = $input.text();
-                }
-                else {
-                    value = Craft.getText(Garnish.getInputPostVal($input));
-                }
-
-                if (value instanceof Array) {
-                    value = value.join(', ');
-                }
-
-                if (value) {
-                    value = Craft.trim(value);
-
-                    if (value) {
-                        if (inputPreviewText) {
-                            inputPreviewText += ', ';
-                        }
-
-                        inputPreviewText += value;
-                    }
-                }
+                });
             }
+        },
 
-            if (inputPreviewText) {
-                previewHtml += (previewHtml ? ' <span>|</span> ' : '') + inputPreviewText;
+        updateAddBlockBtn: function() {
+            if (this.canAddMoreRows()) {
+                this.$addRowBtn.removeClass('disabled');
+            } else {
+                this.$addRowBtn.addClass('disabled');
             }
-        }
+        },
+    }, {
+        collapsedBlockStorageKey: 'Craft-' + Craft.systemUid + '.SuperTable.InputMatrix.collapsedBlocks',
 
-        this.$previewContainer.html(previewHtml);
-
-        this.$fieldsContainer.velocity('stop');
-        this.$tr.velocity('stop');
-
-        if (animate) {
-            this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-            this.$tr.velocity({height: 16}, 'fast');
-        }
-        else {
-            this.$previewContainer.show();
-            this.$fieldsContainer.hide();
-            this.$tr.css({height: 16});
-        }
-
-        setTimeout($.proxy(function() {
-            this.$actionMenu.find('a[data-action=collapse]:first').parent().addClass('hidden');
-            this.$actionMenu.find('a[data-action=expand]:first').parent().removeClass('hidden');
-        }, this), 200);
-
-        // Remember that?
-        if (!this.isNew) {
-            Craft.SuperTable.InputRow.rememberCollapsedBlockId(this.id);
-        }
-        else {
-            if (!this.$collapsedInput) {
-                this.$collapsedInput = $('<input type="hidden" name="' + this.matrix.inputNamePrefix + '[' + this.id + '][collapsed]" value="1"/>').appendTo(this.$container);
+        getCollapsedBlockIds: function() {
+            if (typeof localStorage[Craft.SuperTable.InputMatrix.collapsedBlockStorageKey] === 'string') {
+                return Craft.filterArray(localStorage[Craft.SuperTable.InputMatrix.collapsedBlockStorageKey].split(','));
             }
             else {
-                this.$collapsedInput.val('1');
+                return [];
+            }
+        },
+
+        setCollapsedBlockIds: function(ids) {
+            localStorage[Craft.SuperTable.InputMatrix.collapsedBlockStorageKey] = ids.join(',');
+        },
+
+        rememberCollapsedBlockId: function(id) {
+            if (typeof Storage !== 'undefined') {
+                var collapsedBlocks = Craft.SuperTable.InputMatrix.getCollapsedBlockIds();
+
+                if ($.inArray('' + id, collapsedBlocks) === -1) {
+                    collapsedBlocks.push(id);
+                    Craft.SuperTable.InputMatrix.setCollapsedBlockIds(collapsedBlocks);
+                }
+            }
+        },
+
+        forgetCollapsedBlockId: function(id) {
+            if (typeof Storage !== 'undefined') {
+                var collapsedBlocks = Craft.SuperTable.InputMatrix.getCollapsedBlockIds(),
+                    collapsedBlocksIndex = $.inArray('' + id, collapsedBlocks);
+
+                if (collapsedBlocksIndex !== -1) {
+                    collapsedBlocks.splice(collapsedBlocksIndex, 1);
+                    Craft.SuperTable.InputMatrix.setCollapsedBlockIds(collapsedBlocks);
+                }
             }
         }
+    });
 
-        this.collapsed = true;
-    },
+    Craft.SuperTable.InputMatrix.Row = Garnish.Base.extend({
+        table: null,
 
-    expand: function() {
-        if (!this.collapsed) {
-            return;
-        }
+        $tr: null,
+        $deleteBtn: null,
+        $titlebar: null,
+        $actionMenu: null,
 
-        this.$tr.removeClass('collapsed');
+        id: null,
+        collapsed: false,
+        $previewContainer: null,
+        $fieldsContainer: null,
 
-        this.$fieldsContainer.velocity('stop');
-        this.$tr.velocity('stop');
+        init: function(table, tr) {
+            this.table = table;
+            this.$tr = $(tr);
+            this.id = this.$tr.data('id');
 
-        var collapsedContainerHeight = this.$tr.height();
-        this.$tr.height('auto');
-        this.$fieldsContainer.show();
-        var expandedContainerHeight = this.$tr.height();
-        this.$tr.height(collapsedContainerHeight);
-        this.$fieldsContainer.hide().velocity('fadeIn', {duration: 'fast'});
-        this.$tr.velocity({height: expandedContainerHeight}, 'fast', $.proxy(function() {
-            this.$previewContainer.html('');
-            this.$tr.height('auto');
-        }, this));
+            this.$titlebar = this.$tr.children('.titlebar');
+            this.$previewContainer = this.$titlebar.children('.preview');
+            this.$fieldsContainer = this.$tr.children('.fields');
+            var $menuBtn = this.$tr.find('> .actions > .settings'),
+                menuBtn = new Garnish.MenuBtn($menuBtn);
 
-        setTimeout($.proxy(function() {
-            this.$actionMenu.find('a[data-action=collapse]:first').parent().removeClass('hidden');
-            this.$actionMenu.find('a[data-action=expand]:first').parent().addClass('hidden');
-        }, this), 200);
+            this.$actionMenu = menuBtn.menu.$container;
 
-        // Remember that?
-        if (!this.isNew && typeof Storage !== 'undefined') {
-            var collapsedBlocks = Craft.SuperTable.InputRow.getCollapsedBlockIds(),
-                collapsedBlocksIndex = $.inArray('' + this.id, collapsedBlocks);
+            menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
 
-            if (collapsedBlocksIndex !== -1) {
-                collapsedBlocks.splice(collapsedBlocksIndex, 1);
-                Craft.SuperTable.InputRow.setCollapsedBlockIds(collapsedBlocks);
-            }
-        }
-
-        if (!this.isNew) {
-            Craft.SuperTable.InputRow.forgetCollapsedBlockId(this.id);
-        }
-        else if (this.$collapsedInput) {
-            this.$collapsedInput.val('');
-        }
-
-        this.collapsed = false;
-    },
-
-    onMenuOptionSelect: function(option) {
-        var $option = $(option);
-
-        switch ($option.data('action')) {
-            case 'collapse': {
-                this.collapse(true);
-                break;
+            // Was this block already collapsed?
+            if (Garnish.hasAttr(this.$tr, 'data-collapsed')) {
+                this.collapse();
             }
 
-            case 'expand': {
+            this._handleTitleBarClick = function(ev) {
+                ev.preventDefault();
+                this.toggle();
+            };
+
+            this.addListener(this.$titlebar, 'doubletap', this._handleTitleBarClick);
+        },
+
+        deleteRow: function() {
+            this.table.sorter.removeItems(this.$tr);
+
+            this.contract(function() {
+                this.$tr.remove();
+
+                this.table.updateAddBlockBtn();
+            });
+        },
+
+        toggle: function() {
+            if (this.collapsed) {
                 this.expand();
-                break;
+            }
+            else {
+                this.collapse(true);
+            }
+        },
+
+        collapse: function(animate) {
+            if (this.collapsed) {
+                return;
             }
 
-            case 'delete': {
-                this.deleteRow();
-                break;
+            this.$tr.addClass('collapsed');
+
+            var previewHtml = '',
+                $fields = this.$fieldsContainer.children();
+
+            for (var i = 0; i < $fields.length; i++) {
+                var $field = $($fields[i]),
+                    $inputs = $field.children('.input').find('select,input[type!="hidden"],textarea,.label'),
+                    inputPreviewText = '';
+
+                for (var j = 0; j < $inputs.length; j++) {
+                    var $input = $($inputs[j]),
+                        value;
+
+                    if ($input.hasClass('label')) {
+                        var $maybeLightswitchContainer = $input.parent().parent();
+
+                        if ($maybeLightswitchContainer.hasClass('lightswitch') && (
+                                ($maybeLightswitchContainer.hasClass('on') && $input.hasClass('off')) ||
+                                (!$maybeLightswitchContainer.hasClass('on') && $input.hasClass('on'))
+                            )) {
+                            continue;
+                        }
+
+                        value = $input.text();
+                    }
+                    else {
+                        value = Craft.getText(Garnish.getInputPostVal($input));
+                    }
+
+                    if (value instanceof Array) {
+                        value = value.join(', ');
+                    }
+
+                    if (value) {
+                        value = Craft.trim(value);
+
+                        if (value) {
+                            if (inputPreviewText) {
+                                inputPreviewText += ', ';
+                            }
+
+                            inputPreviewText += value;
+                        }
+                    }
+                }
+
+                if (inputPreviewText) {
+                    previewHtml += (previewHtml ? ' <span>|</span> ' : '') + inputPreviewText;
+                }
             }
-        }
-    },
-});
 
+            this.$previewContainer.html(previewHtml);
 
+            this.$fieldsContainer.velocity('stop');
+            this.$tr.velocity('stop');
 
+            if (animate) {
+                this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
+                this.$tr.velocity({height: 16}, 'fast');
+            }
+            else {
+                this.$previewContainer.show();
+                this.$fieldsContainer.hide();
+                this.$tr.css({height: 16});
+            }
+
+            setTimeout($.proxy(function() {
+                this.$actionMenu.find('a[data-action=collapse]:first').parent().addClass('hidden');
+                this.$actionMenu.find('a[data-action=expand]:first').parent().removeClass('hidden');
+            }, this), 200);
+
+            // Remember that?
+            if (!this.isNew) {
+                Craft.SuperTable.InputMatrix.rememberCollapsedBlockId(this.id);
+            }
+            else {
+                if (!this.$collapsedInput) {
+                    this.$collapsedInput = $('<input type="hidden" name="' + this.matrix.inputNamePrefix + '[' + this.id + '][collapsed]" value="1"/>').appendTo(this.$container);
+                }
+                else {
+                    this.$collapsedInput.val('1');
+                }
+            }
+
+            this.collapsed = true;
+        },
+
+        expand: function() {
+            if (!this.collapsed) {
+                return;
+            }
+
+            this.$tr.removeClass('collapsed');
+
+            this.$fieldsContainer.velocity('stop');
+            this.$tr.velocity('stop');
+
+            var collapsedContainerHeight = this.$tr.height();
+            this.$tr.height('auto');
+            this.$fieldsContainer.show();
+            var expandedContainerHeight = this.$tr.height();
+            this.$tr.height(collapsedContainerHeight);
+            this.$fieldsContainer.hide().velocity('fadeIn', {duration: 'fast'});
+            this.$tr.velocity({height: expandedContainerHeight}, 'fast', $.proxy(function() {
+                this.$previewContainer.html('');
+                this.$tr.height('auto');
+            }, this));
+
+            setTimeout($.proxy(function() {
+                this.$actionMenu.find('a[data-action=collapse]:first').parent().removeClass('hidden');
+                this.$actionMenu.find('a[data-action=expand]:first').parent().addClass('hidden');
+            }, this), 200);
+
+            // Remember that?
+            if (!this.isNew && typeof Storage !== 'undefined') {
+                var collapsedBlocks = Craft.SuperTable.InputMatrix.getCollapsedBlockIds(),
+                    collapsedBlocksIndex = $.inArray('' + this.id, collapsedBlocks);
+
+                if (collapsedBlocksIndex !== -1) {
+                    collapsedBlocks.splice(collapsedBlocksIndex, 1);
+                    Craft.SuperTable.InputMatrix.setCollapsedBlockIds(collapsedBlocks);
+                }
+            }
+
+            if (!this.isNew) {
+                Craft.SuperTable.InputMatrix.forgetCollapsedBlockId(this.id);
+            }
+            else if (this.$collapsedInput) {
+                this.$collapsedInput.val('');
+            }
+
+            this.collapsed = false;
+        },
+
+        onMenuOptionSelect: function(option) {
+            var $option = $(option);
+
+            switch ($option.data('action')) {
+                case 'collapse': {
+                    this.collapse(true);
+                    break;
+                }
+
+                case 'expand': {
+                    this.expand();
+                    break;
+                }
+
+                case 'delete': {
+                    this.deleteRow();
+                    break;
+                }
+            }
+        },
+    });
 })(jQuery);
