@@ -108,6 +108,10 @@
     margin: 10px 0;
 }
 
+body.ltr .superTableRow > .titlebar {
+    padding: 5px 70px 5px 5px;
+}
+
 .superTableRow .rowHeader {
     font-weight: bold;
     vertical-align: top;

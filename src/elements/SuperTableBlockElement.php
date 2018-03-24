@@ -131,6 +131,11 @@ class SuperTableBlockElement extends Element
     public $sortOrder;
 
     /**
+     * @var bool Collapsed
+     */
+    public $collapsed = false;
+
+    /**
      * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
      */
     private $_owner;

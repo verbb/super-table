@@ -176,9 +176,10 @@ Craft.SuperTable.InputRow = Garnish.Base.extend({
         this.$divInner = this.$div.children('.rowLayoutContainer');
 
         this.$rows = this.$divInner.children('.superTableRow');
+        collapsedRows = Craft.SuperTable.InputRow.getCollapsedBlockIds();
 
         this.sorter = new Garnish.DragSort(this.$rows, {
-            handle: 'tfoot .reorder .move',
+            handle: '.actions .move',
             axis: 'y',
             collapseDraggees: true,
             magnetStrength: 4,
@@ -187,7 +188,7 @@ Craft.SuperTable.InputRow = Garnish.Base.extend({
         });
 
         for (var i = 0; i < this.$rows.length; i++) {
-            new Craft.SuperTable.InputRow.Row(this, this.$rows[i]);
+            var row = new Craft.SuperTable.InputRow.Row(this, this.$rows[i]);
 
             var $block = $(this.$rows[i]),
                 id = $block.data('id');
@@ -197,6 +198,10 @@ Craft.SuperTable.InputRow = Garnish.Base.extend({
 
             if (newMatch && newMatch[1] > this.totalNewBlocks) {
                 this.totalNewBlocks = parseInt(newMatch[1]);
+            }
+
+            if (id && $.inArray('' + id, collapsedRows) !== -1) {
+                row.collapse();
             }
         }
 
@@ -291,6 +296,44 @@ Craft.SuperTable.InputRow = Garnish.Base.extend({
             this.$addRowBtn.addClass('disabled');
         }
     },
+}, {
+    collapsedBlockStorageKey: 'Craft-' + Craft.systemUid + '.SuperTable.InputRow.collapsedBlocks',
+
+    getCollapsedBlockIds: function() {
+        if (typeof localStorage[Craft.SuperTable.InputRow.collapsedBlockStorageKey] === 'string') {
+            return Craft.filterArray(localStorage[Craft.SuperTable.InputRow.collapsedBlockStorageKey].split(','));
+        }
+        else {
+            return [];
+        }
+    },
+
+    setCollapsedBlockIds: function(ids) {
+        localStorage[Craft.SuperTable.InputRow.collapsedBlockStorageKey] = ids.join(',');
+    },
+
+    rememberCollapsedBlockId: function(id) {
+        if (typeof Storage !== 'undefined') {
+            var collapsedBlocks = Craft.SuperTable.InputRow.getCollapsedBlockIds();
+
+            if ($.inArray('' + id, collapsedBlocks) === -1) {
+                collapsedBlocks.push(id);
+                Craft.SuperTable.InputRow.setCollapsedBlockIds(collapsedBlocks);
+            }
+        }
+    },
+
+    forgetCollapsedBlockId: function(id) {
+        if (typeof Storage !== 'undefined') {
+            var collapsedBlocks = Craft.SuperTable.InputRow.getCollapsedBlockIds(),
+                collapsedBlocksIndex = $.inArray('' + id, collapsedBlocks);
+
+            if (collapsedBlocksIndex !== -1) {
+                collapsedBlocks.splice(collapsedBlocksIndex, 1);
+                Craft.SuperTable.InputRow.setCollapsedBlockIds(collapsedBlocks);
+            }
+        }
+    }
 });
 
 Craft.SuperTable.InputRow.Row = Garnish.Base.extend({
@@ -298,13 +341,43 @@ Craft.SuperTable.InputRow.Row = Garnish.Base.extend({
 
     $tr: null,
     $deleteBtn: null,
+    $titlebar: null,
+    $actionMenu: null,
+
+    id: null,
+    collapsed: false,
+    $previewContainer: null,
+    $fieldsContainer: null,
 
     init: function(table, tr) {
         this.table = table;
         this.$tr = $(tr);
+        this.id = this.$tr.data('id');
 
         var $deleteBtn = this.$tr.children().last().find('tfoot .delete');
         this.addListener($deleteBtn, 'click', 'deleteRow');
+
+        this.$titlebar = this.$tr.children('.titlebar');
+        this.$previewContainer = this.$titlebar.children('.preview');
+        this.$fieldsContainer = this.$tr.children('.fields');
+        var $menuBtn = this.$tr.find('> .actions > .settings'),
+            menuBtn = new Garnish.MenuBtn($menuBtn);
+
+        this.$actionMenu = menuBtn.menu.$container;
+
+        menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
+
+        // Was this block already collapsed?
+        if (Garnish.hasAttr(this.$tr, 'data-collapsed')) {
+            this.collapse();
+        }
+
+        this._handleTitleBarClick = function(ev) {
+            ev.preventDefault();
+            this.toggle();
+        };
+
+        this.addListener(this.$titlebar, 'doubletap', this._handleTitleBarClick);
     },
 
     deleteRow: function() {
@@ -342,7 +415,176 @@ Craft.SuperTable.InputRow.Row = Garnish.Base.extend({
             marginBottom: -(this.$tr.outerHeight())
         };
     },
-    
+
+    toggle: function() {
+        if (this.collapsed) {
+            this.expand();
+        }
+        else {
+            this.collapse(true);
+        }
+    },
+
+    collapse: function(animate) {
+        if (this.collapsed) {
+            return;
+        }
+
+        this.$tr.addClass('collapsed');
+
+        var previewHtml = '',
+            $fields = this.$fieldsContainer.children();
+
+        for (var i = 0; i < $fields.length; i++) {
+            var $field = $($fields[i]),
+                $inputs = $field.children('.input').find('select,input[type!="hidden"],textarea,.label'),
+                inputPreviewText = '';
+
+            for (var j = 0; j < $inputs.length; j++) {
+                var $input = $($inputs[j]),
+                    value;
+
+                if ($input.hasClass('label')) {
+                    var $maybeLightswitchContainer = $input.parent().parent();
+
+                    if ($maybeLightswitchContainer.hasClass('lightswitch') && (
+                            ($maybeLightswitchContainer.hasClass('on') && $input.hasClass('off')) ||
+                            (!$maybeLightswitchContainer.hasClass('on') && $input.hasClass('on'))
+                        )) {
+                        continue;
+                    }
+
+                    value = $input.text();
+                }
+                else {
+                    value = Craft.getText(Garnish.getInputPostVal($input));
+                }
+
+                if (value instanceof Array) {
+                    value = value.join(', ');
+                }
+
+                if (value) {
+                    value = Craft.trim(value);
+
+                    if (value) {
+                        if (inputPreviewText) {
+                            inputPreviewText += ', ';
+                        }
+
+                        inputPreviewText += value;
+                    }
+                }
+            }
+
+            if (inputPreviewText) {
+                previewHtml += (previewHtml ? ' <span>|</span> ' : '') + inputPreviewText;
+            }
+        }
+
+        this.$previewContainer.html(previewHtml);
+
+        this.$fieldsContainer.velocity('stop');
+        this.$tr.velocity('stop');
+
+        if (animate) {
+            this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
+            this.$tr.velocity({height: 16}, 'fast');
+        }
+        else {
+            this.$previewContainer.show();
+            this.$fieldsContainer.hide();
+            this.$tr.css({height: 16});
+        }
+
+        setTimeout($.proxy(function() {
+            this.$actionMenu.find('a[data-action=collapse]:first').parent().addClass('hidden');
+            this.$actionMenu.find('a[data-action=expand]:first').parent().removeClass('hidden');
+        }, this), 200);
+
+        // Remember that?
+        if (!this.isNew) {
+            Craft.SuperTable.InputRow.rememberCollapsedBlockId(this.id);
+        }
+        else {
+            if (!this.$collapsedInput) {
+                this.$collapsedInput = $('<input type="hidden" name="' + this.matrix.inputNamePrefix + '[' + this.id + '][collapsed]" value="1"/>').appendTo(this.$container);
+            }
+            else {
+                this.$collapsedInput.val('1');
+            }
+        }
+
+        this.collapsed = true;
+    },
+
+    expand: function() {
+        if (!this.collapsed) {
+            return;
+        }
+
+        this.$tr.removeClass('collapsed');
+
+        this.$fieldsContainer.velocity('stop');
+        this.$tr.velocity('stop');
+
+        var collapsedContainerHeight = this.$tr.height();
+        this.$tr.height('auto');
+        this.$fieldsContainer.show();
+        var expandedContainerHeight = this.$tr.height();
+        this.$tr.height(collapsedContainerHeight);
+        this.$fieldsContainer.hide().velocity('fadeIn', {duration: 'fast'});
+        this.$tr.velocity({height: expandedContainerHeight}, 'fast', $.proxy(function() {
+            this.$previewContainer.html('');
+            this.$tr.height('auto');
+        }, this));
+
+        setTimeout($.proxy(function() {
+            this.$actionMenu.find('a[data-action=collapse]:first').parent().removeClass('hidden');
+            this.$actionMenu.find('a[data-action=expand]:first').parent().addClass('hidden');
+        }, this), 200);
+
+        // Remember that?
+        if (!this.isNew && typeof Storage !== 'undefined') {
+            var collapsedBlocks = Craft.SuperTable.InputRow.getCollapsedBlockIds(),
+                collapsedBlocksIndex = $.inArray('' + this.id, collapsedBlocks);
+
+            if (collapsedBlocksIndex !== -1) {
+                collapsedBlocks.splice(collapsedBlocksIndex, 1);
+                Craft.SuperTable.InputRow.setCollapsedBlockIds(collapsedBlocks);
+            }
+        }
+
+        if (!this.isNew) {
+            Craft.SuperTable.InputRow.forgetCollapsedBlockId(this.id);
+        }
+        else if (this.$collapsedInput) {
+            this.$collapsedInput.val('');
+        }
+
+        this.collapsed = false;
+    },
+
+    onMenuOptionSelect: function(option) {
+        var $option = $(option);
+
+        switch ($option.data('action')) {
+            case 'collapse': {
+                this.collapse(true);
+                break;
+            }
+
+            case 'expand': {
+                this.expand();
+                break;
+            }
+
+            case 'delete': {
+                this.deleteRow();
+                break;
+            }
+        }
+    },
 });
 
 
