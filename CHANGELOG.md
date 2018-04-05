@@ -1,11 +1,25 @@
 # Changelog
 
-## 2.0.4
+## 2.0.5 - 2018-04-05
+
+### Fixed
+- Updates to be inline with Craft 3.0.0 GA, now minimum requirement
+- Improve field validation
+- Fix post location path for inner fields
+- Fix some minor layout issues with Matrix combinations
+- Fix row layout (and a few other things) not using `site` as the translation key
+- Fix table fields rows now being able to be deleted
+- Fix Row layout not respecting minRows value
+- Field instructions should parse markdown
+- Fix namespacing for nested Matrix fields
+- Fix errors caused by SuperTableBlockElement.eagerLoadingMap()
+
+## 2.0.4 - 2018-02-21
 
 ### Added
 - Minimum requirement for Super Table is now `^3.0.0-RC10`
 
-### Improved
+### Changed
 - Make use of `FieldLayoutBehavior::getFields()` and `setFields()`
 - No longer executes two queries per block type when preparing a Super Table block query.
 
