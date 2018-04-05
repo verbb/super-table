@@ -318,7 +318,15 @@ Craft.SuperTable.InputRow.Row = Garnish.Base.extend({
         this.addListener($deleteBtn, 'click', 'deleteRow');
     },
 
+    canDeleteRows: function() {
+        return (!this.table.settings.minRows || this.table.$divInner.children('.superTableRow').length > this.table.settings.minRows);
+    },
+
     deleteRow: function() {
+        if (!this.canDeleteRows()) {
+            return;
+        }
+
         this.table.sorter.removeItems(this.$tr);
 
         this.contract(function() {
