@@ -199,7 +199,7 @@ class SuperTableMatrixService extends Component
 
         // Set a temporary namespace for these
         $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
+        $namespace = Craft::$app->getView()->namespaceInputName('blockTypes[__BLOCK_TYPE_NESTED__][fields][__FIELD_NESTED__][typesettings]', $originalNamespace);
         Craft::$app->getView()->setNamespace($namespace);
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
