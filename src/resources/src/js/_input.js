@@ -137,7 +137,18 @@ Craft.SuperTable.InputTable = Garnish.Base.extend({
         }
     },
 
-    deleteRow: function() {
+    canDeleteRows: function() {
+        return (!this.settings.minRows || this.$tbody.children().length > this.settings.minRows);
+    },
+
+    deleteRow: function(row) {
+        if (!this.canDeleteRows()) {
+            return;
+        }
+
+        this.sorter.removeItems(row.$tr);
+        row.$tr.remove();
+
         this.updateAddBlockBtn();
     },
 
