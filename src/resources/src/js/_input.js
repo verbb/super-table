@@ -25,6 +25,8 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
             if (settings.fieldLayout == 'table') {
                 new Craft.SuperTable.InputTable(id, blockType, inputNamePrefix, settings);
+            } else if (settings.fieldLayout == 'matrix') {
+                new Craft.SuperTable.InputMatrix(id, blockType, inputNamePrefix, settings);
             } else {
                 new Craft.SuperTable.InputRow(id, blockType, inputNamePrefix, settings);
             }
