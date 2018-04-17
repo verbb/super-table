@@ -23,6 +23,13 @@
 		"oAP": "\/.gitignore",
 		"oF": 0
 		},
+	"\/build\/.gitignore": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/build\/.gitignore",
+		"oF": 0
+		},
 	"\/CHANGELOG.md": {
 		"cB": 0,
 		"cS": 0,
@@ -308,7 +315,8 @@
 	"creationDate": 528723773,
 	"displayValue": "super-table",
 	"displayValueWasSetByUser": 0,
-	"iconImageName": "meme-ariel"
+	"iconImageName": "meme-ariel",
+	"lastBuiltDate": 545664222
 	},
 "projectSettings": {
 	"abortBuildOnError": 1,

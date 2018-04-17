@@ -25,10 +25,8 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
             if (settings.fieldLayout == 'table') {
                 new Craft.SuperTable.InputTable(id, blockType, inputNamePrefix, settings);
-            } else if (settings.fieldLayout == 'row') {
-                new Craft.SuperTable.InputRow(id, blockType, inputNamePrefix, settings);
             } else {
-                new Craft.SuperTable.InputMatrix(id, blockType, inputNamePrefix, settings);
+                new Craft.SuperTable.InputRow(id, blockType, inputNamePrefix, settings);
             }
         }
     });
@@ -139,7 +137,18 @@ if (typeof Craft.SuperTable === typeof undefined) {
             }
         },
 
-        deleteRow: function() {
+        canDeleteRows: function() {
+            return (!this.settings.minRows || this.$tbody.children().length > this.settings.minRows);
+        },
+
+        deleteRow: function(row) {
+            if (!this.canDeleteRows()) {
+                return;
+            }
+
+            this.sorter.removeItems(row.$tr);
+            row.$tr.remove();
+
             this.updateAddBlockBtn();
         },
 
@@ -309,7 +318,15 @@ if (typeof Craft.SuperTable === typeof undefined) {
             this.addListener($deleteBtn, 'click', 'deleteRow');
         },
 
+        canDeleteRows: function() {
+            return (!this.table.settings.minRows || this.table.$divInner.children('.superTableRow').length > this.table.settings.minRows);
+        },
+
         deleteRow: function() {
+            if (!this.canDeleteRows()) {
+                return;
+            }
+
             this.table.sorter.removeItems(this.$tr);
 
             this.contract(function() {
@@ -346,10 +363,6 @@ if (typeof Craft.SuperTable === typeof undefined) {
         },
 
     });
-
-
-
-
 
     Craft.SuperTable.InputMatrix = Garnish.Base.extend({
         id: null,
@@ -768,4 +781,5 @@ if (typeof Craft.SuperTable === typeof undefined) {
             }
         },
     });
+
 })(jQuery);

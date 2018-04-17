@@ -630,8 +630,8 @@ var Field = Garnish.Base.extend({
 
     getParsedFieldTypeHtml: function(html) {
         if (typeof html === 'string') {
-            html = html.replace(/__BLOCK_TYPE__/g, this.blockType.id);
-            html = html.replace(/__FIELD__/g, this.id);
+            html = html.replace(/__BLOCK_TYPE_NESTED__/g, this.blockType.id);
+            html = html.replace(/__FIELD_NESTED__/g, this.id);
         }
         else {
             html = '';

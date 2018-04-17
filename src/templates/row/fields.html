@@ -9,7 +9,7 @@
                     {{ field.name | t('site') }}
 
                     {% if field.instructions %}
-                        <span class="info">{{ field.instructions | t('site') }}</span>
+                        <span class="info">{{ field.instructions | t('site') | md | raw }}</span>
                     {% endif %}
                 </span>
             </td>
