@@ -589,11 +589,13 @@ if (typeof Craft.SuperTable === typeof undefined) {
         deleteRow: function() {
             this.table.sorter.removeItems(this.$tr);
 
-            this.contract(function() {
+            this.$tr.velocity({
+                opacity: 0,
+                marginBottom: -(this.$tr.outerHeight())
+            }, 'fast', $.proxy(function() {
                 this.$tr.remove();
-
                 this.table.updateAddBlockBtn();
-            });
+            }, this));
         },
 
         toggle: function() {
