@@ -180,10 +180,10 @@
 
 {{ forms.selectField({
     label: "Field Layout" | t('super-table'),
-    instructions: "Set how fields are presented. Table Layout displays fields vertically in a table, while Row Layout displays fields horizontally." | t('super-table'),
+    instructions: "Set how fields are presented. Table Layout displays fields vertically in a table, Row Layout displays fields horizontally and Matrix layout displays fields like a Matrix field." | t('super-table'),
     id: 'fieldLayout',
     name: 'fieldLayout',
-    options: {table: 'Table Layout', row: "Row Layout"},
+    options: {table: 'Table Layout', row: "Row Layout", matrix: "Matrix Layout"},
     value: supertableField.fieldLayout,
 }) }}
 
