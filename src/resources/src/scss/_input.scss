@@ -197,9 +197,17 @@
     padding: 6px 0;
 }
 
+/* ==========================================================================
+// Matrix-Layout Styles
+// ========================================================================== */
 
+body.ltr .superTableMatrix > .titlebar {
+    padding: 5px 70px 5px 5px;
+}
 
-
+.superTableMatrix .fields .heading-text {
+    display: none;
+}
 
 /* ==========================================================================
 // Provide special formatting for some field types.
