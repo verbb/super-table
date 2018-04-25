@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.0.6 - 2018-04-25
+
+### Added
+- Added Matrix Layout option (thanks [@Rias500](https://github.com/Rias500))
+- Added back support for `getRelatedElements()`
+
+### Changed
+- Now sets `$propagating` to `true` when saving blocks, if the owner element is propagating.
+
+### Fixed
+Fixed a bug where relational fields within Super Table fields wouldn’t save relations to elements that didn’t exist on all of the sites the owner element existed on. ([#2683](https://github.com/craftcms/cms/issues/2683))
+- Fix query issue when requesting from console (for static fields)
+- Fixed validation-handling when used in a Matrix field. Would allow saving invalid field handles in this context.
+
 ## 2.0.5 - 2018-04-05
 
 ### Fixed

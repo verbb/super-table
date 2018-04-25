@@ -7,7 +7,7 @@
 		"uuidString": "ECE3F09A-2816-43C6-9715-3F4A30BD28C5"
 		}
 	],
-"creatorBuild": "26330",
+"creatorBuild": "26680",
 "files": {
 	"\/.github\/ISSUE_TEMPLATE": {
 		"cB": 0,
@@ -21,13 +21,6 @@
 		"ft": 8192,
 		"oA": 2,
 		"oAP": "\/.gitignore",
-		"oF": 0
-		},
-	"\/build\/.gitignore": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "\/build\/.gitignore",
 		"oF": 0
 		},
 	"\/CHANGELOG.md": {
@@ -316,6 +309,7 @@
 	"displayValue": "super-table",
 	"displayValueWasSetByUser": 0,
 	"iconImageName": "meme-ariel",
+	"iconImageWasSetByUser": 0,
 	"lastBuiltDate": 545664222
 	},
 "projectSettings": {
@@ -2119,6 +2113,7 @@
 		"autoOutputPathReplace1": "",
 		"autoOutputPathReplace2": "",
 		"autoOutputPathStyle": 0,
+		"outputFormat": 0,
 		"quality": 100
 		},
 	"languageDefaultsJS": {
