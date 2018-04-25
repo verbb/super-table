@@ -10,7 +10,7 @@
 - Now sets `$propagating` to `true` when saving blocks, if the owner element is propagating.
 
 ### Fixed
-Fixed a bug where relational fields within Super Table fields wouldn’t save relations to elements that didn’t exist on all of the sites the owner element existed on. ([#2683](https://github.com/craftcms/cms/issues/2683))
+- Fixed a bug where relational fields within Super Table fields wouldn’t save relations to elements that didn’t exist on all of the sites the owner element existed on. ([#2683](https://github.com/craftcms/cms/issues/2683))
 - Fix query issue when requesting from console (for static fields)
 - Fixed validation-handling when used in a Matrix field. Would allow saving invalid field handles in this context.
 
