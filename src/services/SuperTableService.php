@@ -140,6 +140,11 @@ class SuperTableService extends Component
             $blockType->addErrors($blockTypeRecord->getErrors());
         }
 
+        // Reset this each time - normal Super Table fields won't be an issue, but when validation is called multiple times
+        // its because its being embedded in another field (Matrix). Thus, we need to reset unique field handles, because they
+        // can be different across multiple parent fields.
+        $this->_uniqueFieldHandles = [];
+
         // Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
         // handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
         // field handle validation takes its length into account.
