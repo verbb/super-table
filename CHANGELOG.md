@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.7 - 2018-05-08
+
+### Added
+
+- Added Support for [Schematic](https://github.com/nerds-and-company/schematic)
+
+### Fixed
+
+- Fix nested Super Table (in Matrix) fields needing each field handle to be unique
+
 ## 2.0.6 - 2018-04-25
 
 ### Added
