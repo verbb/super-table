@@ -57,6 +57,11 @@ class SuperTable extends Plugin
             });
         }
 
+        if (class_exists(Importers::class)) {
+            Event::on(Importers::class, Importers::EVENT_REGISTER_IMPORTER_TYPES, function (RegisterComponentTypesEvent $event) {
+                $event->types[] = 'verbb\supertable\integrations\sproutimport\importers\fields\SuperTableImporter';
+            });
+        }
         // Setup Variables class (for backwards compatibility)
         Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {
             $variable = $event->sender;
