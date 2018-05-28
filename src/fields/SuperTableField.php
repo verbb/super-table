@@ -204,20 +204,24 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
 
                 if (!empty($config['fields'])) {
                     foreach ($config['fields'] as $fieldId => $fieldConfig) {
-                        /** @noinspection SlowArrayOperationsInLoopInspection */
-                        $fieldConfig = array_merge($defaultFieldConfig, $fieldConfig);
+                        if ($fieldConfig instanceof Field) {
+                            $fields[] = $fieldConfig;
+                        } else {
+                            /** @noinspection SlowArrayOperationsInLoopInspection */
+                            $fieldConfig = array_merge($defaultFieldConfig, $fieldConfig);
 
-                        $fields[] = Craft::$app->getFields()->createField([
-                            'type' => $fieldConfig['type'],
-                            'id' => $fieldId,
-                            'name' => $fieldConfig['name'],
-                            'handle' => $fieldConfig['handle'],
-                            'instructions' => $fieldConfig['instructions'],
-                            'required' => (bool)$fieldConfig['required'],
-                            'translationMethod' => $fieldConfig['translationMethod'],
-                            'translationKeyFormat' => $fieldConfig['translationKeyFormat'],
-                            'settings' => $fieldConfig['typesettings'],
-                        ]);
+                            $fields[] = Craft::$app->getFields()->createField([
+                                'type' => $fieldConfig['type'],
+                                'id' => $fieldId,
+                                'name' => $fieldConfig['name'],
+                                'handle' => $fieldConfig['handle'],
+                                'instructions' => $fieldConfig['instructions'],
+                                'required' => (bool)$fieldConfig['required'],
+                                'translationMethod' => $fieldConfig['translationMethod'],
+                                'translationKeyFormat' => $fieldConfig['translationKeyFormat'],
+                                'settings' => $fieldConfig['typesettings'],
+                            ]);
+                        }
                     }
                 }
 
