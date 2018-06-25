@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.8 -
+
+### Fixed
+
+- Fixed nested Super Table (in Matrix) fields Support for [Schematic](https://github.com/nerds-and-company/schematic)
+
 ## 2.0.7 - 2018-05-08
 
 ### Added
