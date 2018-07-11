@@ -33,6 +33,7 @@ class SuperTableVariable
     *       targetElement: entry,
     *       field: 'superTableFieldHandle.columnHandle',
     *   },
+    *   ownerSite: 'siteHandle',
     *   elementType: 'craft\\elements\\Entry',
     *   criteria: {
     *       id: 'not 123',
@@ -80,11 +81,22 @@ class SuperTableVariable
             return false;
         }
 
-        // Get the Super Table Blocks that are related to that field
-        $elementIds = SuperTableBlockElement::find()
-            ->select('ownerId')
-            ->relatedTo($params['relatedTo'])
-            ->column();
+        // Create an element query to find Super Table Blocks
+        $blockQuery = SuperTableBlockElement::find();
+
+        $blockCriteria = [
+            'relatedTo' => $params['relatedTo']
+        ];
+
+        // Check for ownerSite param add to blockCriteria
+        if (isset($params['ownerSite'])) {
+            $blockCriteria['ownerSite'] = $params['ownerSite'];
+        }
+
+        Craft::configure($blockQuery, $blockCriteria);
+
+        // Get the Super Table Blocks that are related to that field and criteria
+        $elementIds = $blockQuery->select('ownerId')->column();
 
         // Default to getting Entry elements but let the user override
         $elementType = $params['elementType'] ?? Entry::class;
