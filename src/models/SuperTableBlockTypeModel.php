@@ -1,6 +1,8 @@
 <?php
+
 namespace verbb\supertable\models;
 
+use Craft;
 use verbb\supertable\elements\SuperTableBlockElement;
 
 use craft\base\FieldInterface;
@@ -32,6 +34,11 @@ class SuperTableBlockTypeModel extends Model
      */
     public $hasFieldErrors = false;
 
+    /**
+     * @var string
+     */
+    private $handle;
+
     // Public Methods
     // =========================================================================
 
@@ -56,6 +63,36 @@ class SuperTableBlockTypeModel extends Model
         return [
             [['id', 'fieldId'], 'number', 'integerOnly' => true],
         ];
+    }
+
+    /**
+     * Set fake handle.
+     *
+     * @param string
+     */
+    public function setHandle($handle)
+    {
+        $this->handle = $handle;
+    }
+
+    /**
+     * Fake handle for easier integrations.
+     *
+     * @return string
+     */
+    public function getHandle()
+    {
+        if (!isset($this->handle) && $this->fieldId) {
+            $field = Craft::$app->fields->getFieldById($this->fieldId);
+            foreach ($field->getBlockTypes() as $index => $blockType) {
+                if ($blockType->id == $this->id) {
+                    $this->handle = $field->handle.'-'.$index;
+                    break;
+                }
+            }
+        }
+
+        return $this->handle;
     }
 
     /**

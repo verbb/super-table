@@ -13,6 +13,7 @@ class SuperTableBlockTypeSchematic extends Base
     public function getRecordDefinition(Model $record): array
     {
         $definition = parent::getRecordDefinition($record);
+        $definition['handle'] = $record->handle;
 
         unset($definition['attributes']['fieldId']);
         unset($definition['attributes']['hasFieldErrors']);
@@ -24,24 +25,30 @@ class SuperTableBlockTypeSchematic extends Base
 
     public function saveRecord(Model $record, array $definition): bool
     {
+        // Save the super table block
+        return SuperTable::$plugin->service->saveBlockType($record, false);
+    }
+
+    public function setRecordAttributes(Model &$record, array $definition, array $defaultAttributes)
+    {
         // Set the content table for this super table block
         $originalContentTable = Craft::$app->content->contentTable;
-        $superTableField = Craft::$app->fields->getFieldById($record->fieldId);
-        $contentTable = SuperTable::$plugin->service->getContentTableName($superTableField);
-        Craft::$app->content->contentTable = $contentTable;
+        if ($record->fieldId) {
+            $superTableField = Craft::$app->fields->getFieldById($record->fieldId);
+            $contentTable = SuperTable::$plugin->service->getContentTableName($superTableField);
+            Craft::$app->content->contentTable = $contentTable;
+        }
 
-        // Get the super table block fields from the definition
-        $modelMapper = Craft::$app->controller->module->modelMapper;
-        $fields = $modelMapper->import($definition['fields'], $record->getFields(), [], false);
-        $record->setFields($fields);
-
-        // Save the super table block
-        $result = SuperTable::$plugin->service->saveBlockType($record, false);
+        parent::setRecordAttributes($record, $definition, $defaultAttributes);
+        if (array_key_exists('fields', $definition)) {
+            // Get the super table block fields from the definition
+            $modelMapper = Craft::$app->controller->module->modelMapper;
+            $fields = $modelMapper->import($definition['fields'], $record->getFields(), [], false);
+            $record->setFields($fields);
+        }
 
         // Restore the content table to what it was before
         Craft::$app->content->contentTable = $originalContentTable;
-
-        return $result;
     }
 
     public function deleteRecord(Model $record): bool
