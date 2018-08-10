@@ -633,7 +633,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             ->all();
 
         return [
-            'elementType' => SuperTableBlock::class,
+            'elementType' => SuperTableBlockElement::class,
             'map' => $map,
             'criteria' => ['fieldId' => $this->id]
         ];
