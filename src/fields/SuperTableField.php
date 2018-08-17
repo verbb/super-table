@@ -22,6 +22,8 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\validators\ArrayValidator;
 
+use yii\base\UnknownPropertyException;
+
 class SuperTableField extends Field implements EagerLoadingFieldInterface
 {
     // Static
@@ -821,14 +823,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
      */
     private function _createBlocksFromSerializedData($value, ElementInterface $element = null): array
     {
+        if (!is_array($value)) {
+            return [];
+        }
+
         /** @var Element $element */
         // Get the possible block types for this field
         /** @var SuperTableBlockType[] $blockTypes */
         $blockTypes = ArrayHelper::index(SuperTable::$plugin->service->getBlockTypesByFieldId($this->id), 'id');
-
-        if (!is_array($value)) {
-            return [];
-        }
 
         $oldBlocksById = [];
 
@@ -892,7 +894,13 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             }
 
             if (isset($blockData['fields'])) {
-                $block->setFieldValues($blockData['fields']);
+                foreach ($blockData['fields'] as $fieldHandle => $fieldValue) {
+                    try {
+                        $block->setFieldValue($fieldHandle, $fieldValue);
+                    } catch (UnknownPropertyException $e) {
+                        // the field was probably deleted
+                    }
+                }
             }
             
             $sortOrder++;
