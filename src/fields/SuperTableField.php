@@ -546,7 +546,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             }
 
             if (!$block->validate()) {
-                $element->addModelErrors($block, "{$this->handle}[{$i}]");
+                foreach ($block->getErrors() as $attribute => $errors) {
+                    $element->addErrors([
+                        "{$this->handle}[{$i}].{$attribute}" => $errors,
+                    ]);
+                }
             }
         }
     }
