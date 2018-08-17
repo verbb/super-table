@@ -16,6 +16,8 @@ use craft\web\twig\variables\CraftVariable;
 use NerdsAndCompany\Schematic\Schematic;
 use NerdsAndCompany\Schematic\Events\ConverterEvent;
 
+use barrelstrength\sproutbase\app\import\services\Importers;
+
 use yii\base\Event;
 
 class SuperTable extends Plugin
@@ -41,12 +43,12 @@ class SuperTable extends Plugin
             'matrixService' => SuperTableMatrixService::class,
         ]);
 
-        Event::on(Fields::className(), Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
+        Event::on(Fields::className(), Fields::EVENT_REGISTER_FIELD_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = SuperTableField::class;
         });
 
         if (class_exists(Schematic::class)) {
-            Event::on(Schematic::class, Schematic::EVENT_RESOLVE_CONVERTER, function(ConverterEvent $event) {
+            Event::on(Schematic::class, Schematic::EVENT_RESOLVE_CONVERTER, function (ConverterEvent $event) {
                 if ($event->modelClass == SuperTableField::class) {
                     $event->converterClass = 'verbb\supertable\integrations\schematic\converters\fields\SuperTableSchematic';
                 }
@@ -57,8 +59,14 @@ class SuperTable extends Plugin
             });
         }
 
+        if (class_exists(Importers::class)) {
+            Event::on(Importers::class, Importers::EVENT_REGISTER_IMPORTER_TYPES, function (RegisterComponentTypesEvent $event) {
+                $event->types[] = 'verbb\supertable\integrations\sproutimport\importers\fields\SuperTableImporter';
+            });
+        }
+
         // Setup Variables class (for backwards compatibility)
-        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function (Event $event) {
             $variable = $event->sender;
             $variable->set('superTable', SuperTableVariable::class);
         });
