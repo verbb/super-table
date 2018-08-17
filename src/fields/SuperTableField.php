@@ -681,7 +681,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             $supertableBlocksQuery = SuperTableBlockElement::find();
             $supertableBlocksQuery->anyStatus();
             $supertableBlocksQuery->siteId($siteId);
-            $supertableBlocksQuery->owner($element);
+            $supertableBlocksQuery->ownerId($element->id);
 
             /** @var SuperTableBlock[] $supertableBlocks */
             $supertableBlocks = $supertableBlocksQuery->all();
