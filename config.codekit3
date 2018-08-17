@@ -127,6 +127,20 @@
 		"plM": 3758088159,
 		"prP": 0
 		},
+	"\/src\/integrations\/schematic\/converters\/fields\/SuperTableSchematic.php": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/src\/integrations\/schematic\/converters\/fields\/SuperTableSchematic.php",
+		"oF": 0
+		},
+	"\/src\/integrations\/schematic\/converters\/models\/SuperTableBlockTypeSchematic.php": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/src\/integrations\/schematic\/converters\/models\/SuperTableBlockTypeSchematic.php",
+		"oF": 0
+		},
 	"\/src\/migrations": {
 		"ft": 65536,
 		"oA": 1,

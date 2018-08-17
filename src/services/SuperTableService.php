@@ -640,8 +640,7 @@ class SuperTableService extends Component
 
         if (($blocks = $query->getCachedResult()) === null) {
             $query = clone $query;
-            $query->status = null;
-            $query->enabledForSite = false;
+            $query->anyStatus();
             $blocks = $query->all();
         }
 
@@ -685,8 +684,7 @@ class SuperTableService extends Component
 
                 // Delete any blocks that shouldn't be there anymore
                 $deleteBlocksQuery = SuperTableBlockElement::find()
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->ownerId($owner->id)
                     ->fieldId($field->id)
                     ->where(['not', ['elements.id' => $blockIds]]);
@@ -819,9 +817,8 @@ class SuperTableService extends Component
             $blockQuery = SuperTableBlockElement::find()
                 ->fieldId($field->id)
                 ->ownerId($ownerId)
-                ->status(null)
-                ->enabledForSite(false)
                 ->limit(null)
+                ->anyStatus()
                 ->siteId($ownerSiteId)
                 ->ownerSiteId(':empty:');
 
@@ -890,9 +887,8 @@ class SuperTableService extends Component
                     $blocks = SuperTableBlockElement::find()
                         ->fieldId($field->id)
                         ->ownerId($ownerId)
-                        ->status(null)
-                        ->enabledForSite(false)
                         ->limit(null)
+                        ->anyStatus()
                         ->siteId($siteId)
                         ->ownerSiteId($siteId)
                         ->all();
