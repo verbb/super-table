@@ -817,7 +817,6 @@ class SuperTableService extends Component
             $blockQuery = SuperTableBlockElement::find()
                 ->fieldId($field->id)
                 ->ownerId($ownerId)
-                ->limit(null)
                 ->anyStatus()
                 ->siteId($ownerSiteId)
                 ->ownerSiteId(':empty:');
@@ -887,7 +886,6 @@ class SuperTableService extends Component
                     $blocks = SuperTableBlockElement::find()
                         ->fieldId($field->id)
                         ->ownerId($ownerId)
-                        ->limit(null)
                         ->anyStatus()
                         ->siteId($siteId)
                         ->ownerSiteId($siteId)
