@@ -368,9 +368,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
         if (is_array($value) || $value === '') {
-            $query->status = null;
-            $query->enabledForSite = false;
             $query->limit = null;
+            $query->anyStatus();
             $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
         }
 
@@ -466,8 +465,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         if ($value instanceof SuperTableBlockQuery) {
             $value = $value
                 ->limit(null)
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
         }
 
@@ -676,8 +674,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         // Delete any SuperTable blocks that belong to this element(s)
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $supertableBlocksQuery = SuperTableBlockElement::find();
-            $supertableBlocksQuery->status(null);
-            $supertableBlocksQuery->enabledForSite(false);
+            $supertableBlocksQuery->anyStatus();
             $supertableBlocksQuery->siteId($siteId);
             $supertableBlocksQuery->owner($element);
 
@@ -847,8 +844,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 $oldBlocksQuery->ownerId($ownerId);
                 $oldBlocksQuery->id($ids);
                 $oldBlocksQuery->limit(null);
-                $oldBlocksQuery->status(null);
-                $oldBlocksQuery->enabledForSite(false);
+                $oldBlocksQuery->anyStatus();
                 $oldBlocksQuery->siteId($element->siteId);
                 $oldBlocksQuery->indexBy('id');
                 $oldBlocksById = $oldBlocksQuery->all();
