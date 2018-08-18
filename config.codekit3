@@ -141,6 +141,13 @@
 		"oAP": "\/src\/integrations\/schematic\/converters\/models\/SuperTableBlockTypeSchematic.php",
 		"oF": 0
 		},
+	"\/src\/integrations\/sproutimport\/importers\/fields\/SuperTableImporter.php": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/src\/integrations\/sproutimport\/importers\/fields\/SuperTableImporter.php",
+		"oF": 0
+		},
 	"\/src\/migrations": {
 		"ft": 65536,
 		"oA": 1,
@@ -202,6 +209,16 @@
 		"mi": 1,
 		"oA": 1,
 		"oAP": "\/src\/resources\/dist\/js\/_input.js",
+		"oF": 0,
+		"sC": 0,
+		"tS": 0
+		},
+	"\/src\/resources\/src\/js\/_matrix-configurator.js": {
+		"ft": 64,
+		"ma": 1,
+		"mi": 1,
+		"oA": 1,
+		"oAP": "\/src\/resources\/dist\/js\/_matrix-configurator.js",
 		"oF": 0,
 		"sC": 0,
 		"tS": 0

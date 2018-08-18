@@ -192,10 +192,10 @@ var BlockTypeSettingsModalAlt = Garnish.Modal.extend(
         this.handleGenerator = new Craft.HandleGenerator(this.$nameInput, this.$handleInput);
 
         // By default, this will close all other Modals - nah man!
-        this.base(this.$form, {
-            closeOtherModals: false,
-            autoShow: false,
-        });
+        // this.base(this.$form, {
+        //     closeOtherModals: false,
+        //     autoShow: false,
+        // });
 
         this.addListener(this.$cancelBtn, 'click', 'hide');
         this.addListener(this.$form, 'submit', 'onFormSubmit');
