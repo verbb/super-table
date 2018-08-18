@@ -486,6 +486,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
                 $block->siteId = $element->siteId;
+
+                // Set each field to be fresh for auto-generated or static rows
+                foreach ($blockType->getFieldLayout()->getFields() as $field) {
+                    $field->setIsFresh(true);
+                }
+
                 $value[] = $block;
             }
         }
