@@ -15,20 +15,20 @@
 
                 <table class="superTable-table superTable-layout-row">
                     <tbody>
-                    {% include "super-table/row/fields" with {
-                        namespace: name ~ '[' ~ blockId ~ '][fields]',
-                        element: block,
-                        fields: block.getType().getFieldLayout().getFields(),
-                        settings: supertableField,
-                    } %}
+                        {% include "super-table/row/fields" with {
+                            namespace: name ~ '[' ~ blockId ~ '][fields]',
+                            element: block,
+                            fields: block.getType().getFieldLayout().getFields(),
+                            settings: supertableField,
+                        } %}
                     </tbody>
 
                     {% if not staticBlocks %}
                         <tfoot>
-                        <tr>
-                            <td class="floating reorder"><a class="move icon" title="{{ 'Reorder' | t('site') }}"></a></td>
-                            <td class="floating delete"><a class="delete icon" title="{{ 'Delete' | t('site') }}"></a></td>
-                        </tr>
+                            <tr>
+                                <td class="floating reorder"><a class="move icon" title="{{ 'Reorder' | t('site') }}"></a></td>
+                                <td class="floating delete"><a class="delete icon" title="{{ 'Delete' | t('site') }}"></a></td>
+                            </tr>
                         </tfoot>
                     {% endif %}
                 </table>

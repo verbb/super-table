@@ -3,6 +3,19 @@
 
 {% namespace namespace %}
     {% for field in fields %}
+        {% set translatable = field.getIsTranslatable() %}
+
+        {% if translatable %}
+            {% switch field.translationMethod %}
+            {% case 'site' %}
+                {% set translationDescription = 'This field is translated for each site.'|t('app') %}
+            {% case 'siteGroup' %}
+                {% set translationDescription = 'This field is translated for each site group.'|t('app') %}
+            {% case 'language' %}
+                {% set translationDescription = 'This field is translated for each language.'|t('app') %}
+            {% endswitch %}
+        {% endif %}
+
         <tr data-id="">
             <td class="thin rowHeader">
                 <span class="heading-text {% if field.required %}required{% endif %}">
@@ -10,6 +23,10 @@
 
                     {% if field.instructions %}
                         <span class="info">{{ field.instructions | t('site') | md | raw }}</span>
+                    {% endif %}
+
+                    {% if translatable %}
+                        <span class="extralight" data-icon="language" title="{{ translationDescription ?? 'This field is translatable.' | t('app') }}"></span>
                     {% endif %}
                 </span>
             </td>
