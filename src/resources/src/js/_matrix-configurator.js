@@ -73,7 +73,7 @@ Craft.SuperTable.MatrixConfiguratorAlt = Garnish.Base.extend({
             var $item = $($blockTypeItems[i]),
                 id = $item.data('id');
 
-            this.blockTypes[id] = new BlockType(this, $item);
+            this.blockTypes[id] = new BlockTypeAlt(this, $item);
 
             // Is this a new block type?
             var newMatch = (typeof id === 'string' && id.match(/new(\d+)/));
@@ -133,7 +133,7 @@ Craft.SuperTable.MatrixConfiguratorAlt = Garnish.Base.extend({
                 '</div>'
             ).appendTo(this.$blockTypeItemsContainer);
 
-            this.blockTypes[id] = new BlockType(this, $item);
+            this.blockTypes[id] = new BlockTypeAlt(this, $item);
             this.blockTypes[id].applySettings(name, handle);
             this.blockTypes[id].select();
             this.blockTypes[id].addField();
@@ -150,7 +150,7 @@ Craft.SuperTable.MatrixConfiguratorAlt = Garnish.Base.extend({
 
     getBlockTypeSettingsModal: function() {
         if (!this.blockTypeSettingsModal) {
-            this.blockTypeSettingsModal = new BlockTypeSettingsModal();
+            this.blockTypeSettingsModal = new BlockTypeSettingsModalAlt();
         }
 
         return this.blockTypeSettingsModal;
@@ -161,7 +161,7 @@ Craft.SuperTable.MatrixConfiguratorAlt = Garnish.Base.extend({
 /**
 * Block type settings modal class
 */
-var BlockTypeSettingsModal = Garnish.Modal.extend(
+var BlockTypeSettingsModalAlt = Garnish.Modal.extend(
 {
     init: function() {
         this.base();
@@ -293,7 +293,7 @@ var BlockTypeSettingsModal = Garnish.Modal.extend(
 /**
  * Block type class
  */
-var BlockType = Garnish.Base.extend({
+var BlockTypeAlt = Garnish.Base.extend({
     configurator: null,
     id: null,
     errors: null,
@@ -354,7 +354,7 @@ var BlockType = Garnish.Base.extend({
             var $fieldItem = $($fieldItems[i]),
                 id = $fieldItem.data('id');
 
-            this.fields[id] = new Field(this.configurator, this, $fieldItem);
+            this.fields[id] = new FieldAlt(this.configurator, this, $fieldItem);
 
             // Is this a new field?
             var newMatch = (typeof id === 'string' && id.match(/new(\d+)/));
@@ -443,7 +443,7 @@ var BlockType = Garnish.Base.extend({
             '</div>'
         ).appendTo(this.$fieldItemsContainer);
 
-        this.fields[id] = new Field(this.configurator, this, $item);
+        this.fields[id] = new FieldAlt(this.configurator, this, $item);
         this.fields[id].select();
 
         this.fieldSort.addItems($item);
@@ -462,7 +462,7 @@ var BlockType = Garnish.Base.extend({
 });
 
 
-var Field = Garnish.Base.extend({
+var FieldAlt = Garnish.Base.extend({
     configurator: null,
     blockType: null,
     id: null,
