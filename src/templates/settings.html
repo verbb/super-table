@@ -85,16 +85,18 @@
                                         value: field.instructions,
                                         errors: field.getErrors('instructions'),
                                     }) }}
+                                {% endnamespace %}
 
-                                    {#{{ forms.textField({
-                                        label: "Column Width" | t('super-table'),
-                                        instructions: "Only applies for Table Layout. Set the width for this column in either pixels or percentage. i.e. `10px` or `10%`." | t('super-table'),
-                                        id: 'width',
-                                        name: 'width',
-                                        size: 8,
-                                        value: field.width,
-                                    }) }}#}
+                                {{ forms.textField({
+                                    label: "Column Width" | t('super-table'),
+                                    instructions: "Only applies for Table Layout. Set the width for this column in either pixels or percentage. i.e. `10px` or `10%`." | t('super-table'),
+                                    id: 'columns-' ~ fieldId ~ '-width',
+                                    name: 'columns[' ~ fieldId ~ '][width]',
+                                    size: 8,
+                                    value: supertableField.columns[fieldId].width ?? '',
+                                }) }}
 
+                                {% namespace 'blockTypes[' ~ blockType.id ~ '][fields][' ~ fieldId ~ ']' %}
                                     {{ forms.checkboxField({
                                         label: "This field is required" | t('super-table'),
                                         id: 'required',

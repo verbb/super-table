@@ -7,7 +7,9 @@
 
                     {% for blockType in blockTypes %}
                         {% for field in blockType.getFieldLayout().getFields() %}
-                            <th scope="col" class="col-header" {% if width is defined and width %}style="width: {{ width }}"{% endif %}>
+                            {% set width = supertableField.columns[field.id].width ?? '' %}
+
+                            <th scope="col" class="col-header" {% if width %}style="width: {{ width }}"{% endif %}>
                                 <span class="heading-text {% if field.required %}required{% endif %}">
                                     {{ field.name | t('site') }} {% if field.instructions %}<span class="info">{{ field.instructions | t('site') | md | raw }}</span>{% endif %}
                                 </span>
