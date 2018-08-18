@@ -1,0 +1,31 @@
+{% if element is not defined %}{% set element = null %}{% endif %}
+{% if namespace is not defined %}{% set namespace = 'fields' %}{% endif %}
+
+{% namespace namespace %}
+    {% for field in fields %}
+        <tr data-id="">
+            <td class="thin rowHeader">
+                <span class="heading-text {% if field.required %}required{% endif %}">
+                    {{ field.name | t('site') }}
+
+                    {% if field.instructions %}
+                        <span class="info">{{ field.instructions | t('site') | md | raw }}</span>
+                    {% endif %}
+                </span>
+            </td>
+
+            <td>
+                {% include "super-table/field" with {
+                    field:    field,
+                    required: field.required,
+                    element:  element,
+                    static:   (static is defined ? static : null)
+                } only %}
+            </td>
+
+            {% if not staticBlocks %}
+                <td class="thin placeholder"></td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+{% endnamespace %}
