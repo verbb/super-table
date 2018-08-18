@@ -82,6 +82,19 @@ class SuperTableBlockQuery extends ElementQuery
     }
 
     /**
+     * @inheritdoc
+     */
+    public function __get($name)
+    {
+        // Handle querying via the direct field handles for a Static Super Table field - `{{ superTable.customField }}`
+        if (is_string($name)) {
+            return $this->one()->$name ?? null;
+        }
+
+        return parent::__get($name);
+    }
+
+    /**
      * Sets the [[fieldId]] property.
      *
      * @param int|int[]|null $value The property value

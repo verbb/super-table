@@ -380,9 +380,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         }
 
         // TODO: Properly fix this by diving into query...
-        if ($this->staticField && !Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getRequest()->getIsConsoleRequest()) {
-            return $query->one();
-        }
+        // if ($this->staticField && !Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getRequest()->getIsConsoleRequest()) {
+        //     return $query->one();
+        // }
 
         return $query;
     }
