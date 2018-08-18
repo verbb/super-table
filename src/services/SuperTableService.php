@@ -425,10 +425,23 @@ class SuperTableService extends Component
             if (!$this->validateBlockType($blockType, false)) {
                 $validates = false;
 
+                $blockTypeErrors = $blockType->getErrors();
+
+                // Make sure to look at validation for each field
+                if (!$blockTypeErrors) {
+                    foreach ($blockType->getFields() as $blockTypeField) {
+                        $blockTypeFieldErrors = $blockTypeField->getErrors();
+
+                        if ($blockTypeFieldErrors) {
+                            $blockTypeErrors[] = $blockTypeFieldErrors;
+                        }
+                    }
+                }
+
                 // Make sure to add any errors to the actual Super Table field. Really important when its
                 // being nested in a Matrix field, because Matrix checks for the presence of errors - not the result
                 // of this function (which correctly returns false).
-                $supertableField->addErrors([ $blockType->id => $blockType->getErrors() ]);
+                $supertableField->addErrors([ $blockType->id => $blockTypeErrors ]);
             }
         }
 
