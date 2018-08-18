@@ -1,19 +1,43 @@
 # Changelog
 
-## 2.0.8 -
+## 2.0.8 - 2018-08-18
+
+### Added
+- Add translation icon to fields that are set to be translatable.
+- Restore column with functionality for table layouts.
+- Allow fields to be translated for each site group.
+- Added support for optional `ownerSite` parameter in `$params` for `getRelatedElements()` to allow for querying relations stored in Super Table fields in entries in a different site to the current site. (thanks @steverowling).
+- Sprout import support (thanks @timkelty).
+
+### Changed
+- Refactor static table querying into actual query class. Fixed lots of cases related to static layouts.
+- Namespace alternate JS inner-matrix functions, just in case.
+- Improve validation on owner elements.
+- Remove default limits of queries.
+- Ensure field options are sorted by name.
+- Make use of `anyStatus()` query function.
+- Allow Field objects to be passed into SuperTableField::setBlockTypes (thanks @pinfirestudios)
 
 ### Fixed
-
 - Fixed nested Super Table (in Matrix) fields Support for [Schematic](https://github.com/nerds-and-company/schematic)
+- Fixed an error when saving an entry from the front-end with a static Super Table field was attached to an entry.
+- Fixed dropdowns, etc not having their default values set on-load when setting a minimum row.
+- Fix Matrix layout fields not saving correctly when set to static
+- Fix when removing a row in an inner table field would collapse the entire Super Table field if set to Table layout and static.
+- Fix modal form overrides on inner-Matrix field, causing all sorts of errors
+- Fix Matrix > SuperTable > Matrix validation not firing correctly.
+- Don't override siteId when deleting a Super Table block.
+- Fix issue when viewing an entry revision where a field may have been deleted.
+- Fix Eager Loading (thanks @mostlyserious).
+- Fixes for schematic integration with a supertable nested in a matrix field (thanks @bvangennep).
+
 
 ## 2.0.7 - 2018-05-08
 
 ### Added
-
 - Added Support for [Schematic](https://github.com/nerds-and-company/schematic)
 
 ### Fixed
-
 - Fix nested Super Table (in Matrix) fields needing each field handle to be unique
 
 ## 2.0.6 - 2018-04-25
