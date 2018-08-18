@@ -11,9 +11,9 @@
             {% endif %}
 
             <div class="superTableMatrix matrixblock" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %}>
-                {% if not staticBlocks %}
-                    <input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
+                <input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
 
+                {% if not staticBlocks %}
                     <div class="titlebar">
                         <div class="blocktype"></div>
                         <div class="preview"></div>
