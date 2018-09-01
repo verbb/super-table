@@ -200,7 +200,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 $this->_blockTypes[] = $config;
             } else {
                 $blockType = new SuperTableBlockTypeModel();
-                $blockType->id = $key;
+                $blockType->id = is_numeric($key) ? $key : null;
                 $blockType->fieldId = $this->id;
 
                 $fields = [];
@@ -215,7 +215,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
 
                             $fields[] = Craft::$app->getFields()->createField([
                                 'type' => $fieldConfig['type'],
-                                'id' => $fieldId,
+                                'id' => is_numeric($fieldId) ? $fieldId : null,
                                 'name' => $fieldConfig['name'],
                                 'handle' => $fieldConfig['handle'],
                                 'instructions' => $fieldConfig['instructions'],
@@ -343,9 +343,27 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             }
         }
 
+        $blockTypes = [];
+        $blockTypeFields = [];
+        $totalNewBlockTypes = 0;
+
+        foreach ($this->getBlockTypes() as $blockType) {
+            $blockTypeId = (string)($blockType->id ?? 'new' . ++$totalNewBlockTypes);
+            $blockTypes[$blockTypeId] = $blockType;
+
+            $blockTypeFields[$blockTypeId] = [];
+            $totalNewFields = 0;
+            foreach ($blockType->getFields() as $field) {
+                $fieldId = (string)($field->id ?? 'new' . ++$totalNewFields);
+                $blockTypeFields[$blockTypeId][$fieldId] = $field;
+            }
+        }
+
         return Craft::$app->getView()->renderTemplate('super-table/settings', [
             'supertableField' => $this,
-            'fieldTypes' => $fieldTypeOptions
+            'fieldTypes' => $fieldTypeOptions,
+            'blockTypes' => $blockTypes,
+            'blockTypeFields' => $blockTypeFields,
         ]);
     }
 
