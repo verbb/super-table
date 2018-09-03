@@ -452,7 +452,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
                 '<a class="settings icon menubtn" title="'+Craft.t('app', 'Actions')+'" role="button"></a>' +
                 '<div class="menu">' +
                 '<ul class="padded">' +
-                '<li><a data-icon="collapse" data-action="collapse">'+Craft.t('app', 'Colapse')+'</a></li>' +
+                '<li><a data-icon="collapse" data-action="collapse">'+Craft.t('app', 'Collapse')+'</a></li>' +
                 '<li class="hidden"><a data-icon="expand" data-action="expand">'+Craft.t('app', 'Expand')+'</a></li>' +
                 '</ul>' +
                 '<hr class="padded">' +
