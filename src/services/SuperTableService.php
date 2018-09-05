@@ -604,14 +604,14 @@ class SuperTableService extends Component
                 }
             }
 
-            $name = '_'.StringHelper::toLowerCase($handle).$name;
+            $name = '_' . strtolower($handle) . $name;
         } while ($supertableField = $this->getParentSuperTableField($supertableField));
 
         if ($parentFieldId) {
-            $name = '_'.$parentFieldId.$name;
+            $name = '_' . $parentFieldId . $name;
         }
 
-        return '{{%stc'.$name.'}}';
+        return '{{%stc' . $name . '}}';
     }
 
     /**
