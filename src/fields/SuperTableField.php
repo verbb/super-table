@@ -71,11 +71,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     public $maxRows;
 
     /**
-     * @var string Content table name
-     */
-    public $contentTable;
-
-    /**
      * @var int Whether each site should get its own unique set of blocks
      */
     public $localizeBlocks = false;
@@ -89,11 +84,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
      * @var SuperTableBlockType[]|null The block types' fields
      */
     private $_blockTypeFields;
-
-    /**
-     * @var string Old content table name
-     */
-    private $_oldContentTable;
 
     /**
      * @var bool Whether this field is a Static type layout
@@ -677,33 +667,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         ];
     }
 
-    /**
-     * Returns the field's old content table name.
-     *
-     * @return string|null
-     */
-    public function getOldContentTable()
-    {
-        return $this->_oldContentTable;
-    }
-
     // Events
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave(bool $isNew): bool
-    {
-        if (!parent::beforeSave($isNew)) {
-            return false;
-        }
-         // Set the new content table name
-        $this->_oldContentTable = $this->contentTable;
-        $this->contentTable = SuperTable::$plugin->service->defineContentTableName($this);
-        
-        return true;
-    }
 
     /**
      * @inheritdoc
