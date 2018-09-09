@@ -263,7 +263,7 @@ class SuperTableBlockQuery extends ElementQuery
             $supertableField = Craft::$app->getFields()->getFieldById($this->fieldId);
 
             if ($supertableField) {
-                $this->contentTable = SuperTable::$plugin->service->getContentTableName($supertableField);
+                $this->contentTable = $supertableField->contentTable;
             }
         }
 

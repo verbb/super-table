@@ -56,11 +56,6 @@ class SuperTableService extends Component
      */
     private $_uniqueFieldHandles = [];
 
-    /**
-     * @var
-     */
-    private $_parentSuperTableFields;
-
 
     // Public Methods
     // =========================================================================
@@ -374,8 +369,7 @@ class SuperTableService extends Component
             $originalContentTable = $contentService->contentTable;
             /** @var SuperTableField $supertableField */
             $supertableField = $fieldsService->getFieldById($blockType->fieldId);
-            $newContentTable = $this->getContentTableName($supertableField);
-            $contentService->contentTable = $newContentTable;
+            $contentService->contentTable = $supertableField->contentTable;
 
             // Set the new fieldColumnPrefix
             $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
@@ -460,19 +454,16 @@ class SuperTableService extends Component
     public function saveSettings(SuperTableField $supertableField, bool $validate = true): bool
     {
         if (!$validate || $this->validateFieldSettings($supertableField)) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                // Create the content table first since the block type fields will need it
-                $oldContentTable = $this->getContentTableName($supertableField, true);
-                $newContentTable = $this->getContentTableName($supertableField);
+            $db = Craft::$app->getDb();
+            $transaction = $db->beginTransaction();
 
-                if ($newContentTable === false) {
-                    throw new Exception('There was a problem getting the new content table name.');
-                }
+            try {
+                $oldContentTable = $supertableField->getOldContentTable();
+                $newContentTable = $supertableField->contentTable;
 
                 // Do we need to create/rename the content table?
-                if (!Craft::$app->getDb()->tableExists($newContentTable)) {
-                    if ($oldContentTable !== false && Craft::$app->getDb()->tableExists($oldContentTable)) {
+                if (!$db->tableExists($newContentTable)) {
+                    if ($oldContentTable && $db->tableExists($oldContentTable)) {
                         MigrationHelper::renameTable($oldContentTable, $newContentTable);
                     } else {
                         $this->_createContentTable($newContentTable);
@@ -537,13 +528,8 @@ class SuperTableService extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $originalContentTable = Craft::$app->getContent()->contentTable;
-            $contentTable = $this->getContentTableName($supertableField);
 
-            if ($contentTable === false) {
-                throw new Exception('There was a problem getting the content table.');
-            }
-
-            Craft::$app->getContent()->contentTable = $contentTable;
+            Craft::$app->getContent()->contentTable = $supertableField->contentTable;
 
             // Delete the block types
             $blockTypes = $this->getBlockTypesByFieldId($supertableField->id);
@@ -554,7 +540,7 @@ class SuperTableService extends Component
 
             // Drop the content table
             Craft::$app->getDb()->createCommand()
-                ->dropTable($contentTable)
+                ->dropTable($supertableField->contentTable)
                 ->execute();
 
             Craft::$app->getContent()->contentTable = $originalContentTable;
@@ -573,45 +559,40 @@ class SuperTableService extends Component
      * Returns the content table name for a given Super Table field.
      *
      * @param SuperTableField $supertableField  The Super Table field.
-     * @param bool        $useOldHandle Whether the method should use the field’s old handle when determining the table
-     *                                  name (e.g. to get the existing table name, rather than the new one).
-     *
      * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
      */
-    public function getContentTableName(SuperTableField $supertableField, bool $useOldHandle = false)
+    public function getContentTableName(SuperTableField $supertableField)
     {
-        $name = '';
-        $parentFieldId = '';
+        return $supertableField->contentTable;
+    }
 
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-        do {
-            if ($useOldHandle) {
-                if (!$supertableField->oldHandle) {
-                    return false;
-                }
+    /**
+     * Defines a new Super Table content table name.
+     *
+     * @param SuperTable $field
+     * @return string
+     */
+    public function defineContentTableName(SuperTableField $field): string
+    {
+        $baseName = 'stc_' . strtolower($field->handle);
+        $db = Craft::$app->getDb();
+        $i = -1;
 
-                $handle = $supertableField->oldHandle;
-            } else {
-                $handle = $supertableField->handle;
+        // Check if this field is inside a Matrix - we need to prefix this content table if so.
+        if ($field->context != 'global') {
+            $parentFieldContext = explode(':', $field->context);
+
+            if ($parentFieldContext[0] == 'matrixBlockType') {
+                $baseName = 'stc_' . $parentFieldContext[1] . '_' . strtolower($field->handle);
             }
-
-            // Check if this field is inside a Matrix - we need to prefix this content table if so.
-            if ($supertableField->context != 'global') {
-                $parentFieldContext = explode(':', $supertableField->context);
-
-                if ($parentFieldContext[0] == 'matrixBlockType') {
-                    $parentFieldId = $parentFieldContext[1];
-                }
-            }
-
-            $name = '_' . strtolower($handle) . $name;
-        } while ($supertableField = $this->getParentSuperTableField($supertableField));
-
-        if ($parentFieldId) {
-            $name = '_' . $parentFieldId . $name;
         }
 
-        return '{{%stc' . $name . '}}';
+        do {
+            $i++;
+            $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
+        } while ($name !== $field->contentTable && $db->tableExists($name));
+
+        return $name;
     }
 
     /**
@@ -719,38 +700,6 @@ class SuperTableService extends Component
 
             throw $e;
         }
-    }
-
-    /**
-     * Returns the parent Super Table field, if any.
-     *
-     * @param SuperTableField $supertableField The Super Table field.
-     *
-     * @return SuperTableField|null The Super Table field’s parent Super Table field, or `null` if there is none.
-     */
-    public function getParentSuperTableField(SuperTableField $supertableField)
-    {
-        if ($this->_parentSuperTableFields !== null && array_key_exists($supertableField->id, $this->_parentSuperTableFields)) {
-            return $this->_parentSuperTableFields[$supertableField->id];
-        }
-
-        // Does this SuperTable field belong to another one?
-        $parentSuperTableFieldId = (new Query())
-            ->select(['fields.id'])
-            ->from(['{{%fields}} fields'])
-            ->innerJoin('{{%supertableblocktypes}} blocktypes', '[[blocktypes.fieldId]] = [[fields.id]]')
-            ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', '[[fieldlayoutfields.layoutId]] = [[blocktypes.fieldLayoutId]]')
-            ->where(['fieldlayoutfields.fieldId' => $supertableField->id])
-            ->scalar();
-
-        if (!$parentSuperTableFieldId) {
-            return $this->_parentSuperTableFields[$supertableField->id] = null;
-        }
-
-        /** @var SuperTableField $field */
-        $field = $this->_parentSuperTableFields[$supertableField->id] = Craft::$app->getFields()->getFieldById($parentSuperTableFieldId);
-
-        return $field;
     }
 
 

@@ -264,7 +264,7 @@ class SuperTableBlockElement extends Element
      */
     public function getContentTable(): string
     {
-        return SuperTable::$plugin->service->getContentTableName($this->_getField());
+        return $this->_getField()->contentTable;
     }
 
     /**
