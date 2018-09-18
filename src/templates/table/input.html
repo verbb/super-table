@@ -30,7 +30,7 @@
                         {% endfor %}
                     {% endfor %}
 
-                    {% if not staticBlocks %}
+                    {% if not staticField %}
                         <th class="col-header" colspan="2"></th>
                     {% endif %}
                 </tr>
@@ -58,7 +58,7 @@
                             settings: supertableField,
                         } %}
 
-                        {% if not staticBlocks %}
+                        {% if not staticField %}
                             <td class="thin action super-table-action">
                                 <a class="move icon" title="{{ 'Reorder' | t('site') }}"></a>
                             </td>
@@ -75,12 +75,10 @@
             </tbody>
         </table>
 
-        {% if not staticBlocks %}
+        {% if not staticField %}
             <div class="btn add icon">
                 {{ supertableField.selectionLabel | default("Add a row") | t('site') }}
             </div>
         {% endif %}
     </div>
 </div>
-
-

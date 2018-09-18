@@ -472,7 +472,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
 
         $createDefaultBlocks = $this->minRows != 0 && count($blockTypeInfo) === 1;
-        $staticBlocks = ($createDefaultBlocks && $this->minRows == $this->maxRows) || $this->staticField;
+        $staticBlocks = ($createDefaultBlocks && $this->minRows == $this->maxRows);
 
         Craft::$app->getView()->registerAssetBundle(SuperTableAsset::class);
 
@@ -523,6 +523,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             'blocks' => $value,
             'static' => false,
             'staticBlocks' => $staticBlocks,
+            'staticField' => $this->staticField,
             'supertableField' => $this,
         ]);
     }
@@ -822,7 +823,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 'fields' => $fieldLayoutFields,
                 'element' => $block,
                 'settings' => $settings,
-                'staticBlocks' => $this->staticField,
+                'staticField' => $this->staticField,
             ]));
 
             // Reset $_isFresh's

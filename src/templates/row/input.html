@@ -23,7 +23,7 @@
                         } %}
                     </tbody>
 
-                    {% if not staticBlocks %}
+                    {% if not staticField %}
                         <tfoot>
                             <tr>
                                 <td class="floating reorder"><a class="move icon" title="{{ 'Reorder' | t('site') }}"></a></td>
@@ -36,7 +36,7 @@
         {% endfor %}
     </div>
 
-    {% if not staticBlocks %}
+    {% if not staticField %}
         <div class="superTableAddRow btn add icon">
             {{ supertableField.selectionLabel | default("Add a row") | t('site') }}
         </div>
