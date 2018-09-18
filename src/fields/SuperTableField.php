@@ -92,6 +92,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
 
     public $columns = [];
 
+    public $contentTable;
+
     // Superseeded - but will throw an error when updating from Craft 2. These will exist in the field
     // settings, but not in this class - we just add them as 'dummy' properties for now...
     public $fieldLayout;

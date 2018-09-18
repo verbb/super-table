@@ -95,6 +95,19 @@ class SuperTableBlockQuery extends ElementQuery
     }
 
     /**
+     * @inheritdoc
+     */
+    public function __call($name, $params)
+    {
+        // Handle calling methods a Static Super Table field - `{{ superTable.getFieldLayout().fields }}`
+        if (is_string($name)) {
+            return $this->one()->$name($params) ?? null;
+        }
+
+        return parent::__call($name, $params);
+    }
+
+    /**
      * Sets the [[fieldId]] property.
      *
      * @param int|int[]|null $value The property value
