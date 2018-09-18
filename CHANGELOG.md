@@ -8,7 +8,7 @@
 ### Fixed
 - Fixed a SQL error that occurred when saving a Super Table field with new sub-fields on PostgreSQL (thanks @brandonkelly).
 - Fixed Twig error in Craft 3.0.23 (thanks @brandonkelly).
-Fixed a typo: 'colapse' > 'collapse' (thanks @joshangell).
+- Fixed a typo: 'colapse' > 'collapse' (thanks @joshangell).
 
 ## 2.0.8 - 2018-08-18
 
