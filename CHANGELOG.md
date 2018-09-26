@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.10 - 2018-09-26
+
+### Fixed
+- Allow block element methods being called on static super tables.
+- Ensure setups with min/max limits can still reorder items.
+- Fix JS error when editing a Super Table field, but only when validation has failed..
+
 ## 2.0.9 - 2018-09-05
 
 ### Changed
