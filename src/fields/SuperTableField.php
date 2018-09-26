@@ -269,16 +269,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         $fieldTypeInfo = $this->_getFieldOptionsForConfigurator();
 
         $blockTypes = $this->getBlockTypes();
-        $tableId = ($blockTypes) ? $blockTypes[0]->id : 'new';
-
-        $view = Craft::$app->getView();
-
-        $view->registerAssetBundle(SuperTableAsset::class);
-        $view->registerJs('new Craft.SuperTable.Configurator(' .
-            Json::encode($tableId, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode(Craft::$app->getView()->getNamespace(), JSON_UNESCAPED_UNICODE) .
-        ');');
 
         // Look for any missing fields and convert to Plain Text
         foreach ($this->getBlockTypes() as $blockType) {
@@ -360,6 +350,16 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                 $blockTypeFields[$blockTypeId][$fieldId] = $field;
             }
         }
+
+        $tableId = ArrayHelper::firstKey($blockTypes) ?? 'new';
+
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(SuperTableAsset::class);
+        $view->registerJs('new Craft.SuperTable.Configurator(' .
+            Json::encode($tableId, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode(Craft::$app->getView()->getNamespace(), JSON_UNESCAPED_UNICODE) .
+        ');');
 
         return Craft::$app->getView()->renderTemplate('super-table/settings', [
             'supertableField' => $this,
