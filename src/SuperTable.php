@@ -1,15 +1,16 @@
 <?php
 namespace verbb\supertable;
 
+use verbb\supertable\base\PluginTrait;
+use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\models\SuperTableBlockTypeModel;
-use verbb\supertable\services\SuperTableService;
-use verbb\supertable\services\SuperTableMatrixService;
 use verbb\supertable\variables\SuperTableVariable;
 
 use Craft;
 use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
+use craft\services\Elements;
 use craft\services\Fields;
 use craft\web\twig\variables\CraftVariable;
 
@@ -22,10 +23,10 @@ use yii\base\Event;
 
 class SuperTable extends Plugin
 {
-    // Static Properties
+    // Traits
     // =========================================================================
 
-    public static $plugin;
+    use PluginTrait;
 
 
     // Public Methods
@@ -37,16 +38,42 @@ class SuperTable extends Plugin
 
         self::$plugin = $this;
 
-        // Register Components (Services)
-        $this->setComponents([
-            'service' => SuperTableService::class,
-            'matrixService' => SuperTableMatrixService::class,
-        ]);
+        $this->_setPluginComponents();
+        $this->_setLogging();
+        $this->_registerVariables();
+        $this->_registerFieldTypes();
+        $this->_registerElementTypes();
+        $this->_registerIntegrations();
+    }
 
-        Event::on(Fields::className(), Fields::EVENT_REGISTER_FIELD_TYPES, function (RegisterComponentTypesEvent $event) {
+    // Private Methods
+    // =========================================================================
+
+
+    private function _registerVariables()
+    {
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {
+            $event->sender->set('superTable', SuperTableVariable::class);
+        });
+    }
+
+    private function _registerFieldTypes()
+    {
+        Event::on(Fields::className(), Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = SuperTableField::class;
         });
+    }
 
+    private function _registerElementTypes()
+    {
+        Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function(RegisterComponentTypesEvent $event) {
+            $event->types[] = SuperTableBlockElement::class;
+        });
+    }
+
+    private function _registerIntegrations()
+    {
+        // Support for Schematic - https://github.com/nerds-and-company/schematic
         if (class_exists(Schematic::class)) {
             Event::on(Schematic::class, Schematic::EVENT_RESOLVE_CONVERTER, function (ConverterEvent $event) {
                 if ($event->modelClass == SuperTableField::class) {
@@ -59,16 +86,12 @@ class SuperTable extends Plugin
             });
         }
 
+        // Support for Sprout Import - https://github.com/barrelstrength/craft-sprout-import
         if (class_exists(Importers::class)) {
             Event::on(Importers::class, Importers::EVENT_REGISTER_IMPORTER_TYPES, function (RegisterComponentTypesEvent $event) {
                 $event->types[] = 'verbb\supertable\integrations\sproutimport\importers\fields\SuperTableImporter';
             });
         }
-
-        // Setup Variables class (for backwards compatibility)
-        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function (Event $event) {
-            $variable = $event->sender;
-            $variable->set('superTable', SuperTableVariable::class);
-        });
     }
+
 }
