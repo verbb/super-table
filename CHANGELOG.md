@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.11 - 2018-10-24
+
+### Fixed
+- Fixed Dashboard error (thanks @brandonkelly).
+- Fix error when throwing an error for field handles (ironic hey?).
+- Drop indexes before renaming instead of after. Otherwise this causes errors on mariadb. (thanks @born05).
+
 ## 2.0.10 - 2018-09-26
 
 ### Fixed
