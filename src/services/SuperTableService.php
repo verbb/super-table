@@ -130,7 +130,7 @@ class SuperTableService extends Component
     {
         $validates = true;
 
-        $reservedHandles = array('type');
+        $reservedHandles = ['type'];
 
         $blockTypeRecord = $this->_getBlockTypeRecord($blockType);
         $blockTypeRecord->fieldId = $blockType->fieldId;
@@ -186,7 +186,7 @@ class SuperTableService extends Component
                 $blockType->hasFieldErrors = true;
                 $validates = false;
 
-                $field->addErrors(array('handle' => Craft::t('"{handle}" is a reserved word.', array('handle' => $field->handle))));
+                $field->addErrors(['handle' => Craft::t('app', '"{handle}" is a reserved word.', ['handle' => $field->handle])]);
             }
 
             // Special-case for validating child Matrix fields
@@ -199,7 +199,7 @@ class SuperTableService extends Component
                         $validates = false;
 
                         // Store a generic error for our parent Super Table field to show a nested error exists
-                        $field->addErrors(array('field' => 'general'));
+                        $field->addErrors(['field' => 'general']);
                     }
                 }
             }

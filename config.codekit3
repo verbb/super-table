@@ -7,7 +7,7 @@
 		"uuidString": "ECE3F09A-2816-43C6-9715-3F4A30BD28C5"
 		}
 	],
-"creatorBuild": "28795",
+"creatorBuild": "28905",
 "files": {
 	"/.github/ISSUE_TEMPLATE": {
 		"cB": 0,
@@ -89,6 +89,12 @@
 		"ft": 65536,
 		"oA": 1,
 		"oAP": "/build/src/assetbundles",
+		"oF": 0
+		},
+	"/src/base": {
+		"ft": 65536,
+		"oA": 1,
+		"oAP": "/build/src/base",
 		"oF": 0
 		},
 	"/src/elements": {
