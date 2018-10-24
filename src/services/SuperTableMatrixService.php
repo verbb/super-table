@@ -171,8 +171,7 @@ class SuperTableMatrixService extends Component
         if ($value instanceof MatrixBlockQuery) {
             $value = $value
                 ->limit(null)
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
         }
 
@@ -184,8 +183,7 @@ class SuperTableMatrixService extends Component
                 $block = new MatrixBlock();
                 $block->fieldId = $matrixField->id;
                 $block->typeId = $blockType->id;
-                $block->fieldLayoutId = $blockType->fieldLayoutId;
-                $block->siteId = $element->siteId;
+                $block->siteId = $element->siteId ?? Craft::$app->getSites()->getCurrentSite()->id;
                 $value[] = $block;
             }
         }
@@ -241,6 +239,9 @@ class SuperTableMatrixService extends Component
             ];
         }
 
+        // Sort them by name
+        ArrayHelper::multisort($fieldTypes, 'name');
+
         Craft::$app->getView()->setNamespace($originalNamespace);
 
         return $fieldTypes;
@@ -261,7 +262,6 @@ class SuperTableMatrixService extends Component
             $block = new MatrixBlock();
             $block->fieldId = $matrixField->id;
             $block->typeId = $blockType->id;
-            $block->fieldLayoutId = $blockType->fieldLayoutId;
 
             if ($element) {
                 $block->setOwner($element);
