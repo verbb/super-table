@@ -964,15 +964,14 @@ class SuperTableService extends BaseApplicationComponent
             if ($superTableField->type == 'SuperTable') {
 
                 $values = array();
-                foreach ($data as $index => $block) {
-                    foreach ($block->getFieldLayout()->getFields() as $fieldLayoutField) {
-                        $field = $fieldLayoutField->getField();
 
-                        $value = $block->getFieldValue($field->handle);
-                        $value = $this->parseFieldData($field, $value);
+                foreach ($data->getFieldLayout()->getFields() as $fieldLayoutField) {
+                    $field = $fieldLayoutField->getField();
 
-                        $values[] = $value;
-                    }
+                    $value = $data->getFieldValue($field->handle);
+                    $value = $this->parseFieldData($field, $value);
+
+                    $values[] = $value;
                 }
 
                 $data = $values;
