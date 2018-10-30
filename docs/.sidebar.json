@@ -1,0 +1,34 @@
+[
+    {
+        "title": "Get Started",
+        "collapsable": false,
+        "children": [
+            "get-started/installation-setup",
+            "get-started/requirements"
+        ]
+    },
+    {
+        "title": "Feature Tour",
+        "collapsable": false,
+        "children": [
+            "feature-tour/layouts",
+            "feature-tour/supported-fieldtypes"
+        ]
+    },
+    {
+        "title": "Content Mapping",
+        "collapsable": false,
+        "children": [
+            "guides/developer-examples",
+            "guides/templating-examples"
+        ]
+    },
+    {
+        "title": "Support",
+        "collapsable": false,
+        "children": [
+            "support/get-support",
+            "support/release-notes"
+        ]
+    }
+]
