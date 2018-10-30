@@ -16,7 +16,7 @@
         ]
     },
     {
-        "title": "Content Mapping",
+        "title": "Guides",
         "collapsable": false,
         "children": [
             "guides/developer-examples",
