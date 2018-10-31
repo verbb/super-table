@@ -10,7 +10,7 @@
 {% for row in entry.superTablePlainText %}
     {{ row.plainText }}
 {% endfor %}
-```twig
+```
 
 ## Static Super Table field
 
@@ -20,7 +20,7 @@
 
 ```twig
 {{ entry.superTableRichText.richText }}
-```twig
+```
 
 ## Matrix in Super Table field
 
