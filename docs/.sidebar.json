@@ -26,8 +26,7 @@
         "title": "Support",
         "collapsable": false,
         "children": [
-            "support/get-support",
-            "support/release-notes"
+            "support/get-support"
         ]
     }
 ]
