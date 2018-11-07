@@ -1,10 +1,23 @@
 # Installation & Setup
+You can install Super Table via the plugin store, or through Composer.
 
-Installing Super Table is as simple as any other Craft plugin - just drop the `supertable` folder in your `craft/plugins` directory and install.
+### Craft Plugin Store
+To install **Super Table**, navigate to the _Plugin Store_ section of your Craft control panel, search for `Super Table`, and click the _Try_ button.
 
-## Installation
+### Composer
+You can also add the package to your project using Composer.
 
-1.  [Download the latest version](/craft-plugins/super-table/pricing) of Super Table and unzip.
-2.  Copy the `supertable/` directory into your `craft/plugins/` directory.
-3.  Inside the Craft control panel, navigate to _Settings → Plugins_.
-4.  Locate the row showing the Super Table plugin and click _Install_.
+1. Open your terminal and go to your Craft project:
+```
+cd /path/to/project
+```
+2. Then tell Composer to load the plugin:
+```
+composer require verbb/super-table
+```
+3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Super Table.
+
+## Licensing
+You can try Super Table in a development environment for as long as you like. Once your site goes live, you are required to purchase a license for the plugin.
+
+For more information, see [Craft's Commercial Plugin Licensing](https://docs.craftcms.com/v3/plugins.html#commercial-plugin-licensing).
