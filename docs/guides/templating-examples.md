@@ -2,7 +2,7 @@
 
 ## Super Table field
 
-**Field Settings** ![](/uploads/plugins/super-table/field_supertable.png)
+**Field Settings** ![](/docs/screenshots/field_supertable.png)
 
 **Template code**
 
@@ -14,7 +14,7 @@
 
 ## Static Super Table field
 
-**Field Settings** ![](/uploads/plugins/super-table/field_supertable_static.png)
+**Field Settings** ![](/docs/screenshots/field_supertable_static.png)
 
 **Template code**
 
@@ -24,9 +24,9 @@
 
 ## Matrix in Super Table field
 
-**Field Settings** ![](/uploads/plugins/super-table/field_supertable_matrix.png)
+**Field Settings** ![](/docs/screenshots/field_supertable_matrix.png)
 
-![](/uploads/plugins/super-table/field_supertable_matrix_settings.png)
+![](/docs/screenshots/field_supertable_matrix_settings.png)
 
 **Template code**
 
