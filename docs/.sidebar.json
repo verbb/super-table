@@ -11,8 +11,7 @@
         "title": "Feature Tour",
         "collapsable": false,
         "children": [
-            "feature-tour/layouts",
-            "feature-tour/supported-fieldtypes"
+            "feature-tour/layouts"
         ]
     },
     {
@@ -27,8 +26,7 @@
         "title": "Support",
         "collapsable": false,
         "children": [
-            "support/get-support",
-            "support/release-notes"
+            "support/get-support"
         ]
     }
 ]
