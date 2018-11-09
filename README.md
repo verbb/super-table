@@ -4,8 +4,6 @@
 
 Super Table is a Craft CMS field type to allow you to create powerful tables. You can utilise all your favourite native Craft field types in your tables, including Assets, Users, Entries and even Matrix. Also supports many third-party field types.
 
-![](https://raw.githubusercontent.com/verbb/super-table/craft-3/docs/screenshots/rowLayout.png)
-
 ## Features
 
 - 3 different layouts for ultimate flexibility; Row, Table and Matrix.
@@ -13,6 +11,8 @@ Super Table is a Craft CMS field type to allow you to create powerful tables. Yo
 - Go crazy with 3-levels of nesting with Matrix > Super Table > Matrix.
 - Static layout option - for when fields need to be grouped, but not repeatable.
 - Unlimited use, free forever.
+
+<img width="800" src="https://raw.githubusercontent.com/verbb/super-table/craft-3/docs/screenshots/rowLayout.png" style="box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-radius: 4px; border: 1px solid rgba(0,0,0,0.12);">
 
 ## Documentation
 
