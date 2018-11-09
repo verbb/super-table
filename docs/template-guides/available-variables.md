@@ -10,7 +10,7 @@ See [Super Table Block Queries](docs:getting-elements/supertable-block-queries)
 
 Expands the defualt relationship behaviour to include Super Table fields so that the user can filter by those too.
 
- ```twig
+```twig
 {% set reverseRelatedElements = craft.superTable.getRelatedElements({
   relatedTo: {
       targetElement: entry,
