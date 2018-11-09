@@ -12,7 +12,7 @@ Super Table is a Craft CMS field type to allow you to create powerful tables. Yo
 - Static layout option - for when fields need to be grouped, but not repeatable.
 - Unlimited use, free forever.
 
-<img src="https://raw.githubusercontent.com/verbb/super-table/craft-3/docs/screenshots/rowLayout.png" style="box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-radius: 4px; border: 1px solid rgba(0,0,0,0.12);">
+<img width="800" src="https://raw.githubusercontent.com/verbb/super-table/craft-3/docs/screenshots/rowLayout.png" style="box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-radius: 4px; border: 1px solid rgba(0,0,0,0.12);">
 
 ## Documentation
 
