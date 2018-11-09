@@ -15,11 +15,21 @@
         ]
     },
     {
-        "title": "Guides",
+        "title": "Template Guides",
         "collapsable": false,
         "children": [
-            "guides/developer-examples",
-            "guides/templating-examples"
+            "template-guides/available-variables",
+            "template-guides/rendering-content",
+            "template-guides/block-querying",
+            "template-guides/front-end-form",
+            "template-guides/php-example"
+        ]
+    },
+    {
+        "title": "Getting Elements",
+        "collapsable": false,
+        "children": [
+            "getting-elements/supertable-block-queries"
         ]
     },
     {

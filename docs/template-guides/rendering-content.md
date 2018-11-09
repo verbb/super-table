@@ -1,4 +1,6 @@
-# Templating Examples
+# Rendering Content
+
+The below shows some typical Twig templating examples for field setups.
 
 ## Super Table field
 
