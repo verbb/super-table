@@ -59,7 +59,7 @@ class SuperTable extends Plugin
 
     private function _registerFieldTypes()
     {
-        Event::on(Fields::className(), Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
+        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = SuperTableField::class;
         });
     }
