@@ -8,7 +8,7 @@
 
 .superTable-table {
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid darken(#e3e5e8, 5%);
     overflow: hidden;
     width: 100%;
     margin-top: 10px;
@@ -39,7 +39,7 @@
 }
 
 .superTable-table tbody tr td.action {
-    background: #ebedef;
+    background: #f1f5f8;
     padding: 4px 7px;
 }
 
@@ -67,11 +67,15 @@
     white-space: nowrap;
 }
 
+.superTable-layout-table tbody tr td:nth-child(2) {
+    border-left: 0;
+}
+
 .superTable-layout-table th,
 .superTable-layout-table td.action {
     color: #8f98a3;
     font-weight: normal;
-    background: #ebedef;
+    background: #f1f5f8;
 }
 
 .superTable-layout-table th.col-header[colspan="2"] {
@@ -84,8 +88,14 @@
 }
 
 /* Tweak the info icon a little */
-.superTable-layout-table .col-header .heading-text .info:before {
-    margin: 1px 0 0 1px;
+.superTable-layout-table .col-header .heading-text {
+    position: relative;
+}
+
+.superTable-layout-table .col-header .heading-text .info {
+    position: absolute;
+    top: 0;
+    right: -20px;
 }
 
 .superTable-layout-table + .btn.add {
@@ -109,17 +119,15 @@
 }
 
 .superTableRow .rowHeader {
-    font-weight: bold;
     vertical-align: top;
-    font-size: 11px;
     line-height: 1.2;
-    color: rgba(0, 0, 0, 0.5);
+    color: #8f98a3;
+    font-weight: normal;
     border-radius: 3px 3px 0 0;
     padding: 8px 7px !important;
     text-align: left;
     white-space: nowrap;
-    background: #f9fafa;
-    box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+    background: #f1f5f8;
 }
 
 .superTableRow .rowHeader .heading-text {
@@ -152,10 +160,14 @@
     top: 0;
     height: 100%;
     text-align: center;
-    background: #ebedef;
+    background: #f1f5f8;
     opacity: 1;
 
     border-left: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.superTable-layout-row tbody tr td:nth-child(2) {
+    border-left: 1px solid #e0e4e7;
 }
 
 .superTableRow .floating .icon.move:before {
