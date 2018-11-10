@@ -399,11 +399,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
         }
 
-        // TODO: Properly fix this by diving into query...
-        // if ($this->staticField && !Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getRequest()->getIsConsoleRequest()) {
-        //     return $query->one();
-        // }
-
         return $query;
     }
 
@@ -636,6 +631,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             'blocks' => $value,
             'static' => true,
             'staticBlocks' => true,
+            'staticField' => $this->staticField,
             'supertableField' => $this,
         ]);
     }
