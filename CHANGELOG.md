@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.12 - 2018-11-10
+
+### Changed
+- Update styles to be inline with Craft 3.
+- Use `duplicateElement()` to clone Super Table blocks after making them localized.
+
+### Fixed
+- Fix error when viewing previous versions of elements that contained a Super Table field.
+
 ## 2.0.11 - 2018-10-24
 
 ### Fixed
