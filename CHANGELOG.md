@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.13 - 2018-11-11
+
+### Fixed
+- Fix lack of styles when editing an entry version.
+
 ## 2.0.12 - 2018-11-10
 
 ### Changed
