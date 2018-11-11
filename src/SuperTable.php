@@ -23,6 +23,13 @@ use yii\base\Event;
 
 class SuperTable extends Plugin
 {
+    // Public Properties
+    // =========================================================================
+
+    public $schemaVersion = '2.0.4';
+    public $hasCpSettings = true;
+    public $hasCpSection = true;
+
     // Traits
     // =========================================================================
 

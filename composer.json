@@ -42,9 +42,6 @@
         "name": "Super Table",
         "handle": "super-table",
         "description": "Super-charge your Craft workflow with Super Table. Use it to group fields together or build complex Matrix-in-Matrix solutions.",
-        "schemaVersion": "2.0.4",
-        "hasCpSettings": false,
-        "hasCpSection": false,
         "documentationUrl": "https://github.com/verbb/super-table",
         "changelogUrl": "https://raw.githubusercontent.com/verbb/super-table/craft-3/CHANGELOG.md",
         "class": "verbb\\supertable\\SuperTable"
