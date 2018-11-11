@@ -624,6 +624,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
 
         $id = StringHelper::randomString();
 
+        Craft::$app->getView()->registerAssetBundle(SuperTableAsset::class);
+
         return Craft::$app->getView()->renderTemplate('super-table/input', [
             'id' => $id,
             'name' => $id,
