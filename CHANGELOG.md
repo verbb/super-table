@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.14 - 2018-11-12
+
+### Fixed
+- Fix CP section turning up.
+
 ## 2.0.13 - 2018-11-11
 
 ### Fixed
