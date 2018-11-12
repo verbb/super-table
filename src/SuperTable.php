@@ -28,7 +28,6 @@ class SuperTable extends Plugin
 
     public $schemaVersion = '2.0.4';
     public $hasCpSettings = true;
-    public $hasCpSection = true;
 
     // Traits
     // =========================================================================
