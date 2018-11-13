@@ -79,7 +79,7 @@ class SuperTableBlockElement extends Element
     public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         // Get the block type
-        $supertableFieldId = $sourceElements[0]->fieldId;
+        $supertableFieldId = ArrayHelper::firstValue($sourceElements)->fieldId;
         $blockTypes = SuperTable::$plugin->service->getBlockTypesByFieldId($supertableFieldId);
 
         if (!isset($blockTypes[0])) {
