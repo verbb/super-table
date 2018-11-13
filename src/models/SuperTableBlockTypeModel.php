@@ -102,7 +102,7 @@ class SuperTableBlockTypeModel extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->id;
+        return (string)$this->id ?: static::class;
     }
 
     /**
