@@ -52,7 +52,7 @@
                 {% for blockTypeId, blockType in blockTypes %}
                     <div data-id="{{ blockTypeId }}">
                         {% for fieldId, field in blockTypeFields[blockTypeId] %}
-                            <div data-id="{{ fieldId }}" {% if not loop.first %}class="hidden"{% endif %}>
+                            <div data-id="{{ fieldId }}" {% if not loop.first %}class="settings-hidden"{% endif %}>
                                 {% namespace 'blockTypes[' ~ blockTypeId ~ '][fields][' ~ fieldId ~ ']' %}
                                     {{ forms.textField({
                                         label: "Name" | t('site'),

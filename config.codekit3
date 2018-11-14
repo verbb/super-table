@@ -9,11 +9,10 @@
 	],
 "creatorBuild": "28905",
 "files": {
-	"/.github/ISSUE_TEMPLATE": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "/.github/ISSUE_TEMPLATE",
+	"/.github": {
+		"ft": 65536,
+		"oA": 1,
+		"oAP": "/build/.github",
 		"oF": 0
 		},
 	"/.gitignore": {
@@ -49,321 +48,11 @@
 		"oO": 0,
 		"oS": 1
 		},
-	"/docs/.sidebar.json": {
-		"ft": 524288,
+	"/docs": {
+		"ft": 65536,
 		"oA": 1,
-		"oAP": "/docs/.sidebar-min.json",
-		"oF": 0,
-		"oO": 0,
-		"oS": 1
-		},
-	"/docs/feature-tour/layouts.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/feature-tour/layouts.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/get-started/installation-setup.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/get-started/installation-setup.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/get-started/requirements.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/get-started/requirements.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/getting-elements/supertable-block-queries.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/getting-elements/supertable-block-queries.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/README.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/README.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/screenshots/field_supertable.png": {
-		"ft": 32768,
-		"iS": 83903,
-		"oA": 0,
-		"oAP": "/docs/screenshots/field_supertable.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/screenshots/field_supertable_matrix.png": {
-		"ft": 32768,
-		"iS": 80953,
-		"oA": 0,
-		"oAP": "/docs/screenshots/field_supertable_matrix.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/screenshots/field_supertable_matrix_settings.png": {
-		"ft": 32768,
-		"iS": 95551,
-		"oA": 0,
-		"oAP": "/docs/screenshots/field_supertable_matrix_settings.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/screenshots/field_supertable_static.png": {
-		"ft": 32768,
-		"iS": 100868,
-		"oA": 0,
-		"oAP": "/docs/screenshots/field_supertable_static.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/screenshots/input.png": {
-		"ft": 32768,
-		"iS": 38623,
-		"oA": 0,
-		"oAP": "/docs/screenshots/input.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/screenshots/layouts.png": {
-		"ft": 32768,
-		"iS": 109721,
-		"oA": 0,
-		"oAP": "/docs/screenshots/layouts.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/screenshots/matrix.png": {
-		"ft": 32768,
-		"iS": 26453,
-		"oA": 0,
-		"oAP": "/docs/screenshots/matrix.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/screenshots/rowLayout.png": {
-		"ft": 32768,
-		"iS": 174604,
-		"oA": 0,
-		"oAP": "/docs/screenshots/rowLayout.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/screenshots/settings.png": {
-		"ft": 32768,
-		"iS": 268331,
-		"oA": 0,
-		"oAP": "/docs/screenshots/settings.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/screenshots/static.png": {
-		"ft": 32768,
-		"iS": 38536,
-		"oA": 0,
-		"oAP": "/docs/screenshots/static.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"/docs/support/get-support.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/support/get-support.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/template-guides/available-variables.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/template-guides/available-variables.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/template-guides/block-querying.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/template-guides/block-querying.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/template-guides/front-end-form.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/template-guides/front-end-form.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/template-guides/php-example.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/template-guides/php-example.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
-		},
-	"/docs/template-guides/rendering-content.md": {
-		"cB": 0,
-		"cS": 0,
-		"eF": 1,
-		"eL": 1,
-		"ema": 1,
-		"eSQ": 1,
-		"ft": 4096,
-		"oA": 1,
-		"oAP": "/docs/template-guides/rendering-content.html",
-		"oF": 0,
-		"oFM": 0,
-		"oS": 0,
-		"pHT": 0,
-		"pME": 1,
-		"rFN": 0,
-		"uCM": 0
+		"oAP": "/build/docs",
+		"oF": 0
 		},
 	"/LICENSE.md": {
 		"cB": 0,
@@ -419,18 +108,10 @@
 		"oAP": "/build/src/elements",
 		"oF": 0
 		},
-	"/src/errors/SuperTableBlockNotFoundException.php": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "/src/errors/SuperTableBlockNotFoundException.php",
-		"oF": 0
-		},
-	"/src/errors/SuperTableBlockTypeNotFoundException.php": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "/src/errors/SuperTableBlockTypeNotFoundException.php",
+	"/src/errors": {
+		"ft": 65536,
+		"oA": 1,
+		"oAP": "/build/src/errors",
 		"oF": 0
 		},
 	"/src/fields": {
@@ -449,25 +130,10 @@
 		"plM": 3758088159,
 		"prP": 0
 		},
-	"/src/integrations/schematic/converters/fields/SuperTableSchematic.php": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "/src/integrations/schematic/converters/fields/SuperTableSchematic.php",
-		"oF": 0
-		},
-	"/src/integrations/schematic/converters/models/SuperTableBlockTypeSchematic.php": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "/src/integrations/schematic/converters/models/SuperTableBlockTypeSchematic.php",
-		"oF": 0
-		},
-	"/src/integrations/sproutimport/importers/fields/SuperTableImporter.php": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "/src/integrations/sproutimport/importers/fields/SuperTableImporter.php",
+	"/src/integrations": {
+		"ft": 65536,
+		"oA": 1,
+		"oAP": "/build/src/integrations",
 		"oF": 0
 		},
 	"/src/migrations": {
@@ -488,31 +154,10 @@
 		"oAP": "/build/src/records",
 		"oF": 0
 		},
-	"/src/resources/dist/css/super-table.css": {
-		"aP": 1,
-		"bl": 0,
-		"ft": 16,
-		"ma": 0,
-		"oA": 0,
-		"oAP": "/src/resources/dist/css/super-table-min.css",
-		"oF": 0,
-		"oS": 3
-		},
-	"/src/resources/dist/js/super-table.js": {
-		"ft": 64,
-		"ma": 1,
-		"mi": 1,
-		"oA": 0,
-		"oAP": "/src/resources/dist/js/super-table.js",
-		"oF": 0,
-		"sC": 0,
-		"tS": 0
-		},
-	"/src/resources/dist/js/super-table.js.map": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 2,
-		"oAP": "/src/resources/dist/js/super-table.js.map",
+	"/src/resources/dist": {
+		"ft": 65536,
+		"oA": 1,
+		"oAP": "/build/src/resources/dist",
 		"oF": 0
 		},
 	"/src/resources/src/js/_configurator.js": {
@@ -2640,7 +2285,7 @@
 		],
 	"overrideExternalServerCSS": 0,
 	"previewPathAddition": "",
-	"skippedFoldersString": "log, _logs, logs, _cache, cache, /storage/framework/sessions, node_modules, /src/models, /src/tasks, /src/elements, /src/helpers, /src/migrations, /src/data, /src/templates, /src/records, /src/controllers, /src/assetbundles, /src/base, /src/fields, /src/services, /src/variables",
+	"skippedFoldersString": "log, _logs, logs, _cache, cache, /storage/framework/sessions, node_modules, /src/models, /src/tasks, /src/elements, /src/helpers, /src/migrations, /src/data, /src/templates, /src/records, /src/controllers, /src/assetbundles, /src/base, /src/fields, /src/services, /src/variables, /.github, /docs, /src/integrations, /src/errors, /src/resources/dist",
 	"sourceFolderName": "source",
 	"susyVersion": 3,
 	"tsAllowSyntheticDefaultImports": 0,
@@ -2704,7 +2349,7 @@
 			"flagValue": -1
 			},
 		"comments": {
-			"active": 1,
+			"active": 0,
 			"flagValue": -1
 			},
 		"comparisons": {

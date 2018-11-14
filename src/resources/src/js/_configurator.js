@@ -4,7 +4,6 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
 (function($) {
 
-
 Craft.SuperTable.Configurator = Garnish.Base.extend({
     fieldTypeInfo: null,
 
@@ -74,7 +73,7 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
 
             // Pre-select first field
             if (i == 0) {
-                this.selectedField = this.fields[id];
+                this.fields[id].select();
             }
 
             // Is this a new field?
@@ -228,7 +227,7 @@ Craft.SuperTable.Field = Garnish.Base.extend({
 
         this.configurator.$fieldSettingsColumnContainer.removeClass('hidden').trigger('resize');
         this.blockType.$fieldSettingsContainer.removeClass('hidden');
-        this.$fieldSettingsContainer.removeClass('hidden');
+        this.$fieldSettingsContainer.removeClass('settings-hidden');
         this.$item.addClass('sel');
         this.blockType.selectedField = this;
 
@@ -243,7 +242,7 @@ Craft.SuperTable.Field = Garnish.Base.extend({
         this.$item.removeClass('sel');
         this.configurator.$fieldSettingsColumnContainer.addClass('hidden').trigger('resize');
         this.blockType.$fieldSettingsContainer.addClass('hidden');
-        this.$fieldSettingsContainer.addClass('hidden');
+        this.$fieldSettingsContainer.addClass('settings-hidden');
         this.blockType.selectedField = null;
     },
 
@@ -411,94 +410,6 @@ Craft.SuperTable.Field = Garnish.Base.extend({
         }).appendTo($container);
 
         return $container;
-
-
-
-
-
-
-
-        // var html = '<div data-id="'+this.id+'">' +
-        //     '<div class="field" id="'+this.inputIdPrefix+'-name-field">' +
-        //         '<div class="heading">' +
-        //             '<label class="required" for="'+this.inputIdPrefix+'-name">'+Craft.t('super-table', 'Name')+'</label>' +
-        //             '<div class="instructions"><p>'+Craft.t('super-table', 'What this field will be called in the CP.')+'</p></div>' +
-        //         '</div>' +
-        //         '<div class="input">' +
-        //             '<input class="text fullwidth" type="text" id="'+this.inputIdPrefix+'-name" name="'+this.inputNamePrefix+'[name]" autofocus="" autocomplete="off"/>' +
-        //         '</div>' +
-        //     '</div>' +
-        //     '<div class="field" id="'+this.inputIdPrefix+'-handle-field">' +
-        //         '<div class="heading">' +
-        //             '<label class="required" for="'+this.inputIdPrefix+'-handle">'+Craft.t('super-table', 'Handle')+'</label>' +
-        //             '<div class="instructions"><p>'+Craft.t('super-table', 'How you’ll refer to this field in the templates.')+'</p></div>' + 
-        //         '</div>' +
-        //         '<div class="input">' +
-        //             '<input class="text fullwidth code" type="text" id="'+this.inputIdPrefix+'-handle" name="'+this.inputNamePrefix+'[handle]" autofocus="" autocomplete="off"/>' +
-        //         '</div>' +
-        //     '</div>' +
-        //     '<div class="field" id="'+this.inputIdPrefix+'-instructions-field">' +
-        //         '<div class="heading">' +
-        //             '<label for="'+this.inputIdPrefix+'-instructions">'+Craft.t('super-table', 'Instructions')+'</label>' +
-        //             '<div class="instructions"><p>'+Craft.t('super-table', 'Helper text to guide the author. Will appear as a small <code>info</code> icon in table headers.')+'</p></div>' +
-        //         '</div>' +
-        //         '<div class="input">' +
-        //             '<textarea class="text nicetext fullwidth" rows="2" cols="50" id="'+this.inputIdPrefix+'-instructions" name="'+this.inputNamePrefix+'[instructions]"></textarea>' +
-        //         '</div>' +
-        //     '</div>' +
-        //     '<div class="field" id="'+this.inputIdPrefix+'-width-field">' +
-        //         '<div class="heading">' +
-        //             '<label for="'+this.inputIdPrefix+'-width">'+Craft.t('super-table', 'Column Width')+'</label>' +
-        //             '<div class="instructions"><p>'+Craft.t('super-table', 'Only applies for Table Layout. Set the width for this column in either pixels or percentage. i.e. <code>10px</code> or <code>10%</code>.')+'</p></div>' +
-        //         '</div>' +
-        //         '<div class="input ltr">' +
-        //             '<input class="text" type="text" id="'+this.inputIdPrefix+'-width" size="4" name="'+this.inputNamePrefix+'[width]" autocomplete="off">' +
-        //         '</div>' +
-        //     '</div>' +
-        //     '<div class="field checkboxfield">' +
-        //         '<label>' +
-        //             '<input type="hidden" name="'+this.inputNamePrefix+'[required]" value=""/>' +
-        //             '<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[required]"/> ' +
-        //             Craft.t('super-table', 'This field is required') +
-        //         '</label>' +
-        //     '</div>';
-
-        //     if (Craft.isLocalized) {
-        //         html += '<div class="field checkboxfield">' +
-        //             '<label>' +
-        //                 '<input type="hidden" name="'+this.inputNamePrefix+'[translatable]" value=""/>' +
-        //                 '<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[translatable]"/> ' +
-        //                 Craft.t('super-table', 'This field is translatable') +
-        //             '</label>' +
-        //         '</div>';
-        //     }
-
-        //     html += '<hr/>' +
-        //         '<div class="field" id="type-field">' +
-        //             '<div class="heading">' +
-        //                 '<label for="type">'+Craft.t('super-table', 'Field Type')+'</label>' +
-        //             '</div>' +
-        //             '<div class="input">' +
-        //                 '<div class="select">' +
-        //                     '<select id="type" class="fieldtoggle" name="'+this.inputNamePrefix+'[type]">';
-        //                         for (var i = 0; i < this.configurator.fieldTypeInfo.length; i++) {
-        //                             var info = this.configurator.fieldTypeInfo[i],
-        //                                 selected = (info.type == 'PlainText');
-
-        //                             html += '<option value="'+info.type+'"'+(selected ? ' selected=""' : '')+'>'+info.name+'</option>';
-        //                         }
-
-        //                         html +=
-        //                 '</select>' +
-        //             '</div>' +
-        //         '</div>' +
-        //     '</div>' +
-        //     '<div class="fieldtype-settings"/>' +
-        //     '<hr/>' +
-        //     '<a class="error delete">'+Craft.t('super-table', 'Delete')+'</a>' +
-        // '</div>';
-
-        // return html;
     },
 
     confirmDelete: function() {
