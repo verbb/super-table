@@ -8,7 +8,7 @@ See [Super Table Block Queries](docs:getting-elements/supertable-block-queries)
 
 ### `craft.superTable.getRelatedElements()`
 
-Expands the defualt relationship behaviour to include Super Table fields so that the user can filter by those too.
+Expands the default relationship behaviour to include Super Table fields so that the user can filter by those too.
 
 ```twig
 {% set reverseRelatedElements = craft.superTable.getRelatedElements({
@@ -22,5 +22,5 @@ Expands the defualt relationship behaviour to include Super Table fields so that
       id: 'not 123',
       section: 'someSection',
   }
-})->all() %}
+}).all() %}
 ```
