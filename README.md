@@ -22,6 +22,12 @@ Visit the [Super Table Plugin page](https://verbb.io/craft-plugins/super-table) 
 
 Get in touch with us via the [Super Table Support page](https://verbb.io/craft-plugins/super-table/support) or by [creating a Github issue](https://github.com/verbb/super-table/issues)
 
+## Show your Support
+
+Super Table is licensed under the MIT license, meaning it will always be free and open source – we love free stuff! If you'd like to show your support to the plugin regardless, buy us a :beers:. Please note that this does not entitle you to any form of support, and is completely optional.
+
+[![Beerpay](https://beerpay.io/verbb/super-table/badge.svg?style=beer-square)](https://beerpay.io/verbb/super-table)
+
 <h2></h2>
 
 <a href="https://verbb.io" target="_blank">
