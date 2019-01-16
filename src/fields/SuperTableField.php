@@ -685,15 +685,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeDelete(): bool
+    public function beforeApplyDelete(): bool
     {
-        if (!parent::beforeDelete()) {
-            return false;
-        }
-
         SuperTable::$plugin->service->deleteSuperTableField($this);
 
-        return true;
+        parent::beforeApplyDelete();
     }
 
     /**
