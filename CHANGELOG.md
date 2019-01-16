@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where a Super Table fields’ block types and content table could be deleted even if something set `$isValid` to `false` on the `beforeDelete` event.
+
 ## 2.1.0 - 2019-01-16
 
 ### Fixed
