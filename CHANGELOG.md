@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.0 - 2019-01-16
+
+### Fixed
+- Fix for ST + Matrix field combination throwing errors during migration for Craft 3.1.x.
+- Fixed an error that could occur when duplicating an element with a Super Table field with “Manage blocks on a per-site basis” disabled.
+- Fixed an error that occurred when querying for Super Table blocks if both the `with` and `indexBy` parameters were set.
+- Fixed a bug where Super Table blocks wouldn’t retain their content translations when an entry was duplicated from the Edit Entry page.
+- Fix settings dropdown/table fields not working on some cases.
+- Remove plugin settings page (It's not supposed to be there).
+
 ## 2.0.14 - 2018-11-12
 
 ### Fixed
