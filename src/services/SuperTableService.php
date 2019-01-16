@@ -18,6 +18,7 @@ use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\BaseRelationField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\MigrationHelper;
@@ -602,7 +603,8 @@ class SuperTableService extends Component
                 $parentFieldContext = explode(':', $supertableField->context);
 
                 if ($parentFieldContext[0] == 'matrixBlockType') {
-                    $parentFieldId = $parentFieldContext[1];
+                    $parentFieldUid = $parentFieldContext[1];
+                    $parentFieldId = DbHelper::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
                 }
             }
 
