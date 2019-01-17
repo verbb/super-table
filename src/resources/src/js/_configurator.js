@@ -348,10 +348,9 @@ Craft.SuperTable.Field = Garnish.Base.extend({
 
         Craft.ui.createTextField({
             label: Craft.t('super-table', 'Column Width'),
-            instructions: Craft.t('super-table', 'Only applies for Table Layout. Set the width for this column in either pixels or percentage. i.e. `10px` or `10%`.'),
-            id: 'columns-' + this.id + '-width',
-            name: 'columns[' + this.id + '][width]',
+            instructions: Craft.t('super-table', 'Please save this Super Table field first to edit its width.'),
             size: 8,
+            disabled: true,
         }).appendTo($container);
 
         Craft.ui.createCheckboxField({
