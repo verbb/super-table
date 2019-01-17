@@ -397,7 +397,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
             collapsedRows = Craft.SuperTable.InputMatrix.getCollapsedBlockIds();
 
             this.sorter = new Garnish.DragSort(this.$rows, {
-                handle: '.actions .move',
+                handle: '> .actions .move',
                 axis: 'y',
                 collapseDraggees: true,
                 magnetStrength: 4,
