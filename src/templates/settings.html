@@ -118,7 +118,7 @@
                                         {% if translationMethods | length > 1 %}
                                             <div id="translation-settings">
                                                 {{ forms.selectField({
-                                                    label: "Translation Method" | t('site'),
+                                                    label: "Translation Method" | t('app'),
                                                     id: 'translation-method',
                                                     name: 'translationMethod',
                                                     options: [
@@ -136,7 +136,7 @@
                                                 {% if 'custom' in translationMethods %}
                                                     <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
                                                         {{ forms.textField({
-                                                            label: "Translation Key Format" | t('site'),
+                                                            label: "Translation Key Format" | t('app'),
                                                             id: 'translation-key-format',
                                                             name: 'translationKeyFormat',
                                                             value: field.translationKeyFormat,
@@ -198,7 +198,7 @@
 
 {% if craft.app.getIsMultiSite() %}
     {{ forms.checkboxField({
-        label: "Manage blocks on a per-site basis" | t('super-table'),
+        label: "Manage blocks on a per-site basis" | t('app'),
         id: 'localize-blocks',
         name: 'localizeBlocks',
         checked: supertableField.localizeBlocks
