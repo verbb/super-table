@@ -36,10 +36,11 @@ class Install extends Migration
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
+            'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
 
         $this->createTable('{{%supertableblocktypes}}', [
@@ -57,6 +58,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%supertableblocks}}', ['ownerId'], false);
         $this->createIndex(null, '{{%supertableblocks}}', ['fieldId'], false);
         $this->createIndex(null, '{{%supertableblocks}}', ['typeId'], false);
+        $this->createIndex(null, '{{%supertableblocks}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%supertableblocks}}', ['ownerSiteId'], false);
         $this->createIndex(null, '{{%supertableblocktypes}}', ['fieldId'], false);
         $this->createIndex(null, '{{%supertableblocktypes}}', ['fieldLayoutId'], false);

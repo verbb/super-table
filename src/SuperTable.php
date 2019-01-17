@@ -5,6 +5,7 @@ use verbb\supertable\base\PluginTrait;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\models\SuperTableBlockTypeModel;
+use verbb\supertable\services\SuperTableService;
 use verbb\supertable\variables\SuperTableVariable;
 
 use Craft;
@@ -26,7 +27,7 @@ class SuperTable extends Plugin
     // Public Properties
     // =========================================================================
 
-    public $schemaVersion = '2.0.4';
+    public $schemaVersion = '2.0.5';
 
     // Traits
     // =========================================================================
@@ -49,6 +50,7 @@ class SuperTable extends Plugin
         $this->_registerFieldTypes();
         $this->_registerElementTypes();
         $this->_registerIntegrations();
+        $this->_registerConfigListeners();
     }
 
     // Private Methods
@@ -74,6 +76,14 @@ class SuperTable extends Plugin
         Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = SuperTableBlockElement::class;
         });
+    }
+
+    private function _registerConfigListeners()
+    {
+        Craft::$app->projectConfig
+            ->onAdd(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
+            ->onUpdate(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
+            ->onRemove(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleDeletedBlockType']);
     }
 
     private function _registerIntegrations()

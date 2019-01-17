@@ -720,7 +720,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeApplyDelete(): bool
+    public function beforeApplyDelete()
     {
         SuperTable::$plugin->getService()->deleteSuperTableField($this);
 
@@ -862,7 +862,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
 
         // Set a temporary namespace for these
         $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName($this->handle.'[__BLOCK_ST__][fields]', $originalNamespace);
+        $namespace = Craft::$app->getView()->namespaceInputName($this->handle . '[__BLOCK_ST__][fields]', $originalNamespace);
         Craft::$app->getView()->setNamespace($namespace);
 
         foreach ($this->getBlockTypes() as $blockType) {

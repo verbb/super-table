@@ -27,6 +27,7 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use craft\services\Fields;
 use craft\web\View;
 
 use yii\base\Component;
@@ -113,7 +114,7 @@ class SuperTableService extends Component
      *
      * @param int $blockTypeId The block type ID.
      *
-     * @return SuperTableBlockType|null The block type, or `null` if it didn’t exist.
+     * @return SuperTableBlockTypeModel|null The block type, or `null` if it didn’t exist.
      */
     public function getBlockTypeById(int $blockTypeId)
     {
@@ -133,7 +134,7 @@ class SuperTableService extends Component
      *
      * If the block type doesn’t validate, any validation errors will be stored on the block type.
      *
-     * @param SuperTableBlockType $blockType        The block type.
+     * @param SuperTableBlockTypeModel $blockType        The block type.
      * @param bool            $validateUniques      Whether the Name and Handle attributes should be validated to
      *                                              ensure they’re unique. Defaults to `true`.
      *
@@ -227,7 +228,7 @@ class SuperTableService extends Component
     /**
      * Saves a block type.
      *
-     * @param SuperTableBlockType $blockType    The block type to be saved.
+     * @param SuperTableBlockTypeModel $blockType    The block type to be saved.
      * @param bool            $validate       Whether the block type should be validated before being saved.
      *                                        Defaults to `true`.
      *
@@ -246,7 +247,7 @@ class SuperTableService extends Component
         /** @var Field $parentField */
         $parentField = $fieldsService->getFieldById($blockType->fieldId);
         $isNewBlockType = $blockType->getIsNew();
-        
+
         if ($isNewBlockType) {
             $blockType->uid = StringHelper::UUID();
         } else if (!$blockType->uid) {
@@ -368,6 +369,10 @@ class SuperTableService extends Component
 
             // (Re)save all the fields that now exist for this block.
             foreach ($newFields as $fieldUid => $fieldData) {
+                // if ($fieldData['type'] === 'craft\fields\Matrix') {
+                //     $fieldData['contentTable'] = 'matrixcontent_test';
+                // }
+
                 $fieldsService->applyFieldSave($fieldUid, $fieldData, 'superTableBlockType:' . $blockTypeUid);
             }
 
@@ -413,10 +418,10 @@ class SuperTableService extends Component
     /**
      * Deletes a block type.
      *
-     * @param SuperTableBlockType $blockType The block type.
+     * @param SuperTableBlockTypeModel $blockType The block type.
      * @return bool Whether the block type was deleted successfully.
      */
-    public function deleteBlockType(SuperTableBlockType $blockType): bool
+    public function deleteBlockType(SuperTableBlockTypeModel $blockType): bool
     {
         Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid);
 
@@ -605,16 +610,11 @@ class SuperTableService extends Component
                 }
 
                 // Save the new ones
-                $sortOrder = 0;
-
-                // Save the new ones
                 $originalContentTable = Craft::$app->getContent()->contentTable;
                 Craft::$app->getContent()->contentTable = $newContentTable;
 
                 foreach ($supertableField->getBlockTypes() as $blockType) {
-                    $sortOrder++;
                     $blockType->fieldId = $supertableField->id;
-                    $blockType->sortOrder = $sortOrder;
                     $this->saveBlockType($blockType, false);
                 }
 
@@ -691,7 +691,6 @@ class SuperTableService extends Component
      *
      * @param SuperTableField $field
      * @return string
-     * @since 3.0.23
      */
     public function defineContentTableName(SuperTableField $field): string
     {
@@ -701,57 +700,29 @@ class SuperTableService extends Component
 
         do {
             $i++;
+
+            $parentFieldId = '';
+
+            // Check if this field is inside a Matrix - we need to prefix this content table if so.
+            if ($field->context != 'global') {
+                $parentFieldContext = explode(':', $field->context);
+
+                if ($parentFieldContext[0] == 'matrixBlockType') {
+                    $parentFieldUid = $parentFieldContext[1];
+                    $parentFieldId = Db::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
+                }
+            }
+
             $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
+        
+            if ($parentFieldId) {
+                $name = '_' . $parentFieldId . $name;
+            }
+
         } while ($name !== $field->contentTable && $db->tableExists($name));
 
         return $name;
     }
-
-    /**
-     * Returns the content table name for a given Super Table field.
-     *
-     * @param SuperTableField $supertableField  The Super Table field.
-     * @param bool        $useOldHandle Whether the method should use the field’s old handle when determining the table
-     *                                  name (e.g. to get the existing table name, rather than the new one).
-     *
-     * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
-     */
-    // public function getContentTableName(SuperTableField $supertableField, bool $useOldHandle = false)
-    // {
-    //     $name = '';
-    //     $parentFieldId = '';
-
-    //     /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-    //     do {
-    //         if ($useOldHandle) {
-    //             if (!$supertableField->oldHandle) {
-    //                 return false;
-    //             }
-
-    //             $handle = $supertableField->oldHandle;
-    //         } else {
-    //             $handle = $supertableField->handle;
-    //         }
-
-    //         // Check if this field is inside a Matrix - we need to prefix this content table if so.
-    //         if ($supertableField->context != 'global') {
-    //             $parentFieldContext = explode(':', $supertableField->context);
-
-    //             if ($parentFieldContext[0] == 'matrixBlockType') {
-    //                 $parentFieldUid = $parentFieldContext[1];
-    //                 $parentFieldId = Db::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
-    //             }
-    //         }
-
-    //         $name = '_' . strtolower($handle) . $name;
-    //     } while ($supertableField = $this->getParentSuperTableField($supertableField));
-
-    //     if ($parentFieldId) {
-    //         $name = '_' . $parentFieldId . $name;
-    //     }
-
-    //     return '{{%stc' . $name . '}}';
-    // }
 
     /**
      * Returns a block by its ID.
@@ -886,7 +857,7 @@ class SuperTableService extends Component
     /**
      * Returns a block type record by its ID or creates a new one.
      *
-     * @param SuperTableBlockType $blockType
+     * @param SuperTableBlockTypeModel $blockType
      *
      * @return SuperTableBlockTypeRecord
      * @throws SuperTableBlockTypeNotFoundException if $blockType->id is invalid
