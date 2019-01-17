@@ -26,7 +26,7 @@ class SuperTableBlockTypeSchematic extends Base
     public function saveRecord(Model $record, array $definition): bool
     {
         // Save the super table block
-        return SuperTable::$plugin->service->saveBlockType($record, false);
+        return SuperTable::$plugin->getService()->saveBlockType($record, false);
     }
 
     public function setRecordAttributes(Model &$record, array $definition, array $defaultAttributes)
@@ -35,7 +35,7 @@ class SuperTableBlockTypeSchematic extends Base
         $originalContentTable = Craft::$app->content->contentTable;
         if ($record->fieldId) {
             $superTableField = Craft::$app->fields->getFieldById($record->fieldId);
-            $contentTable = SuperTable::$plugin->service->getContentTableName($superTableField);
+            $contentTable = SuperTable::$plugin->getService()->getContentTableName($superTableField);
             Craft::$app->content->contentTable = $contentTable;
         }
 
@@ -53,6 +53,6 @@ class SuperTableBlockTypeSchematic extends Base
 
     public function deleteRecord(Model $record): bool
     {
-        return SuperTable::$plugin->service->deleteBlockType($record);
+        return SuperTable::$plugin->getService()->deleteBlockType($record);
     }
 }

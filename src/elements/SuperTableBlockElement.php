@@ -15,6 +15,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\validators\SiteIdValidator;
+
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -80,7 +81,7 @@ class SuperTableBlockElement extends Element
     {
         // Get the block type
         $supertableFieldId = ArrayHelper::firstValue($sourceElements)->fieldId;
-        $blockTypes = SuperTable::$plugin->service->getBlockTypesByFieldId($supertableFieldId);
+        $blockTypes = SuperTable::$plugin->getService()->getBlockTypesByFieldId($supertableFieldId);
 
         if (!isset($blockTypes[0])) {
             // Not a valid block type handle (assuming all $sourceElements are blocks from the same SuperTable field)
@@ -92,7 +93,7 @@ class SuperTableBlockElement extends Element
         // Set the field context
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'superTableBlockType:' . $blockType->id;
+        $contentService->fieldContext = 'superTableBlockType:' . $blockType->uid;
 
         $map = parent::eagerLoadingMap($sourceElements, $handle);
 
@@ -134,6 +135,12 @@ class SuperTableBlockElement extends Element
      * @var bool Collapsed
      */
     public $collapsed = false;
+
+    /**
+     * @var bool Whether the block was deleted along with its owner
+     * @see beforeDelete()
+     */
+    public $deletedWithOwner = false;
 
     /**
      * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
@@ -216,10 +223,10 @@ class SuperTableBlockElement extends Element
             throw new InvalidConfigException('SuperTable block is missing its type ID');
         }
 
-        $blockType = SuperTable::$plugin->service->getBlockTypeById($this->typeId);
+        $blockType = SuperTable::$plugin->getService()->getBlockTypeById($this->typeId);
 
         if (!$blockType) {
-            throw new InvalidConfigException('Invalid SuperTable block ID: '.$this->typeId);
+            throw new InvalidConfigException('Invalid SuperTable block ID: ' . $this->typeId);
         }
 
         return $blockType;
@@ -262,7 +269,7 @@ class SuperTableBlockElement extends Element
      */
     public function getContentTable(): string
     {
-        return SuperTable::$plugin->service->getContentTableName($this->_getField());
+        return $this->_getField()->contentTable;
     }
 
     /**
@@ -278,7 +285,7 @@ class SuperTableBlockElement extends Element
      */
     public function getFieldContext(): string
     {
-        return 'superTableBlockType:' . $this->typeId;
+        return 'superTableBlockType:' . $this->getType()->uid;
     }
 
     /**
@@ -324,6 +331,24 @@ class SuperTableBlockElement extends Element
         parent::afterSave($isNew);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Update the block record
+        Craft::$app->getDb()->createCommand()
+            ->update('{{%supertableblocks}}', [
+                'deletedWithOwner' => $this->deletedWithOwner,
+            ], ['id' => $this->id], [], false)
+            ->execute();
+
+        return true;
+    }
 
     // Private Methods
     // =========================================================================

@@ -36,7 +36,7 @@ class SuperTableSchematic extends Field
 
     private function resetSuperTableServiceBlockTypesCache()
     {
-        $obj = SuperTable::$plugin->service;
+        $obj = SuperTable::$plugin->getService();
         $refObject = new \ReflectionObject($obj);
 
         if ($refObject->hasProperty('_fetchedAllBlockTypesForFieldId')) {

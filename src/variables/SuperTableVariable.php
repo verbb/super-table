@@ -62,7 +62,7 @@ class SuperTableVariable
 
         // Get the Super Table field and associated block type
         $superTableField = Craft::$app->fields->getFieldByHandle($superTableFieldHandle);
-        $superTableBlockTypes = SuperTable::$plugin->service->getBlockTypesByFieldId($superTableField->id);
+        $superTableBlockTypes = SuperTable::$plugin->getService()->getBlockTypesByFieldId($superTableField->id);
         $superTableBlockType = $superTableBlockTypes[0];
        
         // Loop the fields on the block type and save the first one that matches our handle
@@ -137,7 +137,7 @@ class SuperTableVariable
 
     public function getSuperTableBlocks($fieldId)
     {
-        return SuperTable::$plugin->service->getBlockTypesByFieldId($fieldId);
+        return SuperTable::$plugin->getService()->getBlockTypesByFieldId($fieldId);
     }
 
     

@@ -35,9 +35,15 @@ class SuperTableBlockTypeModel extends Model
     public $hasFieldErrors = false;
 
     /**
+     * @var string|mixed
+     */
+    public $uid;
+
+    /**
      * @var string
      */
     private $handle;
+
 
     // Public Methods
     // =========================================================================
@@ -60,9 +66,10 @@ class SuperTableBlockTypeModel extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'fieldId'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'fieldId'], 'number', 'integerOnly' => true];
+
+        return $rules;
     }
 
     /**
@@ -84,9 +91,10 @@ class SuperTableBlockTypeModel extends Model
     {
         if (!isset($this->handle) && $this->fieldId) {
             $field = Craft::$app->fields->getFieldById($this->fieldId);
+            
             foreach ($field->getBlockTypes() as $index => $blockType) {
                 if ($blockType->id == $this->id) {
-                    $this->handle = $field->handle.'-'.$index;
+                    $this->handle = $field->handle . '-' . $index;
                     break;
                 }
             }

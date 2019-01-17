@@ -23,7 +23,7 @@ class SuperTableImporter extends FieldImporter
     public function getMockData()
     {
         $fieldId = $this->model->id;
-        $blocks = SuperTable::$plugin->service->getBlockTypesByFieldId($fieldId);
+        $blocks = SuperTable::$plugin->getService()->getBlockTypesByFieldId($fieldId);
 
         $values = [];
 

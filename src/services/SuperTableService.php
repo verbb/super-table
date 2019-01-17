@@ -16,15 +16,18 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
+use craft\events\ConfigEvent;
 use craft\fields\BaseRelationField;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db as DbHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\MigrationHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use craft\web\View;
 
 use yii\base\Component;
 use yii\base\Exception;
@@ -33,6 +36,11 @@ class SuperTableService extends Component
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @var bool Whether to ignore changes to the project config.
+     */
+    public $ignoreProjectConfigChanges = false;
 
     /**
      * @var
@@ -63,6 +71,8 @@ class SuperTableService extends Component
      * @var
      */
     private $_parentSuperTableFields;
+
+    const CONFIG_BLOCKTYPE_KEY = 'superTableBlockTypes';
 
 
     // Public Methods
@@ -225,140 +235,223 @@ class SuperTableService extends Component
      * @throws Exception if an error occurs when saving the block type
      * @throws \Throwable if reasons
      */
-    public function saveBlockType(SuperTableBlockTypeModel $blockType, bool $validate = true): bool
+    public function saveBlockType(SuperTableBlockTypeModel $blockType, bool $runValidation = true): bool
     {
-        if (!$validate || $this->validateBlockType($blockType)) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                $contentService = Craft::$app->getContent();
-                $fieldsService = Craft::$app->getFields();
-
-                $originalFieldContext = $contentService->fieldContext;
-                $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-                $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
-
-                // Get the block type record
-                $blockTypeRecord = $this->_getBlockTypeRecord($blockType);
-                $isNewBlockType = $blockType->getIsNew();
-
-                if (!$isNewBlockType) {
-                    // Get the old block type fields
-                    $result = $this->_createBlockTypeQuery()
-                        ->where(['id' => $blockType->id])
-                        ->one();
-
-                    $oldBlockType = new SuperTableBlockTypeModel($result);
-
-                    $contentService->fieldContext = 'superTableBlockType:'.$blockType->id;
-                    $contentService->fieldColumnPrefix = 'field_';
-                    $fieldsService->oldFieldColumnPrefix = 'field_';
-
-                    $oldFieldsById = [];
-
-                    foreach ($oldBlockType->getFields() as $field) {
-                        /** @var Field $field */
-                        $oldFieldsById[$field->id] = $field;
-                    }
-
-                    // Figure out which ones are still around
-                    foreach ($blockType->getFields() as $field) {
-                        /** @var Field $field */
-                        if (!$field->getIsNew()) {
-                            unset($oldFieldsById[$field->id]);
-                        }
-                    }
-
-                    // Drop the old fields that aren't around anymore
-                    foreach ($oldFieldsById as $field) {
-                        $fieldsService->deleteField($field);
-                    }
-
-                    // Refresh the schema cache
-                    Craft::$app->getDb()->getSchema()->refresh();
-                }
-
-                // Set the basic info on the new block type record
-                $blockTypeRecord->fieldId = $blockType->fieldId;
-
-                // Save it, minus the field layout for now
-                $blockTypeRecord->save(false);
-
-                if ($isNewBlockType) {
-                    // Set the new ID on the model
-                    $blockType->id = $blockTypeRecord->id;
-                }
-
-                // Save the fields and field layout
-                // -------------------------------------------------------------
-
-                $fieldLayoutFields = [];
-                $sortOrder = 0;
-
-                // Resetting the fieldContext here might be redundant if this isn't a new blocktype but whatever
-                $contentService->fieldContext = 'superTableBlockType:'.$blockType->id;
-                $contentService->fieldColumnPrefix = 'field_';
-
-                foreach ($blockType->getFields() as $field) {
-                    if (!$fieldsService->saveField($field, false)) {
-                        throw new Exception('An error occurred while saving this SuperTable block type.');
-                    }
-
-                    $field->sortOrder = ++$sortOrder;
-
-                    $fieldLayoutFields[] = $field;
-                }
-
-                $contentService->fieldContext = $originalFieldContext;
-                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-                $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
-
-                $fieldLayoutTab = new FieldLayoutTab();
-                $fieldLayoutTab->name = 'Content';
-                $fieldLayoutTab->sortOrder = 1;
-                $fieldLayoutTab->setFields($fieldLayoutFields);
-
-                $fieldLayout = new FieldLayout();
-                $fieldLayout->type = SuperTableBlockElement::class;
-
-                if (isset($oldBlockType)) {
-                    $fieldLayout->id = $oldBlockType->fieldLayoutId;
-                }
-
-                $fieldLayout->setTabs([$fieldLayoutTab]);
-                $fieldLayout->setFields($fieldLayoutFields);
-                $fieldsService->saveLayout($fieldLayout);
-                $blockType->setFieldLayout($fieldLayout);
-                $blockType->fieldLayoutId = (int)$fieldLayout->id;
-                $blockTypeRecord->fieldLayoutId = $fieldLayout->id;
-
-                // Update the block type with the field layout ID
-                $blockTypeRecord->save(false);
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
-            }
-
-            return true;
+        if ($runValidation && !$blockType->validate()) {
+            return false;
         }
 
-        return false;
+        $fieldsService = Craft::$app->getFields();
+
+        /** @var Field $parentField */
+        $parentField = $fieldsService->getFieldById($blockType->fieldId);
+        $isNewBlockType = $blockType->getIsNew();
+        
+        if ($isNewBlockType) {
+            $blockType->uid = StringHelper::UUID();
+        } else if (!$blockType->uid) {
+            $blockType->uid = Db::uidById('{{%supertableblocktypes}}', $blockType->id);
+        }
+
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        $configData = [
+            'field' => $parentField->uid,
+        ];
+
+        // Now, take care of the field layout for this block type
+        // -------------------------------------------------------------
+        $fieldLayoutFields = [];
+        $sortOrder = 0;
+
+        $configData['fields'] = [];
+
+        foreach ($blockType->getFields() as $field) {
+            if (!$field->uid) {
+                $field->uid = StringHelper::UUID();
+            }
+
+            $field->context = 'superTableBlockType:' . $blockType->uid;
+            $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
+
+            $field->sortOrder = ++$sortOrder;
+            $fieldLayoutFields[] = $field;
+        }
+
+        $fieldLayoutTab = new FieldLayoutTab();
+        $fieldLayoutTab->name = 'Content';
+        $fieldLayoutTab->sortOrder = 1;
+        $fieldLayoutTab->setFields($fieldLayoutFields);
+
+        $fieldLayout = $blockType->getFieldLayout();
+
+        if ($fieldLayout->uid) {
+            $layoutUid = $fieldLayout->uid;
+        } else {
+            $layoutUid = StringHelper::UUID();
+            $fieldLayout->uid = $layoutUid;
+        }
+
+        $fieldLayout->setTabs([$fieldLayoutTab]);
+        $fieldLayout->setFields($fieldLayoutFields);
+
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+
+        $configData['fieldLayouts'] = [
+            $layoutUid => $fieldLayoutConfig
+        ];
+
+        $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
+        $projectConfig->set($configPath, $configData);
+
+        if ($isNewBlockType) {
+            $blockType->id = Db::idByUid('{{%supertableblocktypes}}', $blockType->uid);
+        }
+
+        return true;
+    }
+
+    /**
+     * Handle block type change
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleChangedBlockType(ConfigEvent $event)
+    {
+        if ($this->ignoreProjectConfigChanges) {
+            return;
+        }
+
+        ProjectConfigHelper::ensureAllFieldsProcessed();
+
+        $blockTypeUid = $event->tokenMatches[0];
+        $data = $event->newValue;
+        $previousData = $event->oldValue;
+
+        $fieldsService = Craft::$app->getFields();
+        $contentService = Craft::$app->getContent();
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+
+        try {
+            // Store the current contexts.
+            $originalContentTable = $contentService->contentTable;
+            $originalFieldContext = $contentService->fieldContext;
+            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+            $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
+
+            // Get the block type record
+            $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
+
+            // Set the basic info on the new block type record
+            $blockTypeRecord->fieldId = Db::idByUid('{{%fields}}', $data['field']);
+            $blockTypeRecord->uid = $blockTypeUid;
+
+            // Make sure that alterations, if any, occur in the correct context.
+            $contentService->fieldContext = 'superTableBlockType:' . $blockTypeUid;
+            $contentService->fieldColumnPrefix = 'field_';
+
+            /** @var SuperTableField $superTableField */
+            $superTableField = $fieldsService->getFieldById($blockTypeRecord->fieldId);
+            $contentService->contentTable = $superTableField->contentTable;
+            $fieldsService->oldFieldColumnPrefix = 'field_';
+
+            $oldFields = $previousData['fields'] ?? [];
+            $newFields = $data['fields'] ?? [];
+
+            // Remove fields that this block type no longer has
+            foreach ($oldFields as $fieldUid => $fieldData) {
+                if (!array_key_exists($fieldUid, $newFields)) {
+                    $fieldsService->applyFieldDelete($fieldUid);
+                }
+            }
+
+            // (Re)save all the fields that now exist for this block.
+            foreach ($newFields as $fieldUid => $fieldData) {
+                $fieldsService->applyFieldSave($fieldUid, $fieldData, 'superTableBlockType:' . $blockTypeUid);
+            }
+
+            // Refresh the schema cache
+            Craft::$app->getDb()->getSchema()->refresh();
+
+            $contentService->fieldContext = $originalFieldContext;
+            $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+            $contentService->contentTable = $originalContentTable;
+            $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
+
+            if (!empty($data['fieldLayouts'])) {
+                // Save the field layout
+                $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->id = $blockTypeRecord->fieldLayoutId;
+                $layout->type = SuperTableBlockElement::class;
+                $layout->uid = key($data['fieldLayouts']);
+
+                $fieldsService->saveLayout($layout);
+                $blockTypeRecord->fieldLayoutId = $layout->id;
+            } else if ($blockTypeRecord->fieldLayoutId) {
+                // Delete the field layout
+                $fieldsService->deleteLayoutById($blockTypeRecord->fieldLayoutId);
+                $blockTypeRecord->fieldLayoutId = null;
+            }
+
+            // Save it
+            $blockTypeRecord->save(false);
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Clear caches
+        unset(
+            $this->_blockTypesById[$blockTypeRecord->id],
+            $this->_blockTypesByFieldId[$blockTypeRecord->fieldId]
+        );
+        $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
     }
 
     /**
      * Deletes a block type.
      *
      * @param SuperTableBlockType $blockType The block type.
-     *
      * @return bool Whether the block type was deleted successfully.
+     */
+    public function deleteBlockType(SuperTableBlockType $blockType): bool
+    {
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid);
+
+        return true;
+    }
+
+    /**
+     * Handle block type change
+     *
+     * @param ConfigEvent $event
      * @throws \Throwable if reasons
      */
-    public function deleteBlockType(SuperTableBlockTypeModel $blockType): bool
+    public function handleDeletedBlockType(ConfigEvent $event)
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        if ($this->ignoreProjectConfigChanges) {
+            return;
+        }
+
+        $blockTypeUid = $event->tokenMatches[0];
+        $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
+
+        if (!$blockTypeRecord->id) {
+            return;
+        }
+
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+
         try {
+            $blockType = $this->getBlockTypeById($blockTypeRecord->id);
+
+            if (!$blockType) {
+                return;
+            }
+
             // First delete the blocks of this type
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
                 $blocks = SuperTableBlockElement::find()
@@ -375,10 +468,10 @@ class SuperTableService extends Component
             $contentService = Craft::$app->getContent();
             $fieldsService = Craft::$app->getFields();
             $originalContentTable = $contentService->contentTable;
-            /** @var SuperTableField $supertableField */
-            $supertableField = $fieldsService->getFieldById($blockType->fieldId);
-            $newContentTable = $this->getContentTableName($supertableField);
-            $contentService->contentTable = $newContentTable;
+
+            /** @var SuperTableField $superTableField */
+            $superTableField = $fieldsService->getFieldById($blockType->fieldId);
+            $contentService->contentTable = $superTableField->contentTable;
 
             // Set the new fieldColumnPrefix
             $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
@@ -394,21 +487,33 @@ class SuperTableService extends Component
             $contentService->contentTable = $originalContentTable;
 
             // Delete the field layout
-            Craft::$app->getFields()->deleteLayoutById($blockType->fieldLayoutId);
+            $fieldLayoutId = (new Query())
+                ->select(['fieldLayoutId'])
+                ->from(['{{%supertableblocktypes}}'])
+                ->where(['id' => $blockTypeRecord->id])
+                ->scalar();
+
+            // Delete the field layout
+            Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
 
             // Finally delete the actual block type
-            $affectedRows = Craft::$app->getDb()->createCommand()
-                ->delete('{{%supertableblocktypes}}', ['id' => $blockType->id])
+            $db->createCommand()
+                ->delete('{{%supertableblocktypes}}', ['id' => $blockTypeRecord->id])
                 ->execute();
 
             $transaction->commit();
-
-            return (bool)$affectedRows;
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
+
+        // Clear caches
+        unset(
+            $this->_blockTypesById[$blockTypeRecord->id],
+            $this->_blockTypesByFieldId[$blockTypeRecord->fieldId],
+            $this->_blockTypeRecordsById[$blockTypeRecord->id]
+        );
+        $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
     }
 
     /**
@@ -463,19 +568,18 @@ class SuperTableService extends Component
     public function saveSettings(SuperTableField $supertableField, bool $validate = true): bool
     {
         if (!$validate || $this->validateFieldSettings($supertableField)) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            $db = Craft::$app->getDb();
+            $transaction = $db->beginTransaction();
+
             try {
                 // Create the content table first since the block type fields will need it
-                $oldContentTable = $this->getContentTableName($supertableField, true);
-                $newContentTable = $this->getContentTableName($supertableField);
-
-                if ($newContentTable === false) {
-                    throw new Exception('There was a problem getting the new content table name.');
-                }
+                $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $supertableField->uid . '.settings.contentTable';
+                $oldContentTable = Craft::$app->getProjectConfig()->get($configPath);
+                $newContentTable = $supertableField->contentTable;
 
                 // Do we need to create/rename the content table?
-                if (!Craft::$app->getDb()->tableExists($newContentTable)) {
-                    if ($oldContentTable !== false && Craft::$app->getDb()->tableExists($oldContentTable)) {
+                if (!$db->tableExists($newContentTable)) {
+                    if ($oldContentTable && $db->tableExists($oldContentTable)) {
                         MigrationHelper::renameTable($oldContentTable, $newContentTable);
                     } else {
                         $this->_createContentTable($newContentTable);
@@ -501,11 +605,16 @@ class SuperTableService extends Component
                 }
 
                 // Save the new ones
+                $sortOrder = 0;
+
+                // Save the new ones
                 $originalContentTable = Craft::$app->getContent()->contentTable;
                 Craft::$app->getContent()->contentTable = $newContentTable;
 
                 foreach ($supertableField->getBlockTypes() as $blockType) {
+                    $sortOrder++;
                     $blockType->fieldId = $supertableField->id;
+                    $blockType->sortOrder = $sortOrder;
                     $this->saveBlockType($blockType, false);
                 }
 
@@ -540,13 +649,7 @@ class SuperTableService extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $originalContentTable = Craft::$app->getContent()->contentTable;
-            $contentTable = $this->getContentTableName($supertableField);
-
-            if ($contentTable === false) {
-                throw new Exception('There was a problem getting the content table.');
-            }
-
-            Craft::$app->getContent()->contentTable = $contentTable;
+            Craft::$app->getContent()->contentTable = $supertableField->contentTable;
 
             // Delete the block types
             $blockTypes = $this->getBlockTypesByFieldId($supertableField->id);
@@ -557,7 +660,7 @@ class SuperTableService extends Component
 
             // Drop the content table
             Craft::$app->getDb()->createCommand()
-                ->dropTable($contentTable)
+                ->dropTable($supertableField->contentTable)
                 ->execute();
 
             Craft::$app->getContent()->contentTable = $originalContentTable;
@@ -576,47 +679,79 @@ class SuperTableService extends Component
      * Returns the content table name for a given Super Table field.
      *
      * @param SuperTableField $supertableField  The Super Table field.
+     * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
+     */
+    public function getContentTableName(SuperTableField $supertableField)
+    {
+        return $supertableField->contentTable;
+    }
+
+    /**
+     * Defines a new Super Table content table name.
+     *
+     * @param SuperTableField $field
+     * @return string
+     * @since 3.0.23
+     */
+    public function defineContentTableName(SuperTableField $field): string
+    {
+        $baseName = 'stc_' . strtolower($field->handle);
+        $db = Craft::$app->getDb();
+        $i = -1;
+
+        do {
+            $i++;
+            $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
+        } while ($name !== $field->contentTable && $db->tableExists($name));
+
+        return $name;
+    }
+
+    /**
+     * Returns the content table name for a given Super Table field.
+     *
+     * @param SuperTableField $supertableField  The Super Table field.
      * @param bool        $useOldHandle Whether the method should use the field’s old handle when determining the table
      *                                  name (e.g. to get the existing table name, rather than the new one).
      *
      * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
      */
-    public function getContentTableName(SuperTableField $supertableField, bool $useOldHandle = false)
-    {
-        $name = '';
-        $parentFieldId = '';
+    // public function getContentTableName(SuperTableField $supertableField, bool $useOldHandle = false)
+    // {
+    //     $name = '';
+    //     $parentFieldId = '';
 
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-        do {
-            if ($useOldHandle) {
-                if (!$supertableField->oldHandle) {
-                    return false;
-                }
+    //     /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+    //     do {
+    //         if ($useOldHandle) {
+    //             if (!$supertableField->oldHandle) {
+    //                 return false;
+    //             }
 
-                $handle = $supertableField->oldHandle;
-            } else {
-                $handle = $supertableField->handle;
-            }
+    //             $handle = $supertableField->oldHandle;
+    //         } else {
+    //             $handle = $supertableField->handle;
+    //         }
 
-            // Check if this field is inside a Matrix - we need to prefix this content table if so.
-            if ($supertableField->context != 'global') {
-                $parentFieldContext = explode(':', $supertableField->context);
+    //         // Check if this field is inside a Matrix - we need to prefix this content table if so.
+    //         if ($supertableField->context != 'global') {
+    //             $parentFieldContext = explode(':', $supertableField->context);
 
-                if ($parentFieldContext[0] == 'matrixBlockType') {
-                    $parentFieldUid = $parentFieldContext[1];
-                    $parentFieldId = DbHelper::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
-                }
-            }
+    //             if ($parentFieldContext[0] == 'matrixBlockType') {
+    //                 $parentFieldUid = $parentFieldContext[1];
+    //                 $parentFieldId = Db::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
+    //             }
+    //         }
 
-            $name = '_' . strtolower($handle) . $name;
-        } while ($supertableField = $this->getParentSuperTableField($supertableField));
+    //         $name = '_' . strtolower($handle) . $name;
+    //     } while ($supertableField = $this->getParentSuperTableField($supertableField));
 
-        if ($parentFieldId) {
-            $name = '_' . $parentFieldId . $name;
-        }
+    //     if ($parentFieldId) {
+    //         $name = '_' . $parentFieldId . $name;
+    //     }
 
-        return '{{%stc' . $name . '}}';
-    }
+    //     return '{{%stc' . $name . '}}';
+    // }
 
     /**
      * Returns a block by its ID.
@@ -727,38 +862,6 @@ class SuperTableService extends Component
         }
     }
 
-    /**
-     * Returns the parent Super Table field, if any.
-     *
-     * @param SuperTableField $supertableField The Super Table field.
-     *
-     * @return SuperTableField|null The Super Table field’s parent Super Table field, or `null` if there is none.
-     */
-    public function getParentSuperTableField(SuperTableField $supertableField)
-    {
-        if ($this->_parentSuperTableFields !== null && array_key_exists($supertableField->id, $this->_parentSuperTableFields)) {
-            return $this->_parentSuperTableFields[$supertableField->id];
-        }
-
-        // Does this SuperTable field belong to another one?
-        $parentSuperTableFieldId = (new Query())
-            ->select(['fields.id'])
-            ->from(['{{%fields}} fields'])
-            ->innerJoin('{{%supertableblocktypes}} blocktypes', '[[blocktypes.fieldId]] = [[fields.id]]')
-            ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', '[[fieldlayoutfields.layoutId]] = [[blocktypes.fieldLayoutId]]')
-            ->where(['fieldlayoutfields.fieldId' => $supertableField->id])
-            ->scalar();
-
-        if (!$parentSuperTableFieldId) {
-            return $this->_parentSuperTableFields[$supertableField->id] = null;
-        }
-
-        /** @var SuperTableField $field */
-        $field = $this->_parentSuperTableFields[$supertableField->id] = Craft::$app->getFields()->getFieldById($parentSuperTableFieldId);
-
-        return $field;
-    }
-
 
     // Private Methods
     // =========================================================================
@@ -775,6 +878,7 @@ class SuperTableService extends Component
                 'id',
                 'fieldId',
                 'fieldLayoutId',
+                'uid'
             ])
             ->from(['{{%supertableblocktypes}}']);
     }
@@ -787,21 +891,33 @@ class SuperTableService extends Component
      * @return SuperTableBlockTypeRecord
      * @throws SuperTableBlockTypeNotFoundException if $blockType->id is invalid
      */
-    private function _getBlockTypeRecord(SuperTableBlockTypeModel $blockType): SuperTableBlockTypeRecord
+    private function _getBlockTypeRecord($blockType): SuperTableBlockTypeRecord
     {
+        if (is_string($blockType)) {
+            $blockTypeRecord = SuperTableBlockTypeRecord::findOne(['uid' => $blockType]) ?? new SuperTableBlockTypeRecord();
+
+            if (!$blockTypeRecord->getIsNewRecord()) {
+                $this->_blockTypeRecordsById[$blockTypeRecord->id] = $blockTypeRecord;
+            }
+
+            return $blockTypeRecord;
+        }
+
         if ($blockType->getIsNew()) {
             return new SuperTableBlockTypeRecord();
         }
 
-        if ($this->_blockTypeRecordsById !== null && array_key_exists($blockType->id, $this->_blockTypeRecordsById)) {
+        if (isset($this->_blockTypeRecordsById[$blockType->id])) {
             return $this->_blockTypeRecordsById[$blockType->id];
         }
 
-        if (($this->_blockTypeRecordsById[$blockType->id] = SuperTableBlockTypeRecord::findOne($blockType->id)) === null) {
-            throw new SuperTableBlockTypeNotFoundException('Invalid block type ID: '.$blockType->id);
+        $blockTypeRecord = SuperTableBlockTypeRecord::findOne($blockType->id);
+
+        if ($blockTypeRecord === null) {
+            throw new SuperTableBlockTypeNotFoundException('Invalid block type ID: ' . $blockType->id);
         }
 
-        return $this->_blockTypeRecordsById[$blockType->id];
+        return $this->_blockTypeRecordsById[$blockType->id] = $blockTypeRecord;
     }
 
     /**

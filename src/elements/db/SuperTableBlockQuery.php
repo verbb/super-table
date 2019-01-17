@@ -22,6 +22,14 @@ class SuperTableBlockQuery extends ElementQuery
 {
     // Properties
     // =========================================================================
+    
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['supertableblocks.sortOrder' => SORT_ASC];
+    
+    // General parameters
+    // -------------------------------------------------------------------------
 
     /**
      * @var int|int[]|string|false|null The field ID(s) that the resulting SuperTable blocks must belong to.
@@ -46,19 +54,6 @@ class SuperTableBlockQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'supertableblocks.sortOrder';
-        }
-
-        parent::__construct($elementType, $config);
-    }
 
     /**
      * @inheritdoc
@@ -117,7 +112,6 @@ class SuperTableBlockQuery extends ElementQuery
     public function fieldId($value)
     {
         $this->fieldId = $value;
-
         return $this;
     }
 
@@ -131,7 +125,6 @@ class SuperTableBlockQuery extends ElementQuery
     public function ownerId($value)
     {
         $this->ownerId = $value;
-
         return $this;
     }
 
@@ -213,7 +206,7 @@ class SuperTableBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[typeId]] property based on a given block type(s)’s handle(s).
+     * Sets the [[typeId]] property based on a given block type(s)’s id(s).
      *
      * @param string|string[]|SuperTableBlockType|null $value The property value
      *
@@ -263,12 +256,15 @@ class SuperTableBlockQuery extends ElementQuery
         // Figure out which content table to use
         $this->contentTable = null;
 
-        if (!$this->fieldId && $this->id && is_numeric($this->id)) {
-            $this->fieldId = (new Query())
+        if (!$this->fieldId && $this->id) {
+            $fieldIds = (new Query())
                 ->select(['fieldId'])
+                ->distinct()
                 ->from(['{{%supertableblocks}}'])
-                ->where(['id' => $this->id])
-                ->scalar();
+                ->where(Db::parseParam('id', $this->id))
+                ->column();
+
+            $this->fieldId = count($fieldIds) === 1 ? $fieldIds[0] : $fieldIds;
         }
 
         if ($this->fieldId && is_numeric($this->fieldId)) {
@@ -276,7 +272,7 @@ class SuperTableBlockQuery extends ElementQuery
             $supertableField = Craft::$app->getFields()->getFieldById($this->fieldId);
 
             if ($supertableField) {
-                $this->contentTable = SuperTable::$plugin->service->getContentTableName($supertableField);
+                $this->contentTable = $supertableField->contentTable;
             }
         }
 
