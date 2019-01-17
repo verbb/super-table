@@ -369,10 +369,6 @@ class SuperTableService extends Component
 
             // (Re)save all the fields that now exist for this block.
             foreach ($newFields as $fieldUid => $fieldData) {
-                // if ($fieldData['type'] === 'craft\fields\Matrix') {
-                //     $fieldData['contentTable'] = 'matrixcontent_test';
-                // }
-
                 $fieldsService->applyFieldSave($fieldUid, $fieldData, 'superTableBlockType:' . $blockTypeUid);
             }
 
