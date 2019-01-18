@@ -697,10 +697,31 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             return false;
         }
 
+        // Prep the block types & fields for save
+        $fieldsService = Craft::$app->getFields();
+
+        foreach ($this->getBlockTypes() as $blockType) {
+            // Ensure the block type has a UID
+            if ($blockType->getIsNew()) {
+                $blockType->uid = StringHelper::UUID();
+            } else if (!$blockType->uid) {
+                $blockType->uid = Db::uidById('{{%supertableblocktypes}}', $blockType->id);
+            }
+
+            foreach ($blockType->getFields() as $field) {
+                $field->context = 'superTableBlockType:' . $blockType->uid;
+                $fieldsService->prepFieldForSave($field);
+
+                if (!$field->beforeSave($field->getIsNew())) {
+                    return false;
+                }
+            }
+        }
+
         // Set the old content table before
         $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $this->uid . '.settings.contentTable';
         $this->contentTable = Craft::$app->getProjectConfig()->get($configPath);
-        
+
         // Now see if we need a new one
         $this->contentTable = SuperTable::$plugin->getService()->defineContentTableName($this);
 

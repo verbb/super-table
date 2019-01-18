@@ -248,12 +248,6 @@ class SuperTableService extends Component
         $parentField = $fieldsService->getFieldById($blockType->fieldId);
         $isNewBlockType = $blockType->getIsNew();
 
-        if ($isNewBlockType) {
-            $blockType->uid = StringHelper::UUID();
-        } else if (!$blockType->uid) {
-            $blockType->uid = Db::uidById('{{%supertableblocktypes}}', $blockType->id);
-        }
-
         $projectConfig = Craft::$app->getProjectConfig();
 
         $configData = [
@@ -268,11 +262,6 @@ class SuperTableService extends Component
         $configData['fields'] = [];
 
         foreach ($blockType->getFields() as $field) {
-            if (!$field->uid) {
-                $field->uid = StringHelper::UUID();
-            }
-
-            $field->context = 'superTableBlockType:' . $blockType->uid;
             $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
 
             $field->sortOrder = ++$sortOrder;
@@ -568,6 +557,10 @@ class SuperTableService extends Component
      */
     public function saveSettings(SuperTableField $supertableField, bool $validate = true): bool
     {
+        if (!$supertableField->contentTable) {
+            throw new Exception('Unable to save a Super Table field’s settings without knowing its content table.');
+        }
+
         if (!$validate || $this->validateFieldSettings($supertableField)) {
             $db = Craft::$app->getDb();
             $transaction = $db->beginTransaction();
@@ -708,12 +701,12 @@ class SuperTableService extends Component
                     $parentFieldId = Db::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
                 }
             }
-
-            $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
         
             if ($parentFieldId) {
-                $name = '_' . $parentFieldId . $name;
+                $baseName = 'stc_' . $parentFieldId . '_' . strtolower($field->handle);
             }
+
+            $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
 
         } while ($name !== $field->contentTable && $db->tableExists($name));
 
