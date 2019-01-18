@@ -566,17 +566,14 @@ class SuperTableService extends Component
             $transaction = $db->beginTransaction();
 
             try {
-                // Create the content table first since the block type fields will need it
-                $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $supertableField->uid . '.settings.contentTable';
-                $oldContentTable = Craft::$app->getProjectConfig()->get($configPath);
-                $newContentTable = $supertableField->contentTable;
-
                 // Do we need to create/rename the content table?
-                if (!$db->tableExists($newContentTable)) {
+                if (!$db->tableExists($supertableField->contentTable)) {
+                    $oldContentTable = $supertableField->oldSettings['contentTable'] ?? null;
+
                     if ($oldContentTable && $db->tableExists($oldContentTable)) {
-                        MigrationHelper::renameTable($oldContentTable, $newContentTable);
+                        MigrationHelper::renameTable($oldContentTable, $supertableField->contentTable);
                     } else {
-                        $this->_createContentTable($newContentTable);
+                        $this->_createContentTable($supertableField->contentTable);
                     }
                 }
 
@@ -600,7 +597,7 @@ class SuperTableService extends Component
 
                 // Save the new ones
                 $originalContentTable = Craft::$app->getContent()->contentTable;
-                Craft::$app->getContent()->contentTable = $newContentTable;
+                Craft::$app->getContent()->contentTable = $supertableField->contentTable;
 
                 foreach ($supertableField->getBlockTypes() as $blockType) {
                     $blockType->fieldId = $supertableField->id;

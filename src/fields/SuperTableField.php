@@ -718,11 +718,15 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             }
         }
 
-        // Set the old content table before
-        $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $this->uid . '.settings.contentTable';
-        $this->contentTable = Craft::$app->getProjectConfig()->get($configPath);
+        // Set the content table name
+        if ($this->id) {
+            $oldField = $fieldsService->getFieldById($this->id);
 
-        // Now see if we need a new one
+            if ($oldField instanceof self) {
+                $this->contentTable = $oldField->contentTable;
+            }
+        }
+
         $this->contentTable = SuperTable::$plugin->getService()->defineContentTableName($this);
 
         return true;
