@@ -77,7 +77,18 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                             } else {
                                 // Otherwise, something's gone wrong somewhere down the line, and this table doesn't
                                 // exist at all. Save the top-level field (Matrix) to trigger the process
-                                $matrixService->saveSettings($fieldsService->getFieldById($field['id']));
+                                $matrixFieldId = (new Query())
+                                    ->select(['fieldId'])
+                                    ->from([Table::MATRIXBLOCKTYPES])
+                                    ->where(['id' => $parentFieldId])
+                                    ->scalar();
+
+                                if ($matrixFieldId) {
+                                    $matrixService->saveSettings($fieldsService->getFieldById($matrixFieldId));
+                                }
+
+                                // And also re-save the Super Table field
+                                $superTableService->saveSettings($fieldsService->getFieldById($field['id']));
                             }
                         }
                     }
