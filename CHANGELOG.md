@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.4.1 - 2019-01-20
+
+### Fixed
+- Fix migration issue in 2.1.4.
+
 ## 2.1.4 - 2019-01-20
 
 ### Fixed
