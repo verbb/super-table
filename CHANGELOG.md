@@ -1,9 +1,19 @@
 # Changelog
 
-## Unreleased
+## 2.1.1 - 2019-01-19
+
+### Added
+- Added support for Craft 3.1 soft deletes.
+- Added support for Craft 3.1 project config.
+
+### Changed
+- Clarify width field setting label for new fields.
+- Tweak/improve minor field setting translations.
 
 ### Fixed
 - Fixed a bug where a Super Table fields’ block types and content table could be deleted even if something set `$isValid` to `false` on the `beforeDelete` event.
+- Fixed issue with Matrix + Super Table field combinations losing their fields, or content tables (thanks @brandonkelly).
+- Fixed dragging issues with nested Matrix field when using Matrix Layout.
 
 ## 2.1.0 - 2019-01-16
 
