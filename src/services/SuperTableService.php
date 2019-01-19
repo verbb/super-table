@@ -558,6 +558,11 @@ class SuperTableService extends Component
     public function saveSettings(SuperTableField $supertableField, bool $validate = true): bool
     {
         if (!$supertableField->contentTable) {
+            // Silently fail if this is a migration
+            if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                return true;
+            }
+
             throw new Exception('Unable to save a Super Table field’s settings without knowing its content table.');
         }
 
