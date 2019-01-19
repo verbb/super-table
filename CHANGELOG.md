@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.2 - 2019-01-19
+
+### Fixed
+- Ditch (incorrect) project config migration.
+
 ## 2.1.1 - 2019-01-19
 
 ### Added
