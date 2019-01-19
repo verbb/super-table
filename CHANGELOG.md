@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.4 - 2019-01-20
+
+### Fixed
+- Fix any disconnected content tables for any Super Table field.
+
 ## 2.1.3 - 2019-01-19
 
 ### Fixed
