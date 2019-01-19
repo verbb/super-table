@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.3 - 2019-01-19
+
+### Fixed
+- Prevent content field exception during migrations.
+
 ## 2.1.2 - 2019-01-19
 
 ### Fixed
