@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.4.3 - 2019-01-22
+
+### Fixed
+- Remove old content table migration potentially causing issues.
+
 ## 2.1.4.2 - 2019-01-21
 
 ### Fixed
