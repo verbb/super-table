@@ -8,6 +8,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
+use craft\fields\MatrixField;
 use craft\helpers\Db;
 use craft\helpers\Json;
 
@@ -84,11 +85,12 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                                     ->scalar();
 
                                 if ($matrixFieldId) {
-                                    $matrixService->saveSettings($fieldsService->getFieldById($matrixFieldId));
+                                    // Check for any shenanigans from things like Neo...
+                                    $this->_updateMatrixOrSuperTableSettings($fieldsService->getFieldById($matrixFieldId));
                                 }
 
                                 // And also re-save the Super Table field
-                                $superTableService->saveSettings($fieldsService->getFieldById($field['id']));
+                                $this->_updateMatrixOrSuperTableSettings($fieldsService->getFieldById($field['id']));
                             }
                         }
                     }
@@ -101,5 +103,23 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
     {
         echo "m190120_000000_fix_supertablecontent_tables cannot be reverted.\n";
         return false;
+    }
+
+    private function _updateMatrixOrSuperTableSettings($field)
+    {
+        $superTableService = SuperTable::$plugin->getService();
+        $matrixService = Craft::$app->getMatrix();
+        
+        if (!$field) {
+            return;
+        }
+
+        if (get_class($field) === SuperTableField::class) {
+            $superTableService->saveSettings($field);
+        }
+
+        if (get_class($field) === MatrixField::class) {
+            $matrixService->saveSettings($field);
+        }
     }
 }
