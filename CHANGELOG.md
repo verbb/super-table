@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fix content table migration to cater for Neo.
+- Fix inclusion of `_cleanUpTable()` in migration (not needed).
 
 ## 2.1.4.1 - 2019-01-20
 
