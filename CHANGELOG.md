@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.4.2 - 2019-01-21
+
+### Fixed
+- Fix content table migration to cater for Neo.
+
 ## 2.1.4.1 - 2019-01-20
 
 ### Fixed
