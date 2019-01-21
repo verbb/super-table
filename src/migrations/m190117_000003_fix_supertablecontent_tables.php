@@ -98,11 +98,7 @@ class m190117_000003_fix_supertablecontent_tables extends Migration
                     $this->createIndex(null, $tableName, ['elementId', 'siteId'], true);
                     $this->addForeignKey(null, $tableName, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
                     $this->addForeignKey(null, $tableName, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
-                    $this->_cleanUpTable($field['id'], $tableName, $originalFieldColumns);
                 }
-
-                // now clean up the original table
-                $this->_cleanUpTable($originalField['id'], $originalTableName, $originalFieldColumns);
             }
 
             // Re-enable FK checks
@@ -117,40 +113,5 @@ class m190117_000003_fix_supertablecontent_tables extends Migration
     {
         echo "m190117_000003_fix_supertablecontent_tables cannot be reverted.\n";
         return false;
-    }
-
-    private function _cleanUpTable(int $fieldId, string $tableName, array $originalFieldColumns)
-    {
-        // delete the rows we don't need
-        $this->delete($tableName, [
-            'not in', 'elementId', (new Query())
-                ->select(['id'])
-                ->from(['{{%supertableblocks}}'])
-                ->where(['fieldId' => $fieldId])
-        ]);
-
-        // get all of the columns this field needs
-        $subFields = (new Query())
-            ->select(['f.handle', 'mbt.handle as blockTypeHandle'])
-            ->from(['{{%fields}} f'])
-            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[f.id]]')
-            ->innerJoin('{{%supertableblocktypes}} mbt', '[[mbt.fieldLayoutId]] = [[flf.layoutId]]')
-            ->where(['mbt.fieldId' => $fieldId])
-            ->all();
-
-        $columns = [];
-
-        foreach ($subFields as $subField) {
-            $column = 'field_' . $subField['blockTypeHandle'] . '_' . $subField['handle'];
-            if (in_array($column, $originalFieldColumns, true)) {
-                $columns[] = $column;
-            }
-        }
-
-        // drop the ones we don't need
-        $columnsToDrop = array_diff($originalFieldColumns, $columns);
-        foreach ($columnsToDrop as $columnName) {
-            $this->dropColumn($tableName, $columnName);
-        }
     }
 }
