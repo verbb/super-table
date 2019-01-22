@@ -1,3 +1,8 @@
+### Craft 3.1 changes
+If you're updating from Craft 3.0.x, or are experiencing error messages with content tables, please ensure you're on (at least)[https://github.com/verbb/super-table/releases/tag/2.1.5](https://github.com/verbb/super-table/releases/tag/2.1.5) to make use of our "Content Table Checker/Fixer".
+
+Go to your site, and visit `http://mysite.com/actions/super-table/plugin/check-content-tables` (obviously substitute your domain name) and follow the prompts. This will not make any changes on your install, and if any errors are detected, will advise to fix them. In doing so, a backup will be created, and your Super Table fields should be corrected.
+
 # Super Table Plugin for Craft CMS
 
 <img width="500" src="https://verbb.io/uploads/plugins/super-table/_800x455_crop_center-center/super-table-social-card.png">
