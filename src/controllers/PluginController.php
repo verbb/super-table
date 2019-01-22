@@ -126,6 +126,8 @@ class PluginController extends Controller
 
         if ($errors) {
             echo '<br>Fix the above errors by running the <a href="' . UrlHelper::actionUrl('super-table/plugin/fix-content-tables') . '">Super Table content table fixer.';
+        } else {
+            echo 'No errors found.';
         }
 
         exit;
