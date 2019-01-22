@@ -44,6 +44,9 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                 } else {
                     $this->_createContentTable($settings, $field);
                 }
+            } else {
+                // We've updated from an older ST version
+                $this->_createContentTable($settings, $field);
             }
         }
 
@@ -108,45 +111,39 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                 } else {
                     $this->_createContentTable($settings, $field);
                 }
+            } else {
+                // We've updated from an older ST version
+                $this->_createContentTable($settings, $field);
             }
         }
 
         // Also, check to see if there are any content tables mistakenly using the uid of matrix fields (happened during)
         // early Craft 3.1 upgraders.
-        $superTableFields = (new Query())
-            ->select(['*'])
-            ->from([Table::FIELDS])
-            ->where(['type' => SuperTableField::class])
-            ->andWhere(['!=', 'context', 'global'])
-            ->all();
-
         foreach ($superTableFields as $field) {
-            if ($field['context'] != 'global') {
-                $parentFieldContext = explode(':', $field['context']);
+            $parentFieldContext = explode(':', $field['context']);
 
-                if ($parentFieldContext[0] == 'matrixBlockType') {
-                    $parentFieldUid = $parentFieldContext[1];
+            if ($parentFieldContext[0] == 'matrixBlockType') {
+                $parentFieldUid = $parentFieldContext[1];
 
-                    $wrongContentTable = '{{%stc_' . $parentFieldUid . '_' . strtolower($field['handle'] . '}}');
+                $wrongContentTable = '{{%stc_' . $parentFieldUid . '_' . strtolower($field['handle'] . '}}');
 
-                    if ($this->db->tableExists($wrongContentTable)) {
-                        echo "    > Incorrect nested content table found {$wrongContentTable} ...\n";
+                if ($this->db->tableExists($wrongContentTable)) {
+                    echo "    > Incorrect nested content table found {$wrongContentTable} ...\n";
 
-                        $newField = $fieldsService->getFieldById($field['id']);
-                        $contentTable = $this->_getContentTableName($newField);
+                    $newField = $fieldsService->getFieldById($field['id']);
+                    $contentTable = $this->_getContentTableName($newField);
 
-                        // Rename the table
-                        MigrationHelper::renameTable($wrongContentTable, $contentTable, $this);
+                    // Rename the table
+                    MigrationHelper::renameTable($wrongContentTable, $contentTable, $this);
 
-                        echo "    > Renamed content table to {$contentTable} ...\n";
+                    echo "    > Renamed content table to {$contentTable} ...\n";
 
-                        // And also update the field settings
-                        $settings = Json::decode($field['settings']);
-                        $settings['contentTable'] = $contentTable;
-                        $this->update(Table::FIELDS, ['settings' => Json::encode($settings)], ['id' => $field['id']]);
+                    // And also update the field settings
+                    $settings = Json::decode($field['settings']);
+                    $settings['contentTable'] = $contentTable;
+                    $this->update(Table::FIELDS, ['settings' => Json::encode($settings)], ['id' => $field['id']]);
 
-                        echo "    > Updated field settings with content table {$contentTable} ...\n";
-                    }
+                    echo "    > Updated field settings with content table {$contentTable} ...\n";
                 }
             }
         }

@@ -73,6 +73,9 @@ class PluginController extends Controller
                     $errors = true;
                     echo "    > ERROR: Super Table field #{$field['id']} missing content table {$contentTable} ...\n";
                 }
+            } else {
+                $errors = true;
+                echo "    > ERROR: Super Table field #{$field['id']} is missing its content table in settings ...\n";
             }
         }
 
@@ -99,24 +102,26 @@ class PluginController extends Controller
                     $errors = true;
                     echo "    > ERROR: Super Table field #{$field['id']} missing content table {$contentTable} ...\n";
                 }
+            } else {
+                $errors = true;
+                echo "    > ERROR: Super Table field #{$field['id']} is missing its content table in settings ...\n";
             }
         }
 
         // Also, check to see if there are any content tables mistakenly using the uid of matrix fields (happened during)
         // early Craft 3.1 upgraders.
         foreach ($superTableFields as $field) {
-            if ($field['context'] != 'global') {
-                $parentFieldContext = explode(':', $field['context']);
+            $parentFieldContext = explode(':', $field['context']);
 
-                if ($parentFieldContext[0] == 'matrixBlockType') {
-                    $parentFieldUid = $parentFieldContext[1];
+            if ($parentFieldContext[0] == 'matrixBlockType') {
+                $parentFieldUid = $parentFieldContext[1];
 
-                    $wrongContentTable = '{{%stc_' . $parentFieldUid . '_' . strtolower($field['handle'] . '}}');
+                $wrongContentTable = '{{%stc_' . $parentFieldUid . '_' . strtolower($field['handle'] . '}}');
 
-                    if ($db->tableExists($wrongContentTable)) {
-                        $errors = true;
-                        echo "    > ERROR: Incorrect nested content table found {$wrongContentTable} ...\n";
-                    }
+                // This shouldn't exist - it was mistakenly created in the Craft 3.1 update
+                if ($db->tableExists($wrongContentTable)) {
+                    $errors = true;
+                    echo "    > ERROR: Incorrect nested content table found {$wrongContentTable} ...\n";
                 }
             }
         }
