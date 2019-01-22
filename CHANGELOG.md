@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.5.3 - 2019-01-22
+
+### Fixed
+- Fix existing table-checking in content table check
+
 ## 2.1.5.2 - 2019-01-22
 
 ### Fixed
