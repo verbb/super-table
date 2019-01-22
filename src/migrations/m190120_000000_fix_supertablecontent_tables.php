@@ -133,10 +133,15 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                     $newField = $fieldsService->getFieldById($field['id']);
                     $contentTable = $this->_getContentTableName($newField);
 
-                    // Rename the table
-                    MigrationHelper::renameTable($wrongContentTable, $contentTable, $this);
-
-                    echo "    > Renamed content table to {$contentTable} ...\n";
+                    // Rename the table (check if it already exists)
+                    if ($this->db->tableExists($contentTable)) {
+                        echo "    > {$contentTable} already exists, no need to rename ...\n";
+                        $this->dropTableIfExists($wrongContentTable);
+                        echo "    > Deleted content table to {$wrongContentTable} ...\n";
+                    } else {
+                        MigrationHelper::renameTable($wrongContentTable, $contentTable, $this);
+                        echo "    > Renamed content table to {$contentTable} ...\n";
+                    }
 
                     // And also update the field settings
                     $settings = Json::decode($field['settings']);
