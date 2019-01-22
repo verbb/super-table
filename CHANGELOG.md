@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.5.2 - 2019-01-22
+
+### Fixed
+- Fix table cleanup in migration when correct table already exists
+
 ## 2.1.5.1 - 2019-01-22
 
 ### Fixed
