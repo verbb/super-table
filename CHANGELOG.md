@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.1.5 - 2019-01-22
+
+- Fix migration having to run twice to complete required steps in some cases.
+- Added controller action `actions/super-table/plugin/fix-content-tables` to aid in debugging content table issues.
+- Added controller action `actions/super-table/plugin/check-content-tables` to aid in debugging content table issues.
+- Add a bunch of debugging to assist with content table migrations.
+
+## 2.1.4.4 - 2019-01-22
+
+### Fixed
+- Fix more migration issues...
+
 ## 2.1.4.3 - 2019-01-22
 
 ### Fixed
