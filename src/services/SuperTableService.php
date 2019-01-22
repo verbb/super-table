@@ -563,7 +563,7 @@ class SuperTableService extends Component
                 return true;
             }
 
-            throw new Exception('Unable to save a Super Table field’s settings without knowing its content table.');
+            throw new Exception('Unable to save a Super Table field’s settings without knowing its content table: ' . $supertableField->contentTable);
         }
 
         if (!$validate || $this->validateFieldSettings($supertableField)) {
