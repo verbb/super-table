@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.5.1 - 2019-01-22
+
+### Fixed
+- Update migration checks when updating from older version of Super Table.
+- Check content tables clarity when all done/all okay.
+
 ## 2.1.5 - 2019-01-22
 
 ### Fixed
