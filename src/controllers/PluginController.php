@@ -35,6 +35,8 @@ class PluginController extends Controller
 
         echo nl2br($output);
 
+        echo '<br>Fixes complete.';
+
         exit;
     }
 
