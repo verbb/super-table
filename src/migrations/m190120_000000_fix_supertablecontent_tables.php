@@ -11,6 +11,7 @@ use craft\db\Table;
 use craft\fields\MatrixField;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\helpers\MigrationHelper;
 
 class m190120_000000_fix_supertablecontent_tables extends Migration
 {
@@ -33,9 +34,15 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
             if (is_array($settings) && array_key_exists('contentTable', $settings)) {
                 $contentTable = $settings['contentTable'];
 
-                if (!$this->db->tableExists($contentTable)) {
-                    // Re-save field
-                    $superTableService->saveSettings($fieldsService->getFieldById($field['id']));
+                echo "    > Super Table field #{$field['id']} has content table {$contentTable} ...\n";
+
+                if ($contentTable) {
+                    if (!$this->db->tableExists($contentTable)) {
+                        // Re-save field
+                        $superTableService->saveSettings($fieldsService->getFieldById($field['id']));
+                    }
+                } else {
+                    $this->_createContentTable($settings, $field);
                 }
             }
         }
@@ -54,45 +61,91 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
             if (is_array($settings) && array_key_exists('contentTable', $settings)) {
                 $contentTable = $settings['contentTable'];
 
-                if (!$this->db->tableExists($contentTable)) {
-                    // Check to see if our Craft 3 bug is true - the content table isn't stored on the field correctly
-                    // missing its Matrix ID prefix - ie, stored as `stc_relatedwork` not `stc_19_relatedwork`.
-                    $parentFieldContext = explode(':', $field['context']);
+                echo "    > Super Table field #{$field['id']} has content table {$contentTable} ...\n";
 
-                    if ($parentFieldContext[0] == 'matrixBlockType') {
-                        $parentFieldUid = $parentFieldContext[1];
-                        $parentFieldId = Db::idByUid(Table::MATRIXBLOCKTYPES, $parentFieldUid);
+                if ($contentTable) {
+                    if (!$this->db->tableExists($contentTable)) {
+                        // Check to see if our Craft 3 bug is true - the content table isn't stored on the field correctly
+                        // missing its Matrix ID prefix - ie, stored as `stc_relatedwork` not `stc_19_relatedwork`.
+                        $parentFieldContext = explode(':', $field['context']);
 
-                        // Stitch the Matrix ID into the table name
-                        if ($parentFieldId) {
-                            $newContentTable = explode('_', $contentTable);
-                            array_splice($newContentTable, 1, 0, $parentFieldId);
-                            $newContentTable = implode('_', $newContentTable);
+                        if ($parentFieldContext[0] == 'matrixBlockType') {
+                            $parentFieldUid = $parentFieldContext[1];
+                            $parentFieldId = Db::idByUid(Table::MATRIXBLOCKTYPES, $parentFieldUid);
 
-                            // Is there a table that correctly already has the parent Matrix ID? 
-                            if ($this->db->tableExists($newContentTable)) {
-                                // We need to update the field to reflect the already-existing table
-                                $settings['contentTable'] = $newContentTable;
+                            // Stitch the Matrix ID into the table name
+                            if ($parentFieldId) {
+                                $newContentTable = explode('_', $contentTable);
+                                array_splice($newContentTable, 1, 0, $parentFieldId);
+                                $newContentTable = implode('_', $newContentTable);
 
-                                $this->update(Table::FIELDS, ['settings' => Json::encode($settings)], ['id' => $field['id']]);
-                            } else {
-                                // Otherwise, something's gone wrong somewhere down the line, and this table doesn't
-                                // exist at all. Save the top-level field (Matrix) to trigger the process
-                                $matrixFieldId = (new Query())
-                                    ->select(['fieldId'])
-                                    ->from([Table::MATRIXBLOCKTYPES])
-                                    ->where(['id' => $parentFieldId])
-                                    ->scalar();
+                                // Is there a table that correctly already has the parent Matrix ID? 
+                                if ($this->db->tableExists($newContentTable)) {
+                                    // We need to update the field to reflect the already-existing table
+                                    $settings['contentTable'] = $newContentTable;
 
-                                if ($matrixFieldId) {
-                                    // Check for any shenanigans from things like Neo...
-                                    $this->_updateMatrixOrSuperTableSettings($fieldsService->getFieldById($matrixFieldId));
+                                    $this->update(Table::FIELDS, ['settings' => Json::encode($settings)], ['id' => $field['id']]);
+                                } else {
+                                    // Otherwise, something's gone wrong somewhere down the line, and this table doesn't
+                                    // exist at all. Save the top-level field (Matrix) to trigger the process
+                                    $matrixFieldId = (new Query())
+                                        ->select(['fieldId'])
+                                        ->from([Table::MATRIXBLOCKTYPES])
+                                        ->where(['id' => $parentFieldId])
+                                        ->scalar();
+
+                                    if ($matrixFieldId) {
+                                        // Check for any shenanigans from things like Neo...
+                                        $this->_updateMatrixOrSuperTableSettings($fieldsService->getFieldById($matrixFieldId));
+                                    }
+
+                                    // And also re-save the Super Table field
+                                    $this->_updateMatrixOrSuperTableSettings($fieldsService->getFieldById($field['id']));
                                 }
-
-                                // And also re-save the Super Table field
-                                $this->_updateMatrixOrSuperTableSettings($fieldsService->getFieldById($field['id']));
                             }
                         }
+                    }
+                } else {
+                    $this->_createContentTable($settings, $field);
+                }
+            }
+        }
+
+        // Also, check to see if there are any content tables mistakenly using the uid of matrix fields (happened during)
+        // early Craft 3.1 upgraders.
+        $superTableFields = (new Query())
+            ->select(['*'])
+            ->from([Table::FIELDS])
+            ->where(['type' => SuperTableField::class])
+            ->andWhere(['!=', 'context', 'global'])
+            ->all();
+
+        foreach ($superTableFields as $field) {
+            if ($field['context'] != 'global') {
+                $parentFieldContext = explode(':', $field['context']);
+
+                if ($parentFieldContext[0] == 'matrixBlockType') {
+                    $parentFieldUid = $parentFieldContext[1];
+
+                    $wrongContentTable = '{{%stc_' . $parentFieldUid . '_' . strtolower($field['handle'] . '}}');
+
+                    if ($this->db->tableExists($wrongContentTable)) {
+                        echo "    > Incorrect nested content table found {$wrongContentTable} ...\n";
+
+                        $newField = $fieldsService->getFieldById($field['id']);
+                        $contentTable = $this->_getContentTableName($newField);
+
+                        // Rename the table
+                        MigrationHelper::renameTable($wrongContentTable, $contentTable, $this);
+
+                        echo "    > Renamed content table to {$contentTable} ...\n";
+
+                        // And also update the field settings
+                        $settings = Json::decode($field['settings']);
+                        $settings['contentTable'] = $contentTable;
+                        $this->update(Table::FIELDS, ['settings' => Json::encode($settings)], ['id' => $field['id']]);
+
+                        echo "    > Updated field settings with content table {$contentTable} ...\n";
                     }
                 }
             }
@@ -105,6 +158,61 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         return false;
     }
 
+    private function _createContentTable($settings, $field)
+    {
+        $fieldsService = Craft::$app->getFields();
+        $superTableService = SuperTable::$plugin->getService();
+
+        $newField = $fieldsService->getFieldById($field['id']);
+
+        echo "    > Trying to create missing content table for #{$newField->id} ...\n";
+
+        // Fetch the table that it should be
+        $contentTable = $this->_getContentTableName($newField);
+
+        echo "    > Generated table name {$contentTable} ...\n";
+
+        // Update the field 
+        $settings['contentTable'] = $contentTable;
+        $this->update(Table::FIELDS, ['settings' => Json::encode($settings)], ['id' => $field['id']]);
+
+        // Also update our local copy of the field so we can save it
+        $newField->contentTable = $contentTable;
+
+        echo "    > Local field table name {$newField->contentTable} ...\n";
+
+        // Re-save field - for good measure
+        $superTableService->saveSettings($newField);
+
+        echo "    > Updated Super Table field after content table creation ...\n\n";
+    }
+
+    private function _getContentTableName(SuperTableField $field): string
+    {
+        $baseName = 'stc_' . strtolower($field->handle);
+        $db = Craft::$app->getDb();
+
+        $parentFieldId = '';
+
+        // Check if this field is inside a Matrix - we need to prefix this content table if so.
+        if ($field->context != 'global') {
+            $parentFieldContext = explode(':', $field->context);
+
+            if ($parentFieldContext[0] == 'matrixBlockType') {
+                $parentFieldUid = $parentFieldContext[1];
+                $parentFieldId = Db::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
+            }
+        }
+    
+        if ($parentFieldId) {
+            $baseName = 'stc_' . $parentFieldId . '_' . strtolower($field->handle);
+        }
+
+        $name = '{{%' . $baseName . '}}';
+
+        return $name;
+    }
+
     private function _updateMatrixOrSuperTableSettings($field)
     {
         $superTableService = SuperTable::$plugin->getService();
@@ -115,10 +223,14 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         }
 
         if (get_class($field) === SuperTableField::class) {
+            echo "    > Re-saving Super Table field #{$field->id} with content table {$field->contentTable} ...\n";
+
             $superTableService->saveSettings($field);
         }
 
         if (get_class($field) === MatrixField::class) {
+            echo "    > Re-saving Matrix field #{$field->id} with content table {$field->contentTable} ...\n";
+
             $matrixService->saveSettings($field);
         }
     }
