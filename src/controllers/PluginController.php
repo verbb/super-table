@@ -67,9 +67,7 @@ class PluginController extends Controller
                 if (!$contentTable) {
                     $errors = true;
                     echo "    > ERROR: Super Table field #{$field['id']} empty content table {$contentTable} ...\n";
-                }
-
-                if (!$db->tableExists($contentTable)) {
+                } else if (!$db->tableExists($contentTable)) {
                     $errors = true;
                     echo "    > ERROR: Super Table field #{$field['id']} missing content table {$contentTable} ...\n";
                 }
@@ -96,9 +94,7 @@ class PluginController extends Controller
                 if (!$contentTable) {
                     $errors = true;
                     echo "    > ERROR: Super Table field #{$field['id']} has content table {$contentTable} ...\n";
-                }
-
-                if (!$db->tableExists($contentTable)) {
+                } else if (!$db->tableExists($contentTable)) {
                     $errors = true;
                     echo "    > ERROR: Super Table field #{$field['id']} missing content table {$contentTable} ...\n";
                 }
