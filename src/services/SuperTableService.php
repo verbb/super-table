@@ -566,65 +566,69 @@ class SuperTableService extends Component
             throw new Exception('Unable to save a Super Table field’s settings without knowing its content table: ' . $supertableField->contentTable);
         }
 
-        if (!$validate || $this->validateFieldSettings($supertableField)) {
-            $db = Craft::$app->getDb();
-            $transaction = $db->beginTransaction();
+        if ($validate && !$this->validateFieldSettings($supertableField)) {
+            return false;
+        }
 
-            try {
-                // Do we need to create/rename the content table?
-                if (!$db->tableExists($supertableField->contentTable)) {
-                    $oldContentTable = $supertableField->oldSettings['contentTable'] ?? null;
 
-                    if ($oldContentTable && $db->tableExists($oldContentTable)) {
-                        MigrationHelper::renameTable($oldContentTable, $supertableField->contentTable);
-                    } else {
-                        $this->_createContentTable($supertableField->contentTable);
-                    }
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+
+        try {
+            // Do we need to create/rename the content table?
+            if (!$db->tableExists($supertableField->contentTable)) {
+                $oldContentTable = $supertableField->oldSettings['contentTable'] ?? null;
+
+                if ($oldContentTable && $db->tableExists($oldContentTable)) {
+                    MigrationHelper::renameTable($oldContentTable, $supertableField->contentTable);
+                } else {
+                    $this->_createContentTable($supertableField->contentTable);
                 }
+            }
 
+            if (!Craft::$app->getProjectConfig()->areChangesPending(self::CONFIG_BLOCKTYPE_KEY)) {
                 // Delete the old block types first, in case there's a handle conflict with one of the new ones
                 $oldBlockTypes = $this->getBlockTypesByFieldId($supertableField->id);
                 $oldBlockTypesById = [];
-
+                
                 foreach ($oldBlockTypes as $blockType) {
                     $oldBlockTypesById[$blockType->id] = $blockType;
                 }
-
+                
                 foreach ($supertableField->getBlockTypes() as $blockType) {
                     if (!$blockType->getIsNew()) {
                         unset($oldBlockTypesById[$blockType->id]);
                     }
                 }
-
+                
                 foreach ($oldBlockTypesById as $blockType) {
                     $this->deleteBlockType($blockType);
                 }
-
-                // Save the new ones
+                
                 $originalContentTable = Craft::$app->getContent()->contentTable;
                 Craft::$app->getContent()->contentTable = $supertableField->contentTable;
-
+                
                 foreach ($supertableField->getBlockTypes() as $blockType) {
                     $blockType->fieldId = $supertableField->id;
                     $this->saveBlockType($blockType, false);
                 }
 
                 Craft::$app->getContent()->contentTable = $originalContentTable;
-
-                $transaction->commit();
-
-                // Update our cache of this field's block types
-                $this->_blockTypesByFieldId[$supertableField->id] = $supertableField->getBlockTypes();
-
-                return true;
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
             }
-        } else {
-            return false;
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
+
+        // Clear caches
+        unset(
+            $this->_blockTypesByFieldId[$supertableField->id],
+            $this->_fetchedAllBlockTypesForFieldId[$supertableField->id]
+        );
+
+        return true;
     }
 
     /**
