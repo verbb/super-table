@@ -127,6 +127,8 @@ Craft.SuperTable.MatrixInputAlt = Garnish.Base.extend({
 
         // CRAWF
         this.addListener(this.$container, 'showNewBlockBtn', 'showNewBlockBtn');
+
+        this.trigger('afterInit');
     },
 
     // CRAWF - An added event handler to allow Super Table field to trigger the 'responsive'
@@ -272,6 +274,10 @@ Craft.SuperTable.MatrixInputAlt = Garnish.Base.extend({
             footHtml = this.getParsedBlockHtml(this.blockTypesByHandle[type].footHtml, id);
 
         $(bodyHtml).appendTo($fieldsContainer);
+
+        this.trigger('blockAdded', {
+            $block: $block
+        });
 
         // Animate the block into position
         $block.css(this.getHiddenBlockCss($block)).velocity({
