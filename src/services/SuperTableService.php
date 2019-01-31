@@ -558,8 +558,10 @@ class SuperTableService extends Component
     public function saveSettings(SuperTableField $supertableField, bool $validate = true): bool
     {
         if (!$supertableField->contentTable) {
-            // Silently fail if this is a migration
-            if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            // Silently fail if this is a migration or console request
+            $request = Craft::$app->getRequest();
+
+            if ($request->getIsConsoleRequest() || $request->getUrl() == '/actions/update/updateDatabase') {
                 return true;
             }
 
