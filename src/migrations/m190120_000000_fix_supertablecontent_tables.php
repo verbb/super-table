@@ -169,6 +169,18 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
 
         echo "    > Trying to create missing content table for #{$newField->id} ...\n";
 
+        if (!$newField) {
+            echo "    > Could not match #{$newField->id} ...\n";
+
+            return;
+        }
+
+        if (get_class($newField) !== SuperTableField::class) {
+            echo "    > Field mismatch " . get_class($newField) . " is not a Super Table field ...\n";
+
+            return;
+        }
+
         // Fetch the table that it should be
         $contentTable = $this->_getContentTableName($newField);
 
