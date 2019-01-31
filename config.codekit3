@@ -102,6 +102,12 @@
 		"oAP": "/build/src/base",
 		"oF": 0
 		},
+	"/src/controllers": {
+		"ft": 65536,
+		"oA": 1,
+		"oAP": "/build/src/controllers",
+		"oF": 0
+		},
 	"/src/elements": {
 		"ft": 65536,
 		"oA": 1,
