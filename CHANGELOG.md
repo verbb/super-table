@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.6 - 2019-01-31
+
+### Added
+- Added two events to let other js know when nested Matrix blocks are added. (thanks @joshangell).
+
+### Fixed
+- Improve checks around missing content tables during migration.
+- Fix migration causing missing fields to be saved as a missing field.
+
 ## 2.1.5.3 - 2019-01-22
 
 ### Fixed
