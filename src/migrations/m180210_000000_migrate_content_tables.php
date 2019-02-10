@@ -9,6 +9,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\MigrationHelper;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 
 class m180210_000000_migrate_content_tables extends Migration
@@ -35,6 +36,8 @@ class m180210_000000_migrate_content_tables extends Migration
                 $newContentTable = $this->getContentTableName($fieldQuery);
                 $oldContentTable = str_replace('stc_', 'supertablecontent_', $newContentTable);
 
+                echo $oldContentTable . " -> " . $newContentTable . "\n\n";
+
                 if (Craft::$app->db->tableExists($oldContentTable)) {
                     $this->renameTable($oldContentTable, $newContentTable);
                 }
@@ -60,16 +63,17 @@ class m180210_000000_migrate_content_tables extends Migration
             $parentFieldContext = explode(':', $supertableField['context']);
 
             if ($parentFieldContext[0] == 'matrixBlockType') {
-                $parentFieldId = $parentFieldContext[1];
+                $parentFieldUid = $parentFieldContext[1];
+                $parentFieldId = Db::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
             }
         }
 
-        $name = '_'.StringHelper::toLowerCase($handle).$name;
+        $name = '_' . StringHelper::toLowerCase($handle) . $name;
 
         if ($parentFieldId) {
-            $name = '_'.$parentFieldId.$name;
+            $name = '_' . $parentFieldId . $name;
         }
 
-        return '{{%stc'.$name.'}}';
+        return '{{%stc' . $name . '}}';
     }
 }
