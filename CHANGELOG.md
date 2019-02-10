@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.7 - 2019-02-10
+
+### Fixed
+- Fix migration issue with Matrix-nested content tables when upgrading from Craft 2 > 3.
+- Min rows description typo. (thanks @alexjcollins).
+- Fix sprout import incompatibility.
+
 ## 2.1.6 - 2019-01-31
 
 ### Added
