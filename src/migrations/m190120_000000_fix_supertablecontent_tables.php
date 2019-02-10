@@ -21,6 +21,28 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         $superTableService = SuperTable::$plugin->getService();
         $matrixService = Craft::$app->getMatrix();
 
+        // Find any `supertablecontents_*` tables, these should be `stc_*`. But we should check if these tables are completely empty
+        foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
+            if (strstr($tableName, 'supertablecontent_')) {
+                // Does a shortned (correct) table name exist? It really should at this point...
+                $newTableName = str_replace('supertablecontent_', 'stc_', $tableName);
+
+                if ($this->db->tableExists($newTableName)) {
+                    // The shortened table exists, but its empty - not great!
+                    $oldCount = (new Query())->select(['*'])->from([$tableName])->count();
+                    $newCount = (new Query())->select(['*'])->from([$newTableName])->count();
+
+                    if ($oldCount !== $newCount && $newCount === '0') {
+                        // Remove the new (empty) table and rename the old one.
+                        $this->dropTableIfExists($newTableName);
+                        MigrationHelper::renameTable($tableName, $newTableName, null);
+
+                        echo "    > Removed empty table {$newTableName}, re-created from {$tableName} ...\n";
+                    }
+                }
+            }
+        }
+
         // Find all top-level Super Table fields and make sure their content table exists
         $superTableFields = (new Query())
             ->select(['*'])

@@ -29,8 +29,11 @@ class PluginController extends Controller
         $migration = new m190120_000000_fix_supertablecontent_tables();
 
         ob_start();
+
+        // Run the main migration
         $migration->up();
         $output = ob_get_contents();
+
         ob_end_clean();
 
         echo nl2br($output);
@@ -118,6 +121,35 @@ class PluginController extends Controller
                 if ($db->tableExists($wrongContentTable)) {
                     $errors = true;
                     echo "    > ERROR: Incorrect nested content table found {$wrongContentTable} ...\n";
+                }
+            }
+        }
+
+        // Find any `supertablecontents_*` tables, these should be `stc_*`. But we should check if these tables are completely empty
+        foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
+            if (strstr($tableName, 'supertablecontent_')) {
+                // Does a shortned (correct) table name exist? It really should at this point...
+                $newTableName = str_replace('supertablecontent_', 'stc_', $tableName);
+
+                if (!$db->tableExists($newTableName)) {
+                    $errors = true;
+                    echo "    > ERROR: Shortened table not found. {$tableName} should be {$newTableName} ...\n";
+                } else {
+                    // The shortened table exists, but its empty - not great!
+                    $oldCount = (new Query())->select(['*'])->from([$tableName])->count();
+                    $newCount = (new Query())->select(['*'])->from([$newTableName])->count();
+
+                    if ($oldCount !== $newCount) {
+                        // Its more serious if there's no rows in the new one, but some rows in the other
+                        if ($newCount === '0') {
+                            $errors = true;
+                            echo "    > ERROR: Shortened table {$newTableName} has {$newCount} rows. Old table {$tableName} has {$oldCount} rows ...\n";
+                        } else {
+                            // Flag this as a warning
+                            $errors = true;
+                            echo "    > WARNING: Shortened table {$newTableName} has {$newCount} rows. Old table {$tableName} has {$oldCount} rows ...\n";
+                        }
+                    }
                 }
             }
         }
