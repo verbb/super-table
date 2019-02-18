@@ -314,6 +314,14 @@ class SuperTableService extends Component
 
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
+        // Ensure all Matrix blocks are processed
+        $projectConfig = Craft::$app->getProjectConfig();
+        $allBlocks = $projectConfig->get(\craft\services\Matrix::CONFIG_BLOCKTYPE_KEY, true) ?? [];
+
+        foreach ($allBlocks as $blockUid => $blockData) {
+            $projectConfig->processConfigChanges(\craft\services\Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $blockUid);
+        }
+
         $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
         $previousData = $event->oldValue;
