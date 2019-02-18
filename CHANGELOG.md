@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.8 - 2019-02-18
+
+### Fixed
+- Provide a fix for Matrix + Super Table project config issues.
+- Fix overflow for inner fields.
+
 ## 2.1.7 - 2019-02-10
 
 ### Fixed
