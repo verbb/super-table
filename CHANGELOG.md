@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Super Table now requires Craft 3.1.13 or later.
+
 ## 2.1.8 - 2019-02-18
 
 ### Fixed
