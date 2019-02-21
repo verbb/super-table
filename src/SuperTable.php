@@ -11,8 +11,11 @@ use verbb\supertable\variables\SuperTableVariable;
 use Craft;
 use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Fields;
+use craft\web\UrlManager;
 use craft\web\twig\variables\CraftVariable;
 
 use NerdsAndCompany\Schematic\Schematic;
@@ -28,6 +31,7 @@ class SuperTable extends Plugin
     // =========================================================================
 
     public $schemaVersion = '2.0.8';
+    public $hasCpSettings = true;
 
     // Traits
     // =========================================================================
@@ -46,6 +50,7 @@ class SuperTable extends Plugin
 
         $this->_setPluginComponents();
         $this->_setLogging();
+        $this->_registerCpRoutes();
         $this->_registerVariables();
         $this->_registerFieldTypes();
         $this->_registerElementTypes();
@@ -53,8 +58,23 @@ class SuperTable extends Plugin
         $this->_registerConfigListeners();
     }
 
+    public function getSettingsResponse()
+    {
+        Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('super-table/settings'));
+    }
+
+
     // Private Methods
     // =========================================================================
+
+    private function _registerCpRoutes()
+    {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+            $event->rules = array_merge($event->rules, [
+                'super-table/settings' => 'super-table/plugin/settings',
+            ]);
+        });
+    }
 
 
     private function _registerVariables()

@@ -21,6 +21,13 @@ class PluginController extends Controller
     // Public Methods
     // =========================================================================
 
+    public function actionSettings()
+    {
+        return $this->renderTemplate('super-table/plugin-settings', [
+            'settings' => true,
+        ]);
+    }
+
     public function actionFixContentTables()
     {
         // Backup!
@@ -36,11 +43,14 @@ class PluginController extends Controller
 
         ob_end_clean();
 
-        echo nl2br($output);
+        $output = nl2br($output);
 
-        echo '<br>Fixes complete.';
+        $output .= '<br>Fixes complete.';
 
-        exit;
+        return $this->renderTemplate('super-table/plugin-settings', [
+            'fixed' => true,
+            'output' => $output,
+        ]);
     }
 
     public function actionCheckContentTables()
@@ -154,18 +164,62 @@ class PluginController extends Controller
             }
         }
 
+        // Check each table for missing field columns in their content tables
+        $superTableBlockTypes = (new Query())
+            ->select(['*'])
+            ->from(['{{%supertableblocktypes}}'])
+            ->all();
+
+        foreach ($superTableBlockTypes as $superTableBlockType) {
+            $correctFieldColumns = [];
+            $dbFieldColumns = [];
+
+            $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
+
+            // Find what the columns should be according to the block type fields
+            if ($fieldLayout) {
+                foreach ($fieldLayout->getFields() as $field) {
+                    if ($field::hasContentColumn()) {
+                        $correctFieldColumns[] = 'field_' . $field->handle;
+                    }
+                }
+            }
+
+            $field = $fieldsService->getFieldById($superTableBlockType['fieldId']);
+
+            if ($field) {
+                $contentTable = $field->contentTable;
+
+                if ($contentTable) {
+                    $columns = Craft::$app->getDb()->getTableSchema($contentTable)->columns;
+
+                    foreach ($columns as $key => $column) {
+                        if (strstr($key, 'field_')) {
+                            $dbFieldColumns[] = $key;
+                        }
+                    }
+
+                    if ($correctFieldColumns != $dbFieldColumns) {
+                        $errors = true;
+                        echo "    > ERROR: {$contentTable} has missing field columns ...\n";
+                    }
+                }
+            }
+        }
+
         $output = ob_get_contents();
         ob_end_clean();
 
-        echo nl2br($output);
+        $output = nl2br($output);
 
-        if ($errors) {
-            echo '<br>Fix the above errors by running the <a href="' . UrlHelper::actionUrl('super-table/plugin/fix-content-tables') . '">Super Table content table fixer.';
-        } else {
-            echo 'No errors found.';
+        if (!$errors) {
+            $output .= 'No errors found.';
         }
 
-        exit;
+        return $this->renderTemplate('super-table/plugin-settings', [
+            'checkErrors' => $errors,
+            'output' => $output,
+        ]);
     }
 
 }
