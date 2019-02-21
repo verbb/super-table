@@ -1,9 +1,17 @@
 # Changelog
 
-## Unreleased
+## 2.1.9 - 2019-02-21
+
+### Added
+- Use the new `ProjectConfig::defer()` from Craft to help with Matrix combinations and Project Config. (thanks @brandonkelly).
+- Add checks/fixes for content tables with incorrect field columns.
+- Add checker/fixer to plugin settings.
 
 ### Changed
 - Super Table now requires Craft 3.1.13 or later.
+
+### Fixed
+- Fix issues with Project Config and Matrix.
 
 ## 2.1.8 - 2019-02-18
 
