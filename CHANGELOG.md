@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.10 - 2019-02-22
+
+### Fixed
+- Add fix/checks for project config mismatches from Craft 3 > 3.1.
+
 ## 2.1.9 - 2019-02-21
 
 ### Added
