@@ -174,6 +174,50 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                 }
             }
         }
+
+        // Check each table for missing field columns in their content tables
+        $superTableBlockTypes = (new Query())
+            ->select(['*'])
+            ->from(['{{%supertableblocktypes}}'])
+            ->all();
+
+        foreach ($superTableBlockTypes as $superTableBlockType) {
+            $correctFieldColumns = [];
+            $dbFieldColumns = [];
+
+            $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
+
+            // Find what the columns should be according to the block type fields
+            if ($fieldLayout) {
+                foreach ($fieldLayout->getFields() as $field) {
+                    if ($field::hasContentColumn()) {
+                        $correctFieldColumns[] = 'field_' . $field->handle;
+                    }
+                }
+            }
+
+            $field = $fieldsService->getFieldById($superTableBlockType['fieldId']);
+
+            if ($field) {
+                $contentTable = $field->contentTable;
+
+                if ($contentTable) {
+                    $columns = $this->db->getTableSchema($contentTable)->columns;
+
+                    foreach ($columns as $key => $column) {
+                        if (strstr($key, 'field_')) {
+                            $dbFieldColumns[] = $key;
+                        }
+                    }
+
+                    if ($correctFieldColumns != $dbFieldColumns) {
+                        $fieldsService->saveField($field);
+
+                        echo "    > Content table {$contentTable} field columns have been corrected ...\n";
+                    }
+                }
+            }
+        }
     }
 
     public function safeDown()
