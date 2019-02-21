@@ -211,7 +211,7 @@ class PluginController extends Controller
 
         // Check for project config inconsistencies
         $superTableFields = (new Query())
-            ->select(['uid', 'settings'])
+            ->select(['id', 'uid', 'settings'])
             ->from([Table::FIELDS])
             ->where(['type' => SuperTableField::class])
             ->all();
@@ -223,7 +223,7 @@ class PluginController extends Controller
 
             if ($settings != $configSettings) {
                 $errors = true;
-                echo "    > ERROR: #{$superTableField->id} has inconsistent field settings in its project config ...\n";
+                echo "    > ERROR: #{$superTableField['id']} has inconsistent field settings in its project config ...\n";
             }
         }
 
