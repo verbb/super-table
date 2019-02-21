@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.11 - 2019-02-22
+
+### Fixed
+- Add more checks when fixing missing field columns during migration.
+- Fix project inconsistency migration check.
+
 ## 2.1.10 - 2019-02-22
 
 ### Fixed
