@@ -198,10 +198,10 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                 }
             }
 
-            $field = $fieldsService->getFieldById($superTableBlockType['fieldId']);
+            $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
 
-            if ($field) {
-                $contentTable = $field->contentTable;
+            if ($superTableField && get_class($superTableField) === SuperTableField::class) {
+                $contentTable = $superTableField->contentTable;
 
                 if ($contentTable) {
                     $columns = $this->db->getTableSchema($contentTable)->columns;
@@ -213,7 +213,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                     }
 
                     if ($correctFieldColumns != $dbFieldColumns) {
-                        $fieldsService->saveField($field);
+                        $fieldsService->saveField($superTableField);
 
                         echo "    > Content table {$contentTable} field columns have been corrected ...\n";
                     }
