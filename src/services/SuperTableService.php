@@ -1,6 +1,7 @@
 <?php
 namespace verbb\supertable\services;
 
+use craft\db\Table;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\errors\SuperTableBlockTypeNotFoundException;
@@ -312,19 +313,16 @@ class SuperTableService extends Component
             return;
         }
 
-        ProjectConfigHelper::ensureAllFieldsProcessed();
-
-        // Ensure all Matrix blocks are processed
-        $projectConfig = Craft::$app->getProjectConfig();
-        $allBlocks = $projectConfig->get(\craft\services\Matrix::CONFIG_BLOCKTYPE_KEY, true) ?? [];
-
-        foreach ($allBlocks as $blockUid => $blockData) {
-            $projectConfig->processConfigChanges(\craft\services\Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $blockUid);
-        }
-
         $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
         $previousData = $event->oldValue;
+
+        // Make sure the field has been synced
+        $fieldId = Db::idByUid(Table::FIELDS, $data['field']);
+        if ($fieldId === null) {
+            Craft::$app->getProjectConfig()->defer($event, [$this, __FUNCTION__]);
+            return;
+        }
 
         $fieldsService = Craft::$app->getFields();
         $contentService = Craft::$app->getContent();
@@ -342,7 +340,7 @@ class SuperTableService extends Component
             $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
             // Set the basic info on the new block type record
-            $blockTypeRecord->fieldId = Db::idByUid('{{%fields}}', $data['field']);
+            $blockTypeRecord->fieldId = $fieldId;
             $blockTypeRecord->uid = $blockTypeUid;
 
             // Make sure that alterations, if any, occur in the correct context.
