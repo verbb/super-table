@@ -14,6 +14,7 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\helpers\UrlHelper;
+use craft\services\Fields;
 use craft\web\Controller;
 
 class PluginController extends Controller
@@ -63,6 +64,7 @@ class PluginController extends Controller
         $fieldsService = Craft::$app->getFields();
         $superTableService = SuperTable::$plugin->getService();
         $matrixService = Craft::$app->getMatrix();
+        $projectConfig = Craft::$app->getProjectConfig();
 
         // Find all top-level Super Table fields and make sure their content table exists
         $superTableFields = (new Query())
@@ -204,6 +206,24 @@ class PluginController extends Controller
                         echo "    > ERROR: {$contentTable} has missing field columns ...\n";
                     }
                 }
+            }
+        }
+
+        // Check for project config inconsistencies
+        $superTableFields = (new Query())
+            ->select(['uid', 'settings'])
+            ->from([Table::FIELDS])
+            ->where(['type' => SuperTableField::class])
+            ->all();
+
+        foreach ($superTableFields as $superTableField) {
+            $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+            $settings = Json::decode($superTableField['settings']);
+            $configSettings = $projectConfig->get($path);
+
+            if ($settings != $configSettings) {
+                $errors = true;
+                echo "    > ERROR: #{$superTableField->id} has inconsistent field settings in its project config ...\n";
             }
         }
 

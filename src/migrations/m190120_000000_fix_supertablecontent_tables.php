@@ -12,6 +12,7 @@ use craft\fields\MatrixField;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
+use craft\services\Fields;
 
 class m190120_000000_fix_supertablecontent_tables extends Migration
 {
@@ -20,6 +21,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         $fieldsService = Craft::$app->getFields();
         $superTableService = SuperTable::$plugin->getService();
         $matrixService = Craft::$app->getMatrix();
+        $projectConfig = Craft::$app->getProjectConfig();
 
         // Find any `supertablecontents_*` tables, these should be `stc_*`. But we should check if these tables are completely empty
         foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
@@ -218,6 +220,25 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                 }
             }
         }
+
+        // Update Super Table settings in the project config to match the DB. This is because Craft 3.0 > 3.1 migration
+        // has already fired, dumping potentially incorrect values into the project config. Because we've fixed above, 
+        // we should be good to update it again with correct values.
+        $projectConfig->muteEvents = true;
+
+        $superTableFields = (new Query())
+            ->select(['uid', 'settings'])
+            ->from([Table::FIELDS])
+            ->where(['type' => SuperTableField::class])
+            ->all();
+
+        foreach ($superTableFields as $superTableField) {
+            $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+            $settings = Json::decode($superTableField['settings']);
+            $projectConfig->set($path, $settings);
+        }
+
+        $projectConfig->muteEvents = false;
     }
 
     public function safeDown()
