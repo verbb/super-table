@@ -1,8 +1,8 @@
 # Get Support
 
-### Slack
+### Discord
 
-Get in touch via the [Craft Community Slack](https://buildwithcraft.com/community#slack) and be sure to post in the `#help` channel. Mention one of our team members on the following handles:
+Get in touch via the [Craft Discord](https://craftcms.com/discord) and be sure to post in the `#craft3-help` channel. Mention one of our team members on the following handles:
 
 - `@verbb`
 - `@crawf`
