@@ -10,6 +10,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\fields\MatrixField;
+use craft\fields\MissingField;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
@@ -175,7 +176,9 @@ class PluginController extends Controller
         foreach ($superTableBlockTypes as $superTableBlockType) {
             $correctFieldColumns = [];
             $dbFieldColumns = [];
+            $missingFields = false;
 
+            $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
             $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
 
             // Find what the columns should be according to the block type fields
@@ -184,13 +187,24 @@ class PluginController extends Controller
                     if ($field::hasContentColumn()) {
                         $correctFieldColumns[] = 'field_' . $field->handle;
                     }
+
+                    if (get_class($field) == MissingField::class) {
+                        $missingFields = true;
+                        echo "    > ERROR: Unable to update {$superTableField->contentTable} as it contains missing fields. Please fix your missing fields first ...\n";
+                        break;
+                    }
                 }
             }
 
-            $field = $fieldsService->getFieldById($superTableBlockType['fieldId']);
+            // If there are any missing fields, we have to quit right now, otherwise we'll mess up
+            // the content table, as we just don't know enough about the content table structure
+            // to reliably update it properly.
+            if ($missingFields) {
+                continue;
+            }
 
-            if ($field) {
-                $contentTable = $field->contentTable;
+            if ($superTableField) {
+                $contentTable = $superTableField->contentTable;
 
                 if ($contentTable) {
                     $columns = Craft::$app->getDb()->getTableSchema($contentTable)->columns;
@@ -200,6 +214,10 @@ class PluginController extends Controller
                             $dbFieldColumns[] = $key;
                         }
                     }
+
+                    // Sort items the same - just in case they're in a slightly different order, but all there
+                    sort($correctFieldColumns);
+                    sort($dbFieldColumns);
 
                     if ($correctFieldColumns != $dbFieldColumns) {
                         $errors = true;

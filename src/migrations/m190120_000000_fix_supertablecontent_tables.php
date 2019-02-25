@@ -9,6 +9,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\fields\MatrixField;
+use craft\fields\MissingField;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
@@ -62,8 +63,9 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
 
                 if ($contentTable) {
                     if (!$this->db->tableExists($contentTable)) {
+                        $this->_createContentTable($settings, $field);
                         // Re-save field
-                        $superTableService->saveSettings($fieldsService->getFieldById($field['id']));
+                        // $superTableService->saveSettings($fieldsService->getFieldById($field['id']));
                     }
                 } else {
                     $this->_createContentTable($settings, $field);
@@ -186,7 +188,9 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         foreach ($superTableBlockTypes as $superTableBlockType) {
             $correctFieldColumns = [];
             $dbFieldColumns = [];
+            $missingFields = false;
 
+            $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
             $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
 
             // Find what the columns should be according to the block type fields
@@ -195,12 +199,23 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                     if ($field::hasContentColumn()) {
                         $correctFieldColumns[] = 'field_' . $field->handle;
                     }
+
+                    if (get_class($field) == MissingField::class) {
+                        $missingFields = true;
+                        echo "    > Unable to update {$superTableField->contentTable} as it contains missing fields. Please fix your missing fields first ...\n";
+                        break;
+                    }
                 }
             }
 
-            $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
+            // If there are any missing fields, we have to quit right now, otherwise we'll mess up
+            // the content table, as we just don't know enough about the content table structure
+            // to reliably update it properly.
+            if ($missingFields) {
+                continue;
+            }
 
-            if ($superTableField && get_class($superTableField) === SuperTableField::class) {
+            if ($superTableField) {
                 $contentTable = $superTableField->contentTable;
 
                 if ($contentTable) {
@@ -211,6 +226,10 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                             $dbFieldColumns[] = $key;
                         }
                     }
+
+                    // Sort items the same - just in case they're in a slightly different order, but all there
+                    sort($correctFieldColumns);
+                    sort($dbFieldColumns);
 
                     if ($correctFieldColumns != $dbFieldColumns) {
                         $fieldsService->saveField($superTableField);
@@ -277,15 +296,20 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         $settings['contentTable'] = $contentTable;
         $this->update(Table::FIELDS, ['settings' => Json::encode($settings)], ['id' => $field['id']]);
 
-        // Also update our local copy of the field so we can save it
-        $newField->contentTable = $contentTable;
+        // Create the actual content table
+        if (!$this->db->tableExists($contentTable)) {
+            $migration = new CreateSuperTableContentTable([
+                'tableName' => $contentTable,
+            ]);
 
-        echo "    > Local field table name {$newField->contentTable} ...\n";
+            $migration->up();
 
-        // Re-save field - for good measure
-        $superTableService->saveSettings($newField);
+            echo "    > Created table {$contentTable} ...\n\n";
+        } else {
+            echo "    > Content table {$contentTable} already exists, skipping ...\n\n";
 
-        echo "    > Updated Super Table field after content table creation ...\n\n";
+            return;
+        }
     }
 
     private function _getContentTableName(SuperTableField $field): string
