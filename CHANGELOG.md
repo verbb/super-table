@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.12 - 2019-02-25
+
+### Fixed
+- Fix content tables updating (and potentially removing data) when fields are missing in Craft.
+- Added `maxPowerCaptain()` to actionFixContentTables, allow fixing table contents to take a while.
+
 ## 2.1.11 - 2019-02-22
 
 ### Fixed
