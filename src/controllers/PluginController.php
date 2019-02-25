@@ -10,6 +10,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\fields\MatrixField;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
@@ -31,6 +32,9 @@ class PluginController extends Controller
 
     public function actionFixContentTables()
     {
+        // This might take a while
+        App::maxPowerCaptain();
+
         // Backup!
         Craft::$app->getDb()->backup();
 
