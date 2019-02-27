@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.13 - 2019-02-27
+
+### Fixed
+- Added project config migration to help seed project config for Super Tables when migrating from Craft 3 and lower.
+
 ## 2.1.12 - 2019-02-25
 
 ### Fixed
