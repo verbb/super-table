@@ -126,6 +126,16 @@
 		"oAP": "/build/src/fields",
 		"oF": 0
 		},
+	"/src/icon.svg": {
+		"ft": 2097152,
+		"miP": 0,
+		"oA": 2,
+		"oAP": "/src/icon.svg",
+		"oF": 0,
+		"opt": 0,
+		"plM": 3758088159,
+		"prP": 0
+		},
 	"/src/integrations": {
 		"ft": 65536,
 		"oA": 1,
@@ -156,10 +166,119 @@
 		"oAP": "/build/src/resources/dist",
 		"oF": 0
 		},
+	"/src/resources/src/js/_configurator.js": {
+		"ft": 64,
+		"ma": 1,
+		"mi": 1,
+		"oA": 1,
+		"oAP": "/src/resources/dist/js/_configurator.js",
+		"oF": 0,
+		"sC": 0,
+		"tS": 0
+		},
+	"/src/resources/src/js/_input.js": {
+		"ft": 64,
+		"ma": 1,
+		"mi": 1,
+		"oA": 1,
+		"oAP": "/src/resources/dist/js/_input.js",
+		"oF": 0,
+		"sC": 0,
+		"tS": 0
+		},
+	"/src/resources/src/js/_matrix-configurator.js": {
+		"ft": 64,
+		"ma": 1,
+		"mi": 1,
+		"oA": 1,
+		"oAP": "/src/resources/dist/js/_matrix-configurator.js",
+		"oF": 0,
+		"sC": 0,
+		"tS": 0
+		},
+	"/src/resources/src/js/_matrix-input.js": {
+		"ft": 64,
+		"ma": 1,
+		"mi": 1,
+		"oA": 1,
+		"oAP": "/src/resources/dist/js/_matrix-input.js",
+		"oF": 0,
+		"sC": 0,
+		"tS": 0
+		},
+	"/src/resources/src/js/super-table.js": {
+		"ft": 64,
+		"ma": 1,
+		"mi": 1,
+		"oA": 0,
+		"oAP": "/src/resources/dist/js/super-table.js",
+		"oF": 0,
+		"sC": 0,
+		"tS": 0
+		},
+	"/src/resources/src/scss/_base.scss": {
+		"aP": 1,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "/src/resources/dist/css/_base.css",
+		"oF": 0,
+		"oS": 3,
+		"uL": 1
+		},
+	"/src/resources/src/scss/_configurator.scss": {
+		"aP": 1,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "/src/resources/dist/css/_configurator.css",
+		"oF": 0,
+		"oS": 3,
+		"uL": 1
+		},
+	"/src/resources/src/scss/_input.scss": {
+		"aP": 1,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "/src/resources/dist/css/_input.css",
+		"oF": 0,
+		"oS": 3,
+		"uL": 1
+		},
+	"/src/resources/src/scss/super-table.scss": {
+		"aP": 1,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "/src/resources/dist/css/super-table.css",
+		"oF": 0,
+		"oS": 3,
+		"uL": 1
+		},
 	"/src/services": {
 		"ft": 65536,
 		"oA": 1,
 		"oAP": "/build/src/services",
+		"oF": 0
+		},
+	"/src/SuperTable.php": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "/src/SuperTable.php",
 		"oF": 0
 		},
 	"/src/templates": {
