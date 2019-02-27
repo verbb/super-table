@@ -15,12 +15,15 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\services\Fields;
+use craft\services\Matrix;
 
-class m190227_000000_fix_project_config extends Migration
+class m190227_100000_fix_project_config extends Migration
 {
     public function safeUp()
     {
         $projectConfig = Craft::$app->getProjectConfig();
+
+        $projectConfig->muteEvents = true;
 
         $data = [];
 
@@ -61,23 +64,51 @@ class m190227_000000_fix_project_config extends Migration
         $fieldConfigs = $this->_getFieldData();
 
         foreach ($fieldConfigs as $fieldUid => $fieldConfig) {
-            $context = ArrayHelper::remove($fieldConfig, 'context', 'global');
+            // $context = ArrayHelper::remove($fieldConfig, 'context', 'global');
 
-            if (strpos($context, 'superTableBlockType:') === 0) {
-                $blockTypeUid = substr($context, 20);
+            if (strpos($fieldConfig['context'], 'superTableBlockType:') === 0) {
+                $blockTypeUid = substr($fieldConfig['context'], 20);
 
                 if (isset($data[$blockTypeUid])) {
                     $data[$blockTypeUid]['fields'][$fieldUid] = $fieldConfig;
                 }
             }
+
+            // Sort out any top-level fields while we're at it
+            if ($fieldConfig['context'] == 'global') {
+                if ($fieldConfig['type'] === SuperTableField::class || $fieldConfig['type'] == 'SuperTable') {
+                    $projectConfig->set('fields.' . $fieldUid, $fieldConfig);
+                }
+            }
         }
 
         $projectConfig->set('superTableBlockTypes', $data);
+
+        // Fix up any nested Super Tables in Matrix blocks
+        $matrixBlockTypes = $projectConfig->get('matrixBlockTypes') ?? [];
+
+        foreach ($matrixBlockTypes as $matrixBlockTypeUid => $matrixBlockType) {
+            $fields = &$matrixBlockType['fields'];
+
+            if (is_array($fields)) {
+                foreach ($fields as $fieldUid => &$fieldData) {
+                    if ($fieldData['type'] === SuperTableField::class || $fieldData['type'] == 'SuperTable') {
+                        if (isset($fieldConfigs[$fieldUid])) {
+                            $fieldData = $fieldConfigs[$fieldUid];
+                        }
+                    }
+                }
+            }
+
+            $projectConfig->set(Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $matrixBlockTypeUid, $matrixBlockType);
+        }
+
+        $projectConfig->muteEvents = false;
     }
 
     public function safeDown()
     {
-        echo "m190227_000000_fix_project_config cannot be reverted.\n";
+        echo "m190227_100000_fix_project_config cannot be reverted.\n";
         return false;
     }
 
