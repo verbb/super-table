@@ -109,7 +109,10 @@ class m190227_000000_fix_project_config extends Migration
 
         // Massage the data and index by UID
         foreach ($fieldRows as $fieldRow) {
-            $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
+            if ($fieldRow['settings']) {
+                $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
+            }
+            
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
             $fields[$fieldRow['uid']] = $fieldRow;

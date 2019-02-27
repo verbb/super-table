@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.13.1 - 2019-02-27
+
+### Fixed
+- Fix potential migration issue from 2.1.13 where some fields have no settings.
+
 ## 2.1.13 - 2019-02-27
 
 ### Fixed
