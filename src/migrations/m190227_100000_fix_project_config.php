@@ -64,10 +64,10 @@ class m190227_100000_fix_project_config extends Migration
         $fieldConfigs = $this->_getFieldData();
 
         foreach ($fieldConfigs as $fieldUid => $fieldConfig) {
-            // $context = ArrayHelper::remove($fieldConfig, 'context', 'global');
+            $context = ArrayHelper::remove($fieldConfig, 'context');
 
-            if (strpos($fieldConfig['context'], 'superTableBlockType:') === 0) {
-                $blockTypeUid = substr($fieldConfig['context'], 20);
+            if (strpos($context, 'superTableBlockType:') === 0) {
+                $blockTypeUid = substr($context, 20);
 
                 if (isset($data[$blockTypeUid])) {
                     $data[$blockTypeUid]['fields'][$fieldUid] = $fieldConfig;
@@ -75,7 +75,7 @@ class m190227_100000_fix_project_config extends Migration
             }
 
             // Sort out any top-level fields while we're at it
-            if ($fieldConfig['context'] == 'global') {
+            if ($context == 'global') {
                 if ($fieldConfig['type'] === SuperTableField::class || $fieldConfig['type'] == 'SuperTable') {
                     $projectConfig->set('fields.' . $fieldUid, $fieldConfig);
                 }
@@ -95,6 +95,8 @@ class m190227_100000_fix_project_config extends Migration
                     if ($fieldData['type'] === SuperTableField::class || $fieldData['type'] == 'SuperTable') {
                         if (isset($fieldConfigs[$fieldUid])) {
                             $fieldData = $fieldConfigs[$fieldUid];
+
+                            ArrayHelper::remove($fieldData, 'context');
                         }
                     }
                 }
