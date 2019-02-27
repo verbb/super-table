@@ -216,25 +216,27 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
             }
 
             if ($superTableField) {
-                $contentTable = $superTableField->contentTable;
+                if (get_class($superTableField) == SuperTableField::class) {
+                    $contentTable = $superTableField->contentTable;
 
-                if ($contentTable) {
-                    $columns = $this->db->getTableSchema($contentTable)->columns;
+                    if ($contentTable) {
+                        $columns = $this->db->getTableSchema($contentTable)->columns;
 
-                    foreach ($columns as $key => $column) {
-                        if (strstr($key, 'field_')) {
-                            $dbFieldColumns[] = $key;
+                        foreach ($columns as $key => $column) {
+                            if (strstr($key, 'field_')) {
+                                $dbFieldColumns[] = $key;
+                            }
                         }
-                    }
 
-                    // Sort items the same - just in case they're in a slightly different order, but all there
-                    sort($correctFieldColumns);
-                    sort($dbFieldColumns);
+                        // Sort items the same - just in case they're in a slightly different order, but all there
+                        sort($correctFieldColumns);
+                        sort($dbFieldColumns);
 
-                    if ($correctFieldColumns != $dbFieldColumns) {
-                        $fieldsService->saveField($superTableField);
+                        if ($correctFieldColumns != $dbFieldColumns) {
+                            $fieldsService->saveField($superTableField);
 
-                        echo "    > Content table {$contentTable} field columns have been corrected ...\n";
+                            echo "    > Content table {$contentTable} field columns have been corrected ...\n";
+                        }
                     }
                 }
             }
