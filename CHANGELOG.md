@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.13.2 - 2019-02-27
+
+### Fixed
+- Fix/improve project config migration.
+
 ## 2.1.13.1 - 2019-02-27
 
 ### Fixed
