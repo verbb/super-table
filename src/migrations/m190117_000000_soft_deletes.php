@@ -17,7 +17,9 @@ class m190117_000000_soft_deletes extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%supertableblocks}}', 'deletedWithOwner', $this->boolean()->null()->after('sortOrder'));
+        if (!$this->db->columnExists('{{%supertableblocks}}', 'deletedWithOwner')) {
+            $this->addColumn('{{%supertableblocks}}', 'deletedWithOwner', $this->boolean()->null()->after('sortOrder'));
+        }
     }
 
     /**
