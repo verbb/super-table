@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.13.3 - 2019-02-27
+
+### Fixed
+- Fix potential migration issue.
+
 ## 2.1.13.2 - 2019-02-27
 
 ### Fixed
