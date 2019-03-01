@@ -17,6 +17,8 @@ use craft\services\Fields;
 
 class m190120_000000_fix_supertablecontent_tables extends Migration
 {
+    public $manual = false;
+
     public function safeUp()
     {
         $fieldsService = Craft::$app->getFields();
@@ -253,21 +255,30 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         // Update Super Table settings in the project config to match the DB. This is because Craft 3.0 > 3.1 migration
         // has already fired, dumping potentially incorrect values into the project config. Because we've fixed above, 
         // we should be good to update it again with correct values.
-        $projectConfig->muteEvents = true;
+        
+        // Don't make the same config changes twice
+        $schemaVersion = $projectConfig->get('plugins.super-table.schemaVersion', true);
+        $allowAdminChanges = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
-        $superTableFields = (new Query())
-            ->select(['uid', 'settings'])
-            ->from([Table::FIELDS])
-            ->where(['type' => SuperTableField::class])
-            ->all();
+        if (version_compare($schemaVersion, '2.0.10', '<') || ($this->manual && $allowAdminChanges)) {
+            var_dump('expression');
 
-        foreach ($superTableFields as $superTableField) {
-            $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
-            $settings = Json::decode($superTableField['settings']);
-            $projectConfig->set($path, $settings);
+            $projectConfig->muteEvents = true;
+
+            $superTableFields = (new Query())
+                ->select(['uid', 'settings'])
+                ->from([Table::FIELDS])
+                ->where(['type' => SuperTableField::class])
+                ->all();
+
+            foreach ($superTableFields as $superTableField) {
+                $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+                $settings = Json::decode($superTableField['settings']);
+                $projectConfig->set($path, $settings);
+            }
+
+            $projectConfig->muteEvents = false;
         }
-
-        $projectConfig->muteEvents = false;
     }
 
     public function safeDown()

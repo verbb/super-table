@@ -113,6 +113,7 @@ class PluginController extends Controller
         ob_start();
 
         // Run the main migration
+        $migration->manual = true;
         $migration->up();
         $output = ob_get_contents();
 

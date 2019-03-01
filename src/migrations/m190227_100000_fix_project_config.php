@@ -21,7 +21,13 @@ class m190227_100000_fix_project_config extends Migration
 {
     public function safeUp()
     {
+        // Don't make the same config changes twice
         $projectConfig = Craft::$app->getProjectConfig();
+        $schemaVersion = $projectConfig->get('plugins.super-table.schemaVersion', true);
+
+        if (version_compare($schemaVersion, '2.0.10', '>=')) {
+            return;
+        }
 
         $projectConfig->muteEvents = true;
 
