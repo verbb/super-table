@@ -28,6 +28,75 @@ class PluginController extends Controller
     {
         return $this->renderTemplate('super-table/plugin-settings', [
             'settings' => true,
+            'checking' => true,
+            'resaving' => true,
+        ]);
+    }
+
+    public function actionResaveFields()
+    {
+        // This might take a while
+        App::maxPowerCaptain();
+
+        // Backup!
+        Craft::$app->getDb()->backup();
+
+        ob_start();
+
+        $db = Craft::$app->getDb();
+        $fieldsService = Craft::$app->getFields();
+        $superTableService = SuperTable::$plugin->getService();
+        $matrixService = Craft::$app->getMatrix();
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        $superTableBlockTypes = (new Query())
+            ->select(['*'])
+            ->from(['{{%supertableblocktypes}}'])
+            ->all();
+
+        foreach ($superTableBlockTypes as $superTableBlockType) {
+            $missingFields = false;
+
+            $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
+            $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
+
+            // Find what the columns should be according to the block type fields
+            if ($fieldLayout && $superTableField && get_class($superTableField) == SuperTableField::class) {
+                foreach ($fieldLayout->getFields() as $field) {
+                    if (get_class($field) == MissingField::class) {
+                        $missingFields = true;
+                        break;
+                    }
+                }
+            } else {
+                echo "    > Super Table field #{$superTableField->id} skipped as it isn't a Super Table field ...\n";
+
+                continue;
+            }
+
+            if ($missingFields) {
+                echo "    > Super Table field #{$superTableField->id} skipped as it contains missing fields ...\n";
+
+                continue;
+            }
+
+            // Re-save it
+            $fieldsService->saveField($superTableField);
+
+            echo "    > Super Table field #{$superTableField->id} re-saved ...\n";
+        }
+
+        $output = ob_get_contents();
+
+        ob_end_clean();
+
+        $output = nl2br($output);
+
+        $output .= '<br>Field re-saving complete.';
+
+        return $this->renderTemplate('super-table/plugin-settings', [
+            'resaving' => true,
+            'resaveOutput' => $output,
         ]);
     }
 
@@ -54,6 +123,7 @@ class PluginController extends Controller
         $output .= '<br>Fixes complete.';
 
         return $this->renderTemplate('super-table/plugin-settings', [
+            'checking' => true,
             'fixed' => true,
             'output' => $output,
         ]);
@@ -271,6 +341,7 @@ class PluginController extends Controller
         }
 
         return $this->renderTemplate('super-table/plugin-settings', [
+            'checking' => true,
             'checkErrors' => $errors,
             'output' => $output,
         ]);
