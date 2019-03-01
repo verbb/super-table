@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.15 - 2019-03-01
+
+### Fixed
+- Fix project config changes when not allowed or already applied
+
 ## 2.1.14 - 2019-03-01
 
 ### Added
