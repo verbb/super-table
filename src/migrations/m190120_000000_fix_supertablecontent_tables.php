@@ -261,8 +261,6 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         $allowAdminChanges = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         if (version_compare($schemaVersion, '2.0.10', '<') || ($this->manual && $allowAdminChanges)) {
-            var_dump('expression');
-
             $projectConfig->muteEvents = true;
 
             $superTableFields = (new Query())
