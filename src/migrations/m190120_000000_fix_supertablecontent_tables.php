@@ -193,6 +193,16 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
             $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
             $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
 
+            if (!$superTableField) {
+                echo "    > ERROR: Blocktype field #{$superTableBlockType['fieldId']} not found ...\n";
+                continue;
+            }
+
+            if (get_class($superTableField) !== SuperTableField::class) {
+                echo "    > ERROR: Blocktype field #{$superTableBlockType['fieldId']} is not a Super Table field ...\n";
+                continue;
+            }
+
             // Find what the columns should be according to the block type fields
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
@@ -216,27 +226,25 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
             }
 
             if ($superTableField) {
-                if (get_class($superTableField) == SuperTableField::class) {
-                    $contentTable = $superTableField->contentTable;
+                $contentTable = $superTableField->contentTable;
 
-                    if ($contentTable) {
-                        $columns = $this->db->getTableSchema($contentTable)->columns;
+                if ($contentTable) {
+                    $columns = $this->db->getTableSchema($contentTable)->columns;
 
-                        foreach ($columns as $key => $column) {
-                            if (strstr($key, 'field_')) {
-                                $dbFieldColumns[] = $key;
-                            }
+                    foreach ($columns as $key => $column) {
+                        if (strstr($key, 'field_')) {
+                            $dbFieldColumns[] = $key;
                         }
+                    }
 
-                        // Sort items the same - just in case they're in a slightly different order, but all there
-                        sort($correctFieldColumns);
-                        sort($dbFieldColumns);
+                    // Sort items the same - just in case they're in a slightly different order, but all there
+                    sort($correctFieldColumns);
+                    sort($dbFieldColumns);
 
-                        if ($correctFieldColumns != $dbFieldColumns) {
-                            $fieldsService->saveField($superTableField);
+                    if ($correctFieldColumns != $dbFieldColumns) {
+                        $fieldsService->saveField($superTableField);
 
-                            echo "    > Content table {$contentTable} field columns have been corrected ...\n";
-                        }
+                        echo "    > Content table {$contentTable} field columns have been corrected ...\n";
                     }
                 }
             }

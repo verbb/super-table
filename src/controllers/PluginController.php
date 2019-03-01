@@ -185,6 +185,18 @@ class PluginController extends Controller
             $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
             $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
 
+            if (!$superTableField) {
+                $errors = true;
+                echo "    > ERROR: Blocktype field #{$superTableBlockType['fieldId']} not found ...\n";
+                continue;
+            }
+
+            if (get_class($superTableField) !== SuperTableField::class) {
+                $errors = true;
+                echo "    > ERROR: Blocktype field #{$superTableBlockType['fieldId']} is not a Super Table field ...\n";
+                continue;
+            }
+
             // Find what the columns should be according to the block type fields
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
