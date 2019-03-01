@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.14 - 2019-03-01
+
+### Added
+- Add re-save function for Super Table fields.
+
 ## 2.1.13.4 - 2019-03-01
 
 ### Fixed
