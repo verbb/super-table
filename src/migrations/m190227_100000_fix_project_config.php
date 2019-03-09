@@ -80,10 +80,13 @@ class m190227_100000_fix_project_config extends Migration
                 }
             }
 
-            // Sort out any top-level fields while we're at it
-            if ($context == 'global') {
-                if ($fieldConfig['type'] === SuperTableField::class || $fieldConfig['type'] == 'SuperTable') {
+            if ($fieldConfig['type'] === SuperTableField::class || $fieldConfig['type'] == 'SuperTable') {
+                // Sort out any top-level fields while we're at it
+                if ($context == 'global') {
                     $projectConfig->set('fields.' . $fieldUid, $fieldConfig);
+                } else {
+                    // Make sure to remove and top level ST fields that shouldn't be there
+                    $projectConfig->remove('fields.' . $fieldUid);
                 }
             }
         }
