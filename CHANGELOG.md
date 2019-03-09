@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.16 - 2019-03-09
+
+### Fixed
+- Fix layout issue in 3.1.16.
+- Fix fields nested in Matrix fields still being on fields for project config.
+
 ## 2.1.15 - 2019-03-01
 
 ### Fixed
