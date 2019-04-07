@@ -649,7 +649,11 @@ class SuperTableService extends Component
      */
     public function deleteSuperTableField(SuperTableField $supertableField): bool
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        // Clear the schema cache
+        $db = Craft::$app->getDb();
+        $db->getSchema()->refresh();
+
+        $transaction = $db->beginTransaction();
         try {
             $originalContentTable = Craft::$app->getContent()->contentTable;
             Craft::$app->getContent()->contentTable = $supertableField->contentTable;
@@ -662,7 +666,7 @@ class SuperTableService extends Component
             }
 
             // Drop the content table
-            Craft::$app->getDb()->createCommand()
+            $db->createCommand()
                 ->dropTable($supertableField->contentTable)
                 ->execute();
 
