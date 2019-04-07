@@ -500,10 +500,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         }
 
         if ($value instanceof SuperTableBlockQuery) {
-            $value = $value
-                ->limit(null)
-                ->anyStatus()
-                ->all();
+            $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
         }
 
         // Safe to set the default blocks?
