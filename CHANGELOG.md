@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.17 - 2019-04-08
+
+### Added
+- Added support for the Project Config `rebuild` functionality.
+
+### Fixed
+Fixed a bug where entry drafts weren’t showing previous changes to Super Table fields on the draft.
+
 ## 2.1.16 - 2019-03-09
 
 ### Fixed
