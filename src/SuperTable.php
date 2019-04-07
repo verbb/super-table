@@ -4,17 +4,20 @@ namespace verbb\supertable;
 use verbb\supertable\base\PluginTrait;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
+use verbb\supertable\helpers\ProjectConfigData;
 use verbb\supertable\models\SuperTableBlockTypeModel;
 use verbb\supertable\services\SuperTableService;
 use verbb\supertable\variables\SuperTableVariable;
 
 use Craft;
 use craft\base\Plugin;
+use craft\events\RebuildConfigEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Fields;
+use craft\services\ProjectConfig;
 use craft\web\UrlManager;
 use craft\web\twig\variables\CraftVariable;
 
@@ -55,7 +58,7 @@ class SuperTable extends Plugin
         $this->_registerFieldTypes();
         $this->_registerElementTypes();
         $this->_registerIntegrations();
-        $this->_registerConfigListeners();
+        $this->_registerProjectConfigEventListeners();
     }
 
     public function getSettingsResponse()
@@ -98,12 +101,16 @@ class SuperTable extends Plugin
         });
     }
 
-    private function _registerConfigListeners()
+    private function _registerProjectConfigEventListeners()
     {
         Craft::$app->projectConfig
             ->onAdd(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
             ->onUpdate(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
             ->onRemove(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleDeletedBlockType']);
+
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function (RebuildConfigEvent $event) {
+            $event->config['superTable'] = ProjectConfigData::rebuildProjectConfig();
+        });
     }
 
     private function _registerIntegrations()
