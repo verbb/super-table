@@ -5,8 +5,11 @@
 ### Added
 - Added support for the Project Config `rebuild` functionality.
 
+### Changed
+- Now requires Craft 3.1.20+.
+
 ### Fixed
-Fixed a bug where entry drafts weren’t showing previous changes to Super Table fields on the draft.
+- Fixed a bug where entry drafts weren’t showing previous changes to Super Table fields on the draft.
 
 ## 2.1.16 - 2019-03-09
 
