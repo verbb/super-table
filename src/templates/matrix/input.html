@@ -39,7 +39,7 @@
                 {% endif %}
 
                 <div class="fields">
-                    {% include "_includes/fields" with {
+                    {% include "super-table/matrix/fields" with {
                         namespace: name ~ '[' ~ blockId ~ '][fields]',
                         element: block,
                         fields: block.getType().getFieldLayout().getFields(),

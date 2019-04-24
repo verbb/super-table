@@ -3,29 +3,11 @@
 
 {% namespace namespace %}
     {% for field in fields %}
-        <tr data-id="">
-            <td class="thin rowHeader">
-                <span class="heading-text {% if field.required %}required{% endif %}">
-                    {{ field.name | t('site') }}
-
-                    {% if field.instructions %}
-                        <span class="info">{{ field.instructions | t('site') | md | raw }}</span>
-                    {% endif %}
-                </span>
-            </td>
-
-            <td>
-                {% include "super-table/field" with {
-                    field:    field,
-                    required: field.required,
-                    element:  element,
-                    static:   (static is defined ? static : null)
-                } only %}
-            </td>
-
-            {% if not staticField %}
-                <td class="thin placeholder"></td>
-            {% endif %}
-        </tr>
+        {% include "super-table/field" with {
+            field:    field,
+            required: field.required,
+            element:  element,
+            static:   (static is defined ? static : null)
+        } only %}
     {% endfor %}
 {% endnamespace %}
