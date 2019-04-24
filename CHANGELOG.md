@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.18 - 2019-04-24
+
+### Fixed
+- Fix nested Matrix fields in Matrix layout not being properly instantiated. 
+
 ## 2.1.17 - 2019-04-08
 
 ### Added
