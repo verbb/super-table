@@ -109,7 +109,7 @@ class SuperTable extends Plugin
             ->onRemove(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleDeletedBlockType']);
 
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function (RebuildConfigEvent $event) {
-            $event->config['superTable'] = ProjectConfigData::rebuildProjectConfig();
+            $event->config['superTableBlockTypes'] = ProjectConfigData::rebuildProjectConfig();
         });
     }
 

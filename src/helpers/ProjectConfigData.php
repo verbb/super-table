@@ -92,7 +92,7 @@ class ProjectConfigData
             }
         }
 
-        return ['superTableBlockTypes' => $data];
+        return $data;
     }
 
     private static function _generateFieldLayoutArray(array $layoutIds): array
