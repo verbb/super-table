@@ -214,7 +214,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
 
                     if (get_class($field) == MissingField::class) {
                         $missingFields = true;
-                        echo "    > Unable to update {$superTableField->contentTable} as it contains missing fields. Please fix your missing fields first ...\n";
+                        echo "    > ERROR: Unable to update {$superTableField->contentTable} as it contains missing fields. Manually fix field #{$superTableBlockType['fieldId']} and its missing fields ...\n";
                         break;
                     }
                 }

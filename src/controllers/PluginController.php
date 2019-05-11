@@ -277,7 +277,7 @@ class PluginController extends Controller
 
                     if (get_class($field) == MissingField::class) {
                         $missingFields = true;
-                        echo "    > ERROR: Unable to update {$superTableField->contentTable} as it contains missing fields. Please fix your missing fields first ...\n";
+                        echo "    > ERROR: Unable to update {$superTableField->contentTable} as it contains missing fields. Manually fix field #{$superTableField->id} and its missing fields ...\n";
                         break;
                     }
                 }
