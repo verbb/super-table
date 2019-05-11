@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.19 - 2019-05-11
+
+### Fixed
+- Fix project config rebuild event creating incorrect config.
+- Improve content table checker to show field id for manual fixing.
+
 ## 2.1.18 - 2019-04-24
 
 ### Fixed
