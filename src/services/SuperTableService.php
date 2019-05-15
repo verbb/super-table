@@ -838,6 +838,11 @@ class SuperTableService extends Component
 
             throw $e;
         }
+
+        // Reset the field value if this is a new element
+        if ($owner->duplicateOf || !$query->ownerId) {
+            $owner->setFieldValue($field->handle, null);
+        }
     }
 
 
