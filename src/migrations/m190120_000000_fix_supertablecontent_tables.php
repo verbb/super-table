@@ -14,6 +14,7 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\services\Fields;
+use craft\services\Matrix;
 
 class m190120_000000_fix_supertablecontent_tables extends Migration
 {
