@@ -17,6 +17,7 @@ use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Fields;
+use craft\services\Matrix;
 use craft\web\Controller;
 
 class PluginController extends Controller
@@ -316,13 +317,20 @@ class PluginController extends Controller
 
         // Check for project config inconsistencies
         $superTableFields = (new Query())
-            ->select(['id', 'uid', 'settings'])
+            ->select(['id', 'uid', 'settings', 'context'])
             ->from([Table::FIELDS])
             ->where(['type' => SuperTableField::class])
             ->all();
 
         foreach ($superTableFields as $superTableField) {
-            $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+            $parentFieldContext = explode(':', $superTableField['context']);
+
+            if ($superTableField['context'] === 'global') {
+                $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+            } else if ($parentFieldContext[0] == 'matrixBlockType') {
+                $path = Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $parentFieldContext[1] . '.' . Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+            }
+
             $settings = Json::decode($superTableField['settings']);
             $configSettings = $projectConfig->get($path);
 

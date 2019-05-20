@@ -264,13 +264,20 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
             $projectConfig->muteEvents = true;
 
             $superTableFields = (new Query())
-                ->select(['uid', 'settings'])
+                ->select(['id', 'uid', 'settings', 'context'])
                 ->from([Table::FIELDS])
                 ->where(['type' => SuperTableField::class])
                 ->all();
 
             foreach ($superTableFields as $superTableField) {
-                $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+                $parentFieldContext = explode(':', $superTableField['context']);
+
+                if ($superTableField['context'] === 'global') {
+                    $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+                } else if ($parentFieldContext[0] == 'matrixBlockType') {
+                    $path = Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $parentFieldContext[1] . '.' . Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+                }
+
                 $settings = Json::decode($superTableField['settings']);
                 $projectConfig->set($path, $settings);
             }
