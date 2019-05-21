@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.20 - 2019-05-21
+
+### Fixed
+- Fix content table checker/fix incorrectly finding issues with Matrix nested Super Table fields in project config.
+- Reset the ST field value after saving new owner. (thanks @brandonkelly).
+- Don't call limit() or anyStatus() when displaying Matrix sub-fields. (thanks @brandonkelly).
+
 ## 2.1.19 - 2019-05-11
 
 ### Fixed
