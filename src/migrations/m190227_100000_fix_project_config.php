@@ -80,7 +80,9 @@ class m190227_100000_fix_project_config extends Migration
                 }
             }
 
-            if ($fieldConfig['type'] === SuperTableField::class || $fieldConfig['type'] == 'SuperTable') {
+            $type = $fieldConfig['type'] ?? null;
+
+            if ($type === SuperTableField::class || $type == 'SuperTable') {
                 // Sort out any top-level fields while we're at it
                 if ($context == 'global') {
                     $projectConfig->set('fields.' . $fieldUid, $fieldConfig);
@@ -101,7 +103,9 @@ class m190227_100000_fix_project_config extends Migration
 
             if (is_array($fields)) {
                 foreach ($fields as $fieldUid => &$fieldData) {
-                    if ($fieldData['type'] === SuperTableField::class || $fieldData['type'] == 'SuperTable') {
+                    $type = $fieldData['type'] ?? null;
+
+                    if ($type === SuperTableField::class || $type == 'SuperTable') {
                         if (isset($fieldConfigs[$fieldUid])) {
                             $fieldData = $fieldConfigs[$fieldUid];
 
