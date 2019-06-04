@@ -6,6 +6,7 @@ use verbb\supertable\fields\SuperTableField;
 
 use Craft;
 use craft\db\Migration;
+use craft\db\Table;
 use craft\db\Query;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
@@ -14,11 +15,31 @@ use yii\db\Expression;
 
 class m180219_000000_sites extends Migration
 {
-    // Static
+    // Properties
+    // =========================================================================
+
+    protected $caseSql;
+
+
+    // Public Methods
     // =========================================================================
 
     public function safeUp()
     {
+        $sites = (new Query())
+            ->select(['*'])
+            ->from([Table::SITES])
+            ->all($this->db);
+
+        $this->caseSql = 'case';
+
+        foreach ($sites as $i => $site) {
+            $this->caseSql .= ' when % = ' . $this->db->quoteValue($site['handle']) . ' then ' . $this->db->quoteValue($site['id']);
+        }
+
+        $this->caseSql .= ' end';
+
+
         // Rename the FK columns
         // ---------------------------------------------------------------------
 
@@ -48,12 +69,26 @@ class m180219_000000_sites extends Migration
 
         $superTableTablePrefix = $this->db->getSchema()->getRawTableName('{{%stc_}}');
 
+        Craft::$app->getDb()->getSchema()->refresh();
+
         foreach ($this->db->getSchema()->getTableNames() as $tableName) {
             if (StringHelper::startsWith($tableName, $superTableTablePrefix)) {
+
+                // Don't continue if siteId already done
+                if ($this->db->columnExists($tableName, 'siteId')) {
+                    continue;
+                }
+
+                // Check to see if Craft hasn't renamed the locale column to locale__siteId
+                if ($this->db->columnExists($tableName, 'locale') && !$this->db->columnExists($tableName, 'locale__siteId')) {
+                    $this->addSiteColumn($tableName, 'locale__siteId', true, 'locale');
+                    $this->addForeignKey(null, $tableName, ['locale__siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
+                }
+
                 // There's actually an issue here in the MigrationHelper::dropAllIndexesOnTable class, not using the current migration
                 // as context to find existing indexes. This is important, because the indexes have changed from their current names
-                $this->dropAllForeignKeysOnTable($tableName);
-                $this->dropAllIndexesOnTable($tableName);
+                // $this->dropAllForeignKeysOnTable($tableName);
+                // $this->dropAllIndexesOnTable($tableName);
 
                 // Rename column
                 if ($this->db->columnExists($tableName, 'locale__siteId')) {
@@ -61,9 +96,9 @@ class m180219_000000_sites extends Migration
                 }
 
                 // Add them back (like creating a new Matrix would)
-                $this->createIndex(null, $tableName, ['elementId', 'siteId'], true);
-                $this->addForeignKey(null, $tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
-                $this->addForeignKey(null, $tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
+                // $this->createIndex(null, $tableName, ['elementId', 'siteId'], true);
+                // $this->addForeignKey(null, $tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
+                // $this->addForeignKey(null, $tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
 
                 // Delete the old column
                 if ($this->db->columnExists($tableName, 'locale')) {
@@ -136,6 +171,30 @@ class m180219_000000_sites extends Migration
  
         foreach ($allIndexes as $indexName => $indexColumns) {
             $this->dropIndex($indexName, $rawTableName);
+        }
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    protected function addSiteColumn(string $table, string $column, bool $isNotNull, string $localeColumn)
+    {
+        // Ignore NOT NULL for now
+        $type = $this->integer()->after($localeColumn);
+        $this->addColumn($table, $column, $type);
+
+        // Set the values
+        $this->update($table, [
+            $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql))
+        ], '', [], false);
+
+        // In case there were any referenced locales that no longer exist.
+        if ($table === Table::SEARCHINDEX) {
+            $this->delete($table, ['siteId' => null]);
+        }
+
+        if ($isNotNull) {
+            $this->alterColumn($table, $column, $type->notNull());
         }
     }
 }
