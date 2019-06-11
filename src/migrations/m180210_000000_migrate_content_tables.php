@@ -38,7 +38,7 @@ class m180210_000000_migrate_content_tables extends Migration
 
                 echo $oldContentTable . " -> " . $newContentTable . "\n\n";
 
-                if (Craft::$app->db->tableExists($oldContentTable)) {
+                if (Craft::$app->db->tableExists($oldContentTable) && !Craft::$app->db->tableExists($newContentTable)) {
                     $this->renameTable($oldContentTable, $newContentTable);
                 }
             }
