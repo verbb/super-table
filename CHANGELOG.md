@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.1 - 2019-07-14
+
+### Fixed
+- Fix layout for static matrix field.
+- Fix incorrect `SuperTableBlock` references causing elements not to save correctly.
+
 ## 2.2.0 - 2019-07-14
 
 ### Added
