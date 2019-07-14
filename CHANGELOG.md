@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.21 - 2019-07-14
+
+### Fixed 
+- Fix C2 > C3 migration for foreign keys not setup correctly for sites/locales.
+- Fix error thrown when no `type` property in field project config.
+
 ## 2.1.20 - 2019-05-21
 
 ### Fixed
