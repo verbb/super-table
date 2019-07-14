@@ -221,6 +221,10 @@ body.ltr .superTableMatrix > .titlebar {
     display: none;
 }
 
+.superTableContainer.matrixLayout.static-field .matrixblock {
+    padding-top: 14px;
+}
+
 /* ==========================================================================
 // Provide special formatting for some field types.
 // ========================================================================== */
