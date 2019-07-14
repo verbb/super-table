@@ -736,11 +736,11 @@ class SuperTableService extends Component
      * @param int      $blockId The Super Table block’s ID.
      * @param int|null $siteId  The site ID to return. Defaults to the current site.
      *
-     * @return SuperTableBlock|null The Super Table block, or `null` if it didn’t exist.
+     * @return SuperTableBlockElement|null The Super Table block, or `null` if it didn’t exist.
      */
     public function getBlockById(int $blockId, int $siteId = null)
     {
-        /** @var SuperTableBlock|null $block */
+        /** @var SuperTableBlockElement|null $block */
         return Craft::$app->getElements()->getElementById($blockId, SuperTableBlockElement::class, $siteId);
     }
 
@@ -759,7 +759,7 @@ class SuperTableService extends Component
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
-        /** @var SuperTableBlock[] $blocks */
+        /** @var SuperTableBlockElement[] $blocks */
         $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
         $blockIds = [];
         $collapsedBlockIds = [];
@@ -840,14 +840,14 @@ class SuperTableService extends Component
         $elementsService = Craft::$app->getElements();
         /** @var SuperTableBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
-        /** @var SuperTableBlock[] $blocks */
+        /** @var SuperTableBlockElement[] $blocks */
         $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
         $newBlockIds = [];
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             foreach ($blocks as $block) {
-                /** @var SuperTableBlock $newBlock */
+                /** @var SuperTableBlockElement $newBlock */
                 $newBlock = $elementsService->duplicateElement($block, [
                     'ownerId' => $target->id,
                     'owner' => $target,
@@ -1044,7 +1044,7 @@ class SuperTableService extends Component
     private function _deleteOtherBlocks(SuperTableField $field, ElementInterface $owner, array $except)
     {
         /** @var Element $owner */
-        $deleteBlocks = SuperTableBlock::find()
+        $deleteBlocks = SuperTableBlockElement::find()
             ->anyStatus()
             ->ownerId($owner->id)
             ->fieldId($field->id)

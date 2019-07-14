@@ -654,7 +654,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         $value = $element->getFieldValue($this->handle);
 
         foreach ($value->all() as $i => $block) {
-            /** @var SuperTableBlock $block */
+            /** @var SuperTableBlockElement $block */
             if ($element->getScenario() === Element::SCENARIO_LIVE) {
                 $block->setScenario(Element::SCENARIO_LIVE);
             }
@@ -675,7 +675,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     public function getSearchKeywords($value, ElementInterface $element): string
     {
         /** @var SuperTableBlockQuery $value */
-        /** @var SuperTableBlock $block */
+        /** @var SuperTableBlockElement $block */
         $keywords = [];
         $contentService = Craft::$app->getContent();
 
@@ -881,7 +881,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             $supertableBlocksQuery->siteId($siteId);
             $supertableBlocksQuery->ownerId($element->id);
 
-            /** @var SuperTableBlock[] $supertableBlocks */
+            /** @var SuperTableBlockElement[] $supertableBlocks */
             $supertableBlocks = $supertableBlocksQuery->all();
             $elementsService = Craft::$app->getElements();
 
@@ -994,7 +994,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         Craft::$app->getView()->setNamespace($namespace);
 
         foreach ($this->getBlockTypes() as $blockType) {
-            // Create a fake SuperTableBlock so the field types have a way to get at the owner element, if there is one
+            // Create a fake SuperTableBlockElement so the field types have a way to get at the owner element, if there is one
             $block = new SuperTableBlockElement();
             $block->fieldId = $this->id;
             $block->typeId = $blockType->id;
@@ -1045,7 +1045,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
      * @param array|string          $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
-     * @return SuperTableBlock[]
+     * @return SuperTableBlockElement[]
      */
     private function _createBlocksFromSerializedData($value, ElementInterface $element = null): array
     {
