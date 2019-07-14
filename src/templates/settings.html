@@ -5,7 +5,7 @@
     <div class="stc-sidebar fields">
         <div class="col-inner-container">
             <div class="heading">
-                <h5>{{ "Fields" | t('site') }}</h5>
+                <h5>{{ "Fields" | t('app') }}</h5>
             </div>
 
             <div class="field-items">
@@ -17,7 +17,7 @@
                                     {% if field.name %}
                                         {{ field.name }}
                                     {% else %}
-                                        <em class="light">{{ '(blank)' | t('site') }}</em>
+                                        <em class="light">{{ '(blank)' | t('app') }}</em>
                                     {% endif %}
                                 </div>
 
@@ -30,14 +30,14 @@
                                 </div>
 
                                 <div class="actions">
-                                    <a class="move icon" title="{{ 'Reorder' | t('site') }}" role="button"></a>
+                                    <a class="move icon" title="{{ 'Reorder' | t('app') }}" role="button"></a>
                                 </div>
                             </div>
                         {% endfor %}
                     </div>
                 {% endfor %}
 
-                <div class="btn add icon">{{ "New field" | t('site') }}</div>
+                <div class="btn add icon">{{ "New field" | t('app') }}</div>
             </div>
         </div>
     </div>
@@ -45,7 +45,7 @@
     <div class="stc-settings">
         <div class="col-inner-container">
             <div class="heading">
-                <h5>{{ "Field Settings" | t('site') }}</h5>
+                <h5>{{ "Field Settings" | t('app') }}</h5>
             </div>
 
             <div class="field-items">
@@ -55,7 +55,7 @@
                             <div data-id="{{ fieldId }}" {% if not loop.first %}class="settings-hidden"{% endif %}>
                                 {% namespace 'blockTypes[' ~ blockTypeId ~ '][fields][' ~ fieldId ~ ']' %}
                                     {{ forms.textField({
-                                        label: "Name" | t('site'),
+                                        label: "Name" | t('app'),
                                         id: 'name',
                                         name: 'name',
                                         value: field.name,
@@ -65,10 +65,12 @@
                                     }) }}
 
                                     {{ forms.textField({
-                                        label: "Handle" | t('site'),
+                                        label: "Handle" | t('app'),
                                         id: 'handle',
-                                        class: 'code',
                                         name: 'handle',
+                                        class: 'code',
+                                        autocorrect: false,
+                                        autocapitalize: false,
                                         maxlength: 64,
                                         value: field.handle,
                                         errors: field.getErrors('handle'),
@@ -76,7 +78,7 @@
                                     }) }}
 
                                     {{ forms.textareaField({
-                                        label: "Instructions" | t('site'),
+                                        label: "Instructions" | t('app'),
                                         id: 'instructions',
                                         class: 'nicetext',
                                         name: 'instructions',
@@ -96,15 +98,22 @@
 
                                 {% namespace 'blockTypes[' ~ blockTypeId ~ '][fields][' ~ fieldId ~ ']' %}
                                     {{ forms.checkboxField({
-                                        label: "This field is required" | t('super-table'),
+                                        label: "This field is required" | t('app'),
                                         id: 'required',
                                         name: 'required',
                                         checked: field.required
                                     }) }}
 
+                                    {{ forms.checkboxField({
+                                        label: "Use this field’s values as search keywords?" | t('app'),
+                                        id: 'searchable',
+                                        name: 'searchable',
+                                        checked: field.searchable
+                                    }) }}
+
                                     {{ forms.selectField({
-                                        label: "Field Type" | t('site'),
-                                        warning: (not field.isNew() and not field.hasErrors('type') ? "Changing this may result in data loss." | t('site')),
+                                        label: "Field Type" | t('app'),
+                                        warning: (not field.isNew() and not field.hasErrors('type') ? "Changing this may result in data loss." | t('app')),
                                         id: 'type',
                                         name: 'type',
                                         options: fieldId[0:3] != 'new' ? fieldTypes[fieldId] : fieldTypes.new,
@@ -123,7 +132,7 @@
                                                     name: 'translationMethod',
                                                     options: [
                                                         'none' in translationMethods ? { value: 'none', label: "Not translatable" | t('app') },
-                                                        'site' in translationMethods ? { value: 'site', label: "Translate for each site" | t('app') },
+                                                        'site' in translationMethods ? { value: 'app', label: "Translate for each site" | t('app') },
                                                         'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group" | t('app') },
                                                         'language' in translationMethods ? { value: 'language', label: "Translate for each language" | t('app') },
                                                         'custom' in translationMethods ? { value: 'custom', label: "Custom…" | t('app') }
@@ -168,7 +177,7 @@
 
                                 <hr>
 
-                                <a class="error delete">{{ "Delete" | t('site') }}</a>
+                                <a class="error delete">{{ "Delete" | t('app') }}</a>
                             </div>
                         {% endfor %}
                     </div>
@@ -197,11 +206,18 @@
 </div>
 
 {% if craft.app.getIsMultiSite() %}
-    {{ forms.checkboxField({
-        label: "Manage blocks on a per-site basis" | t('app'),
-        id: 'localize-blocks',
-        name: 'localizeBlocks',
-        checked: supertableField.localizeBlocks
+    {{ forms.selectField({
+        label: 'Propagation Method' | t('app'),
+        instructions: 'Which sites should blocks be saved to?' | t('app'),
+        id: 'propagationMethod',
+        name: 'propagationMethod',
+        options: [
+            { value: 'none', label: 'Only save blocks to the site they were created in' | t('app') },
+            { value: 'siteGroup', label: 'Save blocks to other sites in the same site group' | t('app') },
+            { value: 'language', label: 'Save blocks to other sites with the same language' | t('app') },
+            { value: 'all', label: 'Save blocks to all sites the owner element is saved in' | t('app') },
+        ],
+        value: supertableField.propagationMethod
     }) }}
 {% endif %}
 

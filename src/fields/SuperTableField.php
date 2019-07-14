@@ -23,14 +23,25 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use craft\services\Fields;
 use craft\validators\ArrayValidator;
 
+use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
 class SuperTableField extends Field implements EagerLoadingFieldInterface
 {
+    // Constants
+    // =========================================================================
+        
+    const PROPAGATION_METHOD_NONE = 'none';
+    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    const PROPAGATION_METHOD_LANGUAGE = 'language';
+    const PROPAGATION_METHOD_ALL = 'all';
+
+
     // Static
     // =========================================================================
 
@@ -51,6 +62,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         return [
             self::TRANSLATION_METHOD_SITE,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return SuperTableBlockQuery::class;
     }
 
     /**
@@ -81,6 +100,20 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     public $contentTable;
 
     /**
+     * @var string Propagation method
+     *
+     * This will be set to one of the following:
+     *
+     * - `none` – Only save b locks in the site they were created in
+     * - `siteGroup` – Save  blocks to other sites in the same site group
+     * - `language` – Save blocks to other sites with the same language
+     * - `all` – Save blocks to all sites supported by the owner element
+     *
+     * @since 2.2.0
+     */
+    public $propagationMethod = self::PROPAGATION_METHOD_ALL;
+
+    /**
      * @var int Whether each site should get its own unique set of blocks
      */
     public $localizeBlocks = false;
@@ -94,6 +127,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
      * @var SuperTableBlockType[]|null The block types' fields
      */
     private $_blockTypeFields;
+
+    /**
+     * @var string The old propagation method for this field
+     */
+    private $_oldPropagationMethod;
 
     /**
      * @var bool Whether this field is a Static type layout
@@ -114,9 +152,47 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
+    public function __construct($config = [])
+    {
+        if (array_key_exists('localizeBlocks', $config)) {
+            $config['propagationMethod'] = $config['localizeBlocks'] ? 'none' : 'all';
+            unset($config['localizeBlocks']);
+        }
+
+        parent::__construct($config);
+    }
+
+    public function init()
+    {
+        // todo: remove this in 4.0
+        // Set localizeBlocks in case anything is still checking it
+        $this->localizeBlocks = $this->propagationMethod === self::PROPAGATION_METHOD_NONE;
+
+        parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function settingsAttributes(): array
+    {
+        return ArrayHelper::withoutValue(parent::settingsAttributes(), 'localizeBlocks');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
+        $rules[] = [
+            ['propagationMethod'], 'in', 'range' => [
+                self::PROPAGATION_METHOD_NONE,
+                self::PROPAGATION_METHOD_SITE_GROUP,
+                self::PROPAGATION_METHOD_LANGUAGE,
+                self::PROPAGATION_METHOD_ALL
+            ]
+        ];
         $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
         return $rules;
     }
@@ -199,6 +275,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             'type' => null,
             'instructions' => null,
             'required' => false,
+            'searchable' => true,
             'translationMethod' => Field::TRANSLATION_METHOD_NONE,
             'translationKeyFormat' => null,
             'typesettings' => null,
@@ -240,6 +317,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
                             'handle' => $fieldConfig['handle'],
                             'instructions' => $fieldConfig['instructions'],
                             'required' => (bool)$fieldConfig['required'],
+                            'searchable' => (bool)$fieldConfig['searchable'],
                             'translationMethod' => $fieldConfig['translationMethod'],
                             'translationKeyFormat' => $fieldConfig['translationKeyFormat'],
                             'settings' => $fieldConfig['typesettings'],
@@ -450,7 +528,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
         }
 
         if ($value === ':notempty:' || $value === ':empty:') {
-            $alias = 'supertableblocks_'.$this->handle;
+            $alias = 'supertableblocks_' . $this->handle;
             $operator = ($value === ':notempty:' ? '!=' : '=');
 
             $query->subQuery->andWhere(
@@ -469,7 +547,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
      */
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
-        return $this->localizeBlocks;
+        return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
     }
 
     /**
@@ -612,8 +690,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
 
             foreach (Craft::$app->getFields()->getAllFields() as $field) {
                 /** @var Field $field */
-                $fieldValue = $block->getFieldValue($field->handle);
-                $keywords[] = $field->getSearchKeywords($fieldValue, $element);
+                if ($field->searchable) {
+                    $fieldValue = $block->getFieldValue($field->handle);
+                    $keywords[] = $field->getSearchKeywords($fieldValue, $element);
+                }
             }
 
             $contentService->contentTable = $originalContentTable;
@@ -714,12 +794,13 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             }
         }
 
-        // Set the content table name
+        // Set the content table name and remember the original propagation method
         if ($this->id) {
             $oldField = $fieldsService->getFieldById($this->id);
 
             if ($oldField instanceof self) {
                 $this->contentTable = $oldField->contentTable;
+                $this->_oldPropagationMethod = $oldField->propagationMethod;
             }
         }
 
@@ -734,6 +815,22 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     public function afterSave(bool $isNew)
     {
         SuperTable::$plugin->getService()->saveSettings($this, false);
+
+        // If the propagation method just changed, resave all the SuperTable blocks
+        if ($this->_oldPropagationMethod && $this->propagationMethod !== $this->_oldPropagationMethod) {
+            Craft::$app->getQueue()->push(new ResaveElements([
+                'elementType' => SuperTableBlockElement::class,
+                'criteria' => [
+                    'fieldId' => $this->id,
+                    'siteId' => '*',
+                    'unique' => true,
+                    'status' => null,
+                    'enabledForSite' => false,
+                ]
+            ]));
+
+            $this->_oldPropagationMethod = null;
+        }
 
         parent::afterSave($isNew);
     }
@@ -751,11 +848,21 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
+    public function afterElementPropagate(ElementInterface $element, bool $isNew)
     {
-        SuperTable::$plugin->getService()->saveField($this, $element);
+        /** @var Element $element */
+        if ($element->duplicateOf !== null) {
+            SuperTable::$plugin->getService()->duplicateBlocks($this, $element->duplicateOf, $element, true);
+        } else {
+            SuperTable::$plugin->getService()->saveField($this, $element);
+        }
 
-        parent::afterElementSave($element, $isNew);
+        // Reset the field value if this is a new element
+        if ($element->duplicateOf || $isNew) {
+            $element->setFieldValue($this->handle, null);
+        }
+
+        parent::afterElementPropagate($element, $isNew);
     }
 
     /**
@@ -780,7 +887,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
 
             foreach ($supertableBlocks as $supertableBlock) {
                 $supertableBlock->deletedWithOwner = true;
-                $elementsService->deleteElement($supertableBlock);
+                $elementsService->deleteElement($supertableBlock, $element->hardDelete);
             }
         }
 

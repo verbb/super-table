@@ -9,17 +9,21 @@ use verbb\supertable\records\SuperTableBlockRecord;
 use verbb\supertable\assetbundles\SuperTableAsset;
 
 use Craft;
+use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
+use craft\models\Section;
+use craft\models\Site;
 use craft\validators\SiteIdValidator;
 
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
-class SuperTableBlockElement extends Element
+class SuperTableBlockElement extends Element implements BlockElementInterface
 {
     // Static
     // =========================================================================
@@ -30,6 +34,14 @@ class SuperTableBlockElement extends Element
     public static function displayName(): string
     {
         return Craft::t('super-table', 'SuperTable Block');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('super-table', 'SuperTable Blocks');
     }
 
     /**
@@ -118,6 +130,7 @@ class SuperTableBlockElement extends Element
 
     /**
      * @var int|null Owner site ID
+     * @deprecated in 2.2.0. Use [[$siteId]] instead.
      */
     public $ownerSiteId;
 
@@ -159,6 +172,16 @@ class SuperTableBlockElement extends Element
     /**
      * @inheritdoc
      */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'owner';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function extraFields()
     {
         $names = parent::extraFields();
@@ -175,8 +198,6 @@ class SuperTableBlockElement extends Element
     {
         $rules = parent::rules();
         $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
-        $rules[] = [['ownerSiteId'], SiteIdValidator::class];
-
         return $rules;
     }
 
@@ -185,25 +206,17 @@ class SuperTableBlockElement extends Element
      */
     public function getSupportedSites(): array
     {
-        // If the SuperTable field is translatable, than each individual block is tied to a single site, and thus aren't
-        // translatable. Otherwise all blocks belong to all sites, and their content is translatable.
-
-        if ($this->ownerSiteId !== null) {
-            return [$this->ownerSiteId];
+        try {
+            $owner = $this->getOwner();
+        } catch (InvalidConfigException $e) {
+            $owner = $this->duplicateOf;
         }
 
-        if (($owner = $this->getOwner()) || $this->duplicateOf) {
-            // Just send back an array of site IDs -- don't pass along enabledByDefault configs
-            $siteIds = [];
-
-            foreach (ElementHelper::supportedSitesForElement($owner ?? $this->duplicateOf) as $siteInfo) {
-                $siteIds[] = $siteInfo['siteId'];
-            }
-
-            return $siteIds;
+        if (!$owner) {
+            return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return [Craft::$app->getSites()->getPrimarySite()->id];
+        return SuperTable::$plugin->getService()->getSupportedSiteIdsForField($this->_getField(), $owner);
     }
 
     /**
@@ -235,24 +248,17 @@ class SuperTableBlockElement extends Element
     /**
      * @inheritdoc
      */
-    public function getOwner()
+    public function getOwner(): ElementInterface
     {
-        if ($this->_owner !== null) {
-            return $this->_owner !== false ? $this->_owner : null;
+        if ($this->_owner === null) {
+            if ($this->ownerId === null) {
+                throw new InvalidConfigException('SuperTable block is missing its owner ID');
+            }
+
+            if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
+                throw new InvalidConfigException('Invalid owner ID: ' . $this->ownerId);
+            }
         }
-
-        if ($this->ownerId === null) {
-            return null;
-        }
-
-        if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
-            // Be forgiving of invalid ownerId's in this case, since the field
-            // could be in the process of being saved to a new element/site
-            $this->_owner = false;
-
-            return null;
-        }
-
         return $this->_owner;
     }
 
@@ -294,9 +300,11 @@ class SuperTableBlockElement extends Element
     public function getHasFreshContent(): bool
     {
         // Defer to the owner element
-        $owner = $this->getOwner();
-
-        return $owner ? $owner->getHasFreshContent() : false;
+        try {
+            return $this->getOwner()->getHasFreshContent();
+        } catch (InvalidConfigException $e) {
+            return false;
+        }
     }
 
 
@@ -309,24 +317,25 @@ class SuperTableBlockElement extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // Get the block record
-        if (!$isNew) {
-            $record = SuperTableBlockRecord::findOne($this->id);
+        if (!$this->propagating) {
+            // Get the block record
+            if (!$isNew) {
+                $record = SuperTableBlockRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid SuperTable block ID: ' . $this->id);
+                if (!$record) {
+                    throw new Exception('Invalid SuperTable block ID: ' . $this->id);
+                }
+            } else {
+                $record = new SuperTableBlockRecord();
+                $record->id = (int)$this->id;
             }
-        } else {
-            $record = new SuperTableBlockRecord();
-            $record->id = $this->id;
-        }
 
-        $record->fieldId = $this->fieldId;
-        $record->ownerId = $this->ownerId;
-        $record->ownerSiteId = $this->ownerSiteId;
-        $record->typeId = $this->typeId;
-        $record->sortOrder = $this->sortOrder;
-        $record->save(false);
+            $record->fieldId = (int)$this->fieldId;
+            $record->ownerId = (int)$this->ownerId;
+            $record->typeId = (int)$this->typeId;
+            $record->sortOrder = (int)$this->sortOrder ?: null;
+            $record->save(false);
+        }
 
         parent::afterSave($isNew);
     }
@@ -349,6 +358,7 @@ class SuperTableBlockElement extends Element
 
         return true;
     }
+
 
     // Private Methods
     // =========================================================================

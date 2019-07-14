@@ -133,7 +133,7 @@ class m180219_000000_sites extends Migration
 
             $localized = ($field['translationMethod'] === 'site');
 
-            $settings['localizeBlocks'] = $localized;
+            $settings['propagationMethod'] = $localized ? 'none' : 'all';
 
             $this->update(
                 '{{%fields}}',

@@ -2,6 +2,8 @@
 namespace verbb\supertable\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
+
 use yii\db\ActiveQueryInterface;
 
 class SuperTableBlockRecord extends ActiveRecord
@@ -37,16 +39,6 @@ class SuperTableBlockRecord extends ActiveRecord
     public function getOwner(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'ownerId']);
-    }
-
-    /**
-     * Returns the SuperTable block’s owner's site.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getOwnerSite(): ActiveQueryInterface
-    {
-        return $this->hasOne(Site::class, ['id' => 'ownerSiteId']);
     }
 
     /**

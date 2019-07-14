@@ -1,7 +1,6 @@
 <?php
 namespace verbb\supertable\services;
 
-use craft\db\Table;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\errors\SuperTableBlockTypeNotFoundException;
@@ -16,18 +15,17 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
-use craft\elements\db\ElementQueryInterface;
+use craft\db\Table;
 use craft\events\ConfigEvent;
-use craft\fields\BaseRelationField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\MigrationHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use craft\models\Site;
 use craft\services\Fields;
 use craft\web\View;
 
@@ -41,6 +39,7 @@ class SuperTableService extends Component
 
     /**
      * @var bool Whether to ignore changes to the project config.
+     * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
      */
     public $ignoreProjectConfigChanges = false;
 
@@ -742,9 +741,7 @@ class SuperTableService extends Component
     public function getBlockById(int $blockId, int $siteId = null)
     {
         /** @var SuperTableBlock|null $block */
-        $block = Craft::$app->getElements()->getElementById($blockId, SuperTableBlockElement::class, $siteId);
-
-        return $block;
+        return Craft::$app->getElements()->getElementById($blockId, SuperTableBlockElement::class, $siteId);
     }
 
     /**
@@ -752,97 +749,213 @@ class SuperTableService extends Component
      *
      * @param SuperTableField      $field The Super Table field
      * @param ElementInterface $owner The element the field is associated with
+     * @param bool $checkOtherSites Whether to check other sites if the owner was just duplicated
      *
      * @throws \Throwable if reasons
      */
-    public function saveField(SuperTableField $field, ElementInterface $owner)
+    public function saveField(SuperTableField $field, ElementInterface $owner, $checkOtherSites = false)
     {
-        // Is the owner being duplicated?
         /** @var Element $owner */
-        if ($owner->duplicateOf !== null) {
-            /** @var SuperTableBlockQuery $query */
-            $query = $owner->duplicateOf->getFieldValue($field->handle);
-            // If this is the first site the element is being duplicated for, or if the element is set to manage blocks
-            // on a per-site basis, then we need to duplicate them for the new element
-            $duplicateBlocks = !$owner->propagating || $field->localizeBlocks;
-        } else {
-            /** @var SuperTableBlockQuery $query */
-            $query = $owner->getFieldValue($field->handle);
-            // If the element is brand new and propagating, and the field manages blocks on a per-site basis,
-            // then we will need to duplicate the blocks for this site
-            $duplicateBlocks = !$query->ownerId && $owner->propagating && $field->localizeBlocks;
-        }
-
-        // Skip if the element is propagating right now, and we don't need to duplicate the blocks
-        if ($owner->propagating && !$duplicateBlocks) {
-            return;
-        }
-
-        // Fetch the Super Table blocks
+        $elementsService = Craft::$app->getElements();
+        /** @var MatrixBlockQuery $query */
+        $query = $owner->getFieldValue($field->handle);
         /** @var SuperTableBlock[] $blocks */
         $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
-
-        $elementsService = Craft::$app->getElements();
+        $blockIds = [];
+        $collapsedBlockIds = [];
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // If we're duplicating an element, or the owner was a preexisting element,
-            // make sure that the blocks for this field/owner respect the field's translation setting
-            if ($owner->duplicateOf || $query->ownerId) {
-                $this->_applyFieldTranslationSetting($owner->duplicateOf ?? $owner, $field);
-            }
-
-            $blockIds = [];
-
-            // Only propagate the blocks if the owner isn't being propagated
-            $propagate = !$owner->propagating;
-
             foreach ($blocks as $block) {
-                if ($duplicateBlocks) {
-                    $block = $elementsService->duplicateElement($block, [
-                        'ownerId' => $owner->id,
-                        'ownerSiteId' => $field->localizeBlocks ? $owner->siteId : null,
-                        'siteId' => $owner->siteId,
-                        'propagating' => false,
-                    ]);
-                } else {
-                    $block->ownerId = $owner->id;
-                    $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
-                    $block->propagating = $owner->propagating;
-                    $elementsService->saveElement($block, false, $propagate);
-                }
-
+                $block->ownerId = $owner->id;
+                $elementsService->saveElement($block, false);
                 $blockIds[] = $block->id;
             }
 
             // Delete any blocks that shouldn't be there anymore
-            $deleteBlocksQuery = SuperTableBlockElement::find()
-                ->anyStatus()
-                ->ownerId($owner->id)
-                ->fieldId($field->id)
-                ->where(['not', ['elements.id' => $blockIds]]);
+            $this->_deleteOtherBlocks($field, $owner, $blockIds);
 
-            if ($field->localizeBlocks) {
-                $deleteBlocksQuery->ownerSiteId($owner->siteId);
-            } else {
-                $deleteBlocksQuery->siteId($owner->siteId);
-            }
+            // Should we duplicate the blocks to other sites?
+            if ($owner->propagateAll && $field->propagationMethod !== SuperTableField::PROPAGATION_METHOD_ALL) {
+                // Find the owner's site IDs that *aren't* supported by this site's SuperTable blocks
+                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+                $fieldSiteIds = $this->getSupportedSiteIdsForField($field, $owner);
+                $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
-            foreach ($deleteBlocksQuery->all() as $deleteBlock) {
-                $elementsService->deleteElement($deleteBlock);
+                if (!empty($otherSiteIds)) {
+                    // Get the original element and duplicated element for each of those sites
+                    /** @var Element[] $otherTargets */
+                    $otherTargets = $owner::find()
+                        ->drafts($owner->getIsDraft())
+                        ->revisions($owner->getIsRevision())
+                        ->id($owner->id)
+                        ->siteId($otherSiteIds)
+                        ->anyStatus()
+                        ->all();
+
+                    // Duplicate SuperTable blocks, ensuring we don't process the same blocks more than once
+                    $handledSiteIds = [];
+
+                    $cachedQuery = (clone $query)->anyStatus();
+                    $cachedQuery->setCachedResult($blocks);
+                    $owner->setFieldValue($field->handle, $cachedQuery);
+                    
+                    foreach ($otherTargets as $otherTarget) {
+                        // Make sure we haven't already duplicated blocks for this site, via propagation from another site
+                        if (isset($handledSiteIds[$otherTarget->siteId])) {
+                            continue;
+                        }
+
+                        $this->duplicateBlocks($field, $owner, $otherTarget);
+
+                        // Make sure we don't duplicate blocks for any of the sites that were just propagated to
+                        $sourceSupportedSiteIds = $this->getSupportedSiteIdsForField($field, $otherTarget);
+                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                    }
+
+                    $owner->setFieldValue($field->handle, $query);
+                }
             }
 
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
+            throw $e;
+        }
+    }
 
+    /**
+     * Duplicates SuperTable blocks from one owner element to another.
+     *
+     * @param SuperTableField $field The SuperTable field to duplicate blocks for
+     * @param ElementInterface $source The source element blocks should be duplicated from
+     * @param ElementInterface $target The target element blocks should be duplicated to
+     * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
+     * @throws \Throwable if reasons
+     */
+    public function duplicateBlocks(SuperTableField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
+    {
+        /** @var Element $source */
+        /** @var Element $target */
+        $elementsService = Craft::$app->getElements();
+        /** @var SuperTableBlockQuery $query */
+        $query = $source->getFieldValue($field->handle);
+        /** @var SuperTableBlock[] $blocks */
+        $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
+        $newBlockIds = [];
+        $transaction = Craft::$app->getDb()->beginTransaction();
+
+        try {
+            foreach ($blocks as $block) {
+                /** @var SuperTableBlock $newBlock */
+                $newBlock = $elementsService->duplicateElement($block, [
+                    'ownerId' => $target->id,
+                    'owner' => $target,
+                    'siteId' => $target->siteId,
+                    'propagating' => false,
+                ]);
+
+                $newBlockIds[] = $newBlock->id;
+            }
+
+            // Delete any blocks that shouldn't be there anymore
+            $this->_deleteOtherBlocks($field, $target, $newBlockIds);
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
             throw $e;
         }
 
-        // Reset the field value if this is a new element
-        if ($owner->duplicateOf || !$query->ownerId) {
-            $owner->setFieldValue($field->handle, null);
+        // Duplicate blocks for other sites as well?
+        if ($checkOtherSites && $field->propagationMethod !== SuperTableField::PROPAGATION_METHOD_ALL) {
+            // Find the target's site IDs that *aren't* supported by this site's SuperTable blocks
+            $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
+            $fieldSiteIds = $this->getSupportedSiteIdsForField($field, $target);
+            $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
+
+            if (!empty($otherSiteIds)) {
+                // Get the original element and duplicated element for each of those sites
+                /** @var Element[] $otherSources */
+                $otherSources = $target::find()
+                    ->drafts($source->getIsDraft())
+                    ->revisions($source->getIsRevision())
+                    ->id($source->id)
+                    ->siteId($otherSiteIds)
+                    ->anyStatus()
+                    ->all();
+
+                /** @var Element[] $otherTargets */
+                $otherTargets = $target::find()
+                    ->drafts($target->getIsDraft())
+                    ->revisions($target->getIsRevision())
+                    ->id($target->id)
+                    ->siteId($otherSiteIds)
+                    ->anyStatus()
+                    ->indexBy('siteId')
+                    ->all();
+
+                // Duplicate SuperTable blocks, ensuring we don't process the same blocks more than once
+                $handledSiteIds = [];
+
+                foreach ($otherSources as $otherSource) {
+                    // Make sure the target actually exists for this site
+                    if (!isset($otherTargets[$otherSource->siteId])) {
+                        continue;
+                    }
+
+                    // Make sure we haven't already duplicated blocks for this site, via propagation from another site
+                    if (isset($handledSiteIds[$otherSource->siteId])) {
+                        continue;
+                    }
+
+                    $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
+
+                    // Make sure we don't duplicate blocks for any of the sites that were just propagated to
+                    $sourceSupportedSiteIds = $this->getSupportedSiteIdsForField($field, $otherSource);
+                    $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                }
+            }
         }
+    }
+
+    /**
+     * Returns the site IDs that are supported by SuperTable blocks for the given SuperTable field and owner element.
+     *
+     * @param SuperTableField $field
+     * @param ElementInterface $owner
+     * @return int[]
+     */
+    public function getSupportedSiteIdsForField(SuperTableField $field, ElementInterface $owner): array
+    {
+        /** @var Element $owner */
+        /** @var Site[] $allSites */
+        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
+        $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+        $siteIds = [];
+
+        foreach ($ownerSiteIds as $siteId) {
+            switch ($field->propagationMethod) {
+                case SuperTableField::PROPAGATION_METHOD_NONE:
+                    $include = $siteId == $owner->siteId;
+                    break;
+                case SuperTableField::PROPAGATION_METHOD_SITE_GROUP:
+                    $include = $allSites[$siteId]->groupId == $allSites[$owner->siteId]->groupId;
+                    break;
+                case SuperTableField::PROPAGATION_METHOD_LANGUAGE:
+                    $include = $allSites[$siteId]->language == $allSites[$owner->siteId]->language;
+                    break;
+                default:
+                    $include = true;
+                    break;
+            }
+
+            if ($include) {
+                $siteIds[] = $siteId;
+            }
+        }
+
+        return $siteIds;
     }
 
 
@@ -922,68 +1035,27 @@ class SuperTableService extends Component
     }
 
     /**
-     * Applies the field's translation setting to a set of blocks.
+     * Deletes blocks from an owner element
      *
-     * @param ElementInterface $owner
-     * @param SuperTableField $field
+     * @param SuperTableField $field The SuperTable field
+     * @param ElementInterface The owner element
+     * @param int[] $except Block IDs that should be left alone
      */
-    private function _applyFieldTranslationSetting(ElementInterface $owner, SuperTableField $field)
+    private function _deleteOtherBlocks(SuperTableField $field, ElementInterface $owner, array $except)
     {
-        // If the field is translatable, see if there are any global blocks that should be localized
-        if ($field->localizeBlocks) {
-            $blockQuery = SuperTableBlockElement::find()
-                ->fieldId($field->id)
-                ->ownerId($owner->id)
-                ->anyStatus()
-                ->siteId($owner->siteId)
-                ->ownerSiteId(':empty:');
+        /** @var Element $owner */
+        $deleteBlocks = SuperTableBlock::find()
+            ->anyStatus()
+            ->ownerId($owner->id)
+            ->fieldId($field->id)
+            ->siteId($owner->siteId)
+            ->andWhere(['not', ['elements.id' => $except]])
+            ->all();
 
-            $blocks = $blockQuery->all();
+        $elementsService = Craft::$app->getElements();
 
-            if (!empty($blocks)) {
-                // Duplicate the blocks for each of the owner's other sites
-                $elementsService = Craft::$app->getElements();
-                $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-                
-                foreach ($siteIds as $siteId) {
-                    if ($siteId != $owner->siteId) {
-                        $blockQuery->siteId = $siteId;
-                        $siteBlocks = $blockQuery->all();
-
-                        foreach ($siteBlocks as $siteBlock) {
-                            $elementsService->duplicateElement($siteBlock, [
-                                'siteId' => (int)$siteId,
-                                'ownerSiteId' => (int)$siteId,
-                            ]);
-                        }
-                    }
-                }
-
-                // Now resave the blocks for this site
-                foreach ($blocks as $block) {
-                    $block->ownerSiteId = $owner->siteId;
-                    Craft::$app->getElements()->saveElement($block, false);
-                }
-            }
-        } else {
-            // Otherwise, see if the field has any localized blocks that should be deleted
-            $elementsService = Craft::$app->getElements();
-
-            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if ($siteId != $owner->siteId) {
-                    $blocks = SuperTableBlockElement::find()
-                        ->fieldId($field->id)
-                        ->ownerId($owner->id)
-                        ->anyStatus()
-                        ->siteId($siteId)
-                        ->ownerSiteId($siteId)
-                        ->all();
-
-                    foreach ($blocks as $block) {
-                        $elementsService->deleteElement($block);
-                    }
-                }
-            }
+        foreach ($deleteBlocks as $deleteBlock) {
+            $elementsService->deleteElement($deleteBlock);
         }
     }
 }

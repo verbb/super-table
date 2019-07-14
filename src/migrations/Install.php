@@ -32,7 +32,6 @@ class Install extends Migration
         $this->createTable('{{%supertableblocks}}', [
             'id' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
-            'ownerSiteId' => $this->integer(),
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
@@ -59,7 +58,6 @@ class Install extends Migration
         $this->createIndex(null, '{{%supertableblocks}}', ['fieldId'], false);
         $this->createIndex(null, '{{%supertableblocks}}', ['typeId'], false);
         $this->createIndex(null, '{{%supertableblocks}}', ['sortOrder'], false);
-        $this->createIndex(null, '{{%supertableblocks}}', ['ownerSiteId'], false);
         $this->createIndex(null, '{{%supertableblocktypes}}', ['fieldId'], false);
         $this->createIndex(null, '{{%supertableblocktypes}}', ['fieldLayoutId'], false);
     }
@@ -69,7 +67,6 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%supertableblocks}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%supertableblocks}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%supertableblocks}}', ['ownerId'], '{{%elements}}', ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%supertableblocks}}', ['ownerSiteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%supertableblocks}}', ['typeId'], '{{%supertableblocktypes}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%supertableblocktypes}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%supertableblocktypes}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);

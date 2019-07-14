@@ -42,7 +42,8 @@ class SuperTableBlockQuery extends ElementQuery
     public $ownerId;
 
     /**
-     * @var int|string|null The site ID that the resulting SuperTable blocks must have been defined in, or ':empty:' to find blocks without an owner site ID.
+     * @var mixed
+     * @deprecated in 2.2.0
      */
     public $ownerSiteId;
 
@@ -62,13 +63,13 @@ class SuperTableBlockQuery extends ElementQuery
     {
         switch ($name) {
             case 'ownerSite':
-                $this->ownerSite($value);
+                Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSite()', 'The “ownerSite” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
                 break;
             case 'type':
                 $this->type($value);
                 break;
             case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The “ownerLocale” SuperTable block query param has been deprecated. Use “ownerSite” or “ownerSiteId” instead.');
+                Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The “ownerLocale” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
                 $this->ownerSite($value);
                 break;
             default:
@@ -129,61 +130,32 @@ class SuperTableBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerSiteId]] and [[siteId]] properties.
-     *
-     * @param int|string|null $value The property value
-     *
      * @return static self reference
+     * @deprecated in 2.2.0.
      */
-    public function ownerSiteId($value)
+    public function ownerSiteId()
     {
-        $this->ownerSiteId = $value;
-
-        if ($value && strtolower($value) !== ':empty:') {
-            // A block will never exist in a site that is different than its ownerSiteId,
-            // so let's set the siteId param here too.
-            $this->siteId = (int)$value;
-        }
-
+        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSiteId()', 'The “ownerSiteId” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
         return $this;
     }
 
     /**
-     * Sets the [[ownerSiteId]] property based on a given site(s)’s handle(s).
-     *
-     * @param string|string[]|Site $value The property value
-     *
      * @return static self reference
-     * @throws Exception if $value is an invalid site handle
+     * @deprecated in 2.2.0.
      */
-    public function ownerSite($value)
+    public function ownerSite()
     {
-        if ($value instanceof Site) {
-            $this->ownerSiteId($value->id);
-        } else {
-            $site = Craft::$app->getSites()->getSiteByHandle($value);
-
-            if (!$site) {
-                throw new Exception('Invalid site hadle: '.$value);
-            }
-
-            $this->ownerSiteId($site->id);
-        }
-
+        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSite()', 'The “ownerSite” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
         return $this;
     }
 
     /**
-     * Sets the [[ownerLocale]] property.
-     *
-     * @param string|string[] $value The property value
-     *
      * @return static self reference
-     * @deprecated in 3.0. Use [[ownerSiteId()]] instead.
+     * @deprecated in 2.0.
      */
     public function ownerLocale($value)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::ownerLocale()', 'The “ownerLocale” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
+        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The “ownerLocale” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
         $this->ownerSite($value);
 
         return $this;
@@ -279,7 +251,6 @@ class SuperTableBlockQuery extends ElementQuery
         $this->query->select([
             'supertableblocks.fieldId',
             'supertableblocks.ownerId',
-            'supertableblocks.ownerSiteId',
             'supertableblocks.typeId',
             'supertableblocks.sortOrder',
         ]);
@@ -290,10 +261,6 @@ class SuperTableBlockQuery extends ElementQuery
 
         if ($this->ownerId) {
             $this->subQuery->andWhere(Db::parseParam('supertableblocks.ownerId', $this->ownerId));
-        }
-
-        if ($this->ownerSiteId) {
-            $this->subQuery->andWhere(Db::parseParam('supertableblocks.ownerSiteId', $this->ownerSiteId));
         }
 
         if ($this->typeId !== null) {
