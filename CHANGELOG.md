@@ -11,7 +11,7 @@
 - Super Table now requires Craft 3.2+.
 - Super Table fields now have a “Propagation Method” setting, enabling blocks to only be propagated to other sites in the same site group, or with the same language.
 - `verbb\supertable\services\SuperTableService::saveField()` now has a `$checkOtherSites` argument.
-- Improve block dulication.
+- Improve block duplication.
 - Improve element saving performance.
 
 ### Fixed
