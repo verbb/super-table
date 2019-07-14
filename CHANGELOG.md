@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.2.0 - 2019-07-14
+
+### Added
+- Add support for `craft\base\BlockElementInterface`.
+- Add support for setting the content of a Super Table field to be searchable.
+- Add `verbb\supertable\services\SuperTableService::getSupportedSiteIdsForField()`.
+
+### Changed
+- Super Table now requires Craft 3.2+.
+- Super Table fields now have a “Propagation Method” setting, enabling blocks to only be propagated to other sites in the same site group, or with the same language.
+- `verbb\supertable\services\SuperTableService::saveField()` now has a `$checkOtherSites` argument.
+- Improve block dulication.
+- Improve element saving performance.
+
+### Fixed
+- Fix search index updating when upgrading to Craft 3.2+.
+
+### Deprecated
+- Deprecated the `ownerSite` and `ownerSiteId` block query params.
+- Deprecated `verbb\supertable\elements\SuperTableBlockElement::$ownerSiteId`.
+
 ## 2.1.21 - 2019-07-14
 
 ### Fixed 
