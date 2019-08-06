@@ -169,7 +169,7 @@ class SuperTableMatrixService extends Component
         }
 
         if ($value instanceof MatrixBlockQuery) {
-            $value = $value->all();
+            $value = $value->anyStatus()->all();
         }
 
         // Safe to set the default blocks?

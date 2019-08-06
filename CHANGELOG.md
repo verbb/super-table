@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed bug where disabled Matrix blocks would be missing from Super Table inputs, then deleted. ([#288](https://github.com/verbb/super-table/issues/288))
+
 ## 2.2.1 - 2019-07-14
 
 ### Fixed
