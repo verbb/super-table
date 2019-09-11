@@ -95,7 +95,7 @@ class SuperTableService extends Component
         $this->_blockTypesByFieldId[$fieldId] = [];
 
         $results = $this->_createBlockTypeQuery()
-            ->where(['fieldId' => $fieldId])
+            ->where(['bt.fieldId' => $fieldId])
             ->all();
 
         foreach ($results as $result) {
@@ -107,6 +107,25 @@ class SuperTableService extends Component
         $this->_fetchedAllBlockTypesForFieldId[$fieldId] = true;
 
         return $this->_blockTypesByFieldId[$fieldId];
+    }
+
+    /**
+     * Returns all the block types.
+     *
+     * @return SuperTableBlockTypeModel[] An array of block types.
+     */
+    public function getAllBlockTypes(): array
+    {
+        $results = $this->_createBlockTypeQuery()
+            ->innerJoin(Table::FIELDS . ' f', '[[f.id]] = [[bt.fieldId]]')
+            ->where(['f.type' => SuperTableField::class])
+            ->all();
+
+        foreach ($results as $key => $result) {
+            $results[$key] = new SuperTableBlockTypeModel($result);
+        }
+
+        return $results;
     }
 
     /**
@@ -123,7 +142,7 @@ class SuperTableService extends Component
         }
 
         $result = $this->_createBlockTypeQuery()
-            ->where(['id' => $blockTypeId])
+            ->where(['bt.id' => $blockTypeId])
             ->one();
 
         return $this->_blockTypesById[$blockTypeId] = $result ? new SuperTableBlockTypeModel($result) : null;
@@ -979,12 +998,12 @@ class SuperTableService extends Component
     {
         return (new Query())
             ->select([
-                'id',
-                'fieldId',
-                'fieldLayoutId',
-                'uid'
+                'bt.id',
+                'bt.fieldId',
+                'bt.fieldLayoutId',
+                'bt.uid'
             ])
-            ->from(['{{%supertableblocktypes}}']);
+            ->from(['bt' => '{{%supertableblocktypes}}']);
     }
 
     /**

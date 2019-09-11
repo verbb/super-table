@@ -7,20 +7,28 @@ use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\models\SuperTableBlockTypeModel;
 use verbb\supertable\assetbundles\SuperTableAsset;
 
+use verbb\supertable\gql\arguments\elements\SuperTableBlock as SuperTableBlockArguments;
+use verbb\supertable\gql\resolvers\elements\SuperTableBlock as SuperTableBlockResolver;
+use verbb\supertable\gql\types\generators\SuperTableBlockType as SuperTableBlockTypeGenerator;
+
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\base\GqlInlineFragmentFieldInterface;
+use craft\base\GqlInlineFragmentInterface;
 use craft\db\Query;
 use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\Matrix;
+use craft\gql\GqlEntityRegistry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\ResaveElements;
@@ -28,10 +36,12 @@ use craft\services\Elements;
 use craft\services\Fields;
 use craft\validators\ArrayValidator;
 
+use GraphQL\Type\Definition\Type;
+
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
-class SuperTableField extends Field implements EagerLoadingFieldInterface
+class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
     // Constants
     // =========================================================================
@@ -764,6 +774,42 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             'map' => $map,
             'criteria' => ['fieldId' => $this->id]
         ];
+    }
+
+     /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        $typeArray = SuperTableBlockTypeGenerator::generateTypes($this);
+        $typeName = $this->handle . '_SuperTableField';
+        $resolver = function (SuperTableBlockElement $value) {
+            return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+        };
+        
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver)),
+            'args' => SuperTableBlockArguments::getArguments(),
+            'resolve' => SuperTableBlockResolver::class . '::resolve',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @throws InvalidArgumentException
+     */
+    public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
+    {
+        if (!preg_match('/^(?P<fieldHandle>[\w]+)_BlockType$/i', $fragmentName, $matches)) {
+            throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);
+        }
+
+        if ($this->handle !== $matches['fieldHandle']) {
+            throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);
+        }
+
+        return $this->getBlockTypes()[0];
     }
 
     // Events

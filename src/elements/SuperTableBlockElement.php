@@ -114,6 +114,14 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return $map;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        return $context->getField()->handle . '_BlockType';
+    }
+
 
     // Properties
     // =========================================================================
@@ -292,6 +300,14 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     public function getFieldContext(): string
     {
         return 'superTableBlockType:' . $this->getType()->uid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getType());
     }
 
 

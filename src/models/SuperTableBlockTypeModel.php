@@ -1,15 +1,18 @@
 <?php
-
 namespace verbb\supertable\models;
 
 use Craft;
 use verbb\supertable\elements\SuperTableBlockElement;
+use verbb\supertable\fields\SuperTableField;
 
 use craft\base\FieldInterface;
+use craft\base\GqlInlineFragmentInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 
-class SuperTableBlockTypeModel extends Model
+use yii\base\InvalidConfigException;
+
+class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterface
 {
     // Properties
     // =========================================================================
@@ -121,5 +124,41 @@ class SuperTableBlockTypeModel extends Model
     public function getIsNew(): bool
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
+    }
+
+    /**
+     * Returns the block type's field.
+     *
+     * @return SuperTableField
+     * @throws InvalidConfigException if [[fieldId]] is missing or invalid
+     */
+    public function getField(): SuperTableField
+    {
+        if ($this->fieldId === null) {
+            throw new InvalidConfigException('Block type missing its field ID');
+        }
+
+        /** @var SuperTableField $field */
+        if (($field = Craft::$app->getFields()->getFieldById($this->fieldId)) === null) {
+            throw new InvalidConfigException('Invalid field ID: ' . $this->fieldId);
+        }
+
+        return $field;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldContext(): string
+    {
+        return 'superTableBlockType:' . $this->uid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingPrefix(): string
+    {
+        return '';
     }
 }
