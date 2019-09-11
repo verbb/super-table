@@ -87,8 +87,8 @@ class m180219_000000_sites extends Migration
 
                 // There's actually an issue here in the MigrationHelper::dropAllIndexesOnTable class, not using the current migration
                 // as context to find existing indexes. This is important, because the indexes have changed from their current names
-                // $this->dropAllForeignKeysOnTable($tableName);
-                // $this->dropAllIndexesOnTable($tableName);
+                $this->dropAllForeignKeysOnTable($tableName);
+                $this->dropAllIndexesOnTable($tableName);
 
                 // Rename column
                 if ($this->db->columnExists($tableName, 'locale__siteId')) {
@@ -96,9 +96,9 @@ class m180219_000000_sites extends Migration
                 }
 
                 // Add them back (like creating a new Matrix would)
-                // $this->createIndex(null, $tableName, ['elementId', 'siteId'], true);
-                // $this->addForeignKey(null, $tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
-                // $this->addForeignKey(null, $tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
+                $this->createIndex(null, $tableName, ['elementId', 'siteId'], true);
+                $this->addForeignKey(null, $tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
+                $this->addForeignKey(null, $tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
 
                 // Delete the old column
                 if ($this->db->columnExists($tableName, 'locale')) {
