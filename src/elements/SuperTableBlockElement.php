@@ -294,19 +294,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return 'superTableBlockType:' . $this->getType()->uid;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getHasFreshContent(): bool
-    {
-        // Defer to the owner element
-        try {
-            return $this->getOwner()->getHasFreshContent();
-        } catch (InvalidConfigException $e) {
-            return false;
-        }
-    }
-
 
     // Events
     // -------------------------------------------------------------------------
