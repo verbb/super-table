@@ -1,9 +1,22 @@
 # Changelog
 
-## Unreleased
+## 2.3.0 - 2019-09-11
+
+### Added
+- Add GraphQL support.
+- Add data loss warnings for Propagation Method settings.
+
+### Changed
+- Now requires Craft ^3.3.1.2.
 
 ### Fixed
 - Fixed bug where disabled Matrix blocks would be missing from Super Table inputs, then deleted. ([#288](https://github.com/verbb/super-table/issues/288))
+- Add back site FK checks in migration.
+- Fix where it wasn’t possible to delete blocks if Min and Max rows were set to the same value, and an element already had more than that many blocks.
+- Block queries no longer include blocks owned by drafts or revisions by default.
+- Fix blocks not getting duplicated to newly-enabled sites for elements if the field’s Propagation Method setting wasn’t set to “Save blocks to all sites the owner element is saved in”.
+- Fix where default field values weren’t being applied to blocks that were autocreated per the Min Row setting.
+- Fix not allowing block fields to be saved when set to “Translate for each site”.
 
 ## 2.2.1 - 2019-07-14
 
