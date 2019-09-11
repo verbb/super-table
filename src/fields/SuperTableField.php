@@ -555,13 +555,27 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
+        /** @var Element $element */
+        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle);
+        }
+
+        if ($value instanceof SuperTableBlockQuery) {
+            $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
+        }
+
         $id = Craft::$app->getView()->formatInputId($this->handle);
 
         // Get the block types data
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
 
         $createDefaultBlocks = $this->minRows != 0 && count($blockTypeInfo) === 1;
-        $staticBlocks = ($createDefaultBlocks && $this->minRows == $this->maxRows);
+
+        $staticBlocks = (
+            $createDefaultBlocks &&
+            $this->minRows == $this->maxRows &&
+            $this->maxRows >= count($value)
+        );
 
         Craft::$app->getView()->registerAssetBundle(SuperTableAsset::class);
 
@@ -571,15 +585,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface
             '"'.Craft::$app->getView()->namespaceInputName($this->handle).'", '.
             Json::encode($this, JSON_UNESCAPED_UNICODE).
             ');');
-
-        /** @var Element $element */
-        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
-            $value = $element->getEagerLoadedElements($this->handle);
-        }
-
-        if ($value instanceof SuperTableBlockQuery) {
-            $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
-        }
 
         // Safe to set the default blocks?
         if ($createDefaultBlocks || $this->staticField) {
