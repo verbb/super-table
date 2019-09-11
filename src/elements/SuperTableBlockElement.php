@@ -216,7 +216,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return SuperTable::$plugin->getService()->getSupportedSiteIdsForField($this->_getField(), $owner);
+        return SuperTable::$plugin->getService()->getSupportedSiteIdsForField($this->_field(), $owner);
     }
 
     /**
@@ -275,7 +275,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
      */
     public function getContentTable(): string
     {
-        return $this->_getField()->contentTable;
+        return $this->_field()->contentTable;
     }
 
     /**
@@ -355,7 +355,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
      *
      * @return SuperTable
      */
-    private function _getField()
+    private function _field(): SuperTableField
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);
