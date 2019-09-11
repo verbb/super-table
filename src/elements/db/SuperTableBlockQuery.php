@@ -10,6 +10,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\db\Table;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
@@ -270,6 +271,17 @@ class SuperTableBlockQuery extends ElementQuery
             }
 
             $this->subQuery->andWhere(Db::parseParam('supertableblocks.typeId', $this->typeId));
+        }
+
+        // Ignore revision/draft blocks by default
+        if (!$this->id && !$this->ownerId) {
+            // todo: we will need to expand on this when Super Table blocks can be nested.
+            $this->subQuery
+                ->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[supertableblocks.ownerId]]')
+                ->andWhere([
+                    'owners.draftId' => null,
+                    'owners.revisionId' => null,
+                ]);
         }
 
         return parent::beforePrepare();
