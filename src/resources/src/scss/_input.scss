@@ -221,7 +221,7 @@ body.ltr .superTableMatrix > .titlebar {
     display: none;
 }
 
-.superTableContainer.matrixLayout.static-field .matrixblock {
+.superTableContainer.matrixLayout.static-field > .matrixLayoutContainer > .matrixblock {
     padding-top: 14px;
 }
 
