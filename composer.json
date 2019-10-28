@@ -27,12 +27,6 @@
     "require": {
         "craftcms/cms": "^3.3.1.1"
     },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://asset-packagist.org"
-        }
-    ],
     "autoload": {
         "psr-4": {
           "verbb\\supertable\\": "src/"
