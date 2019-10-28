@@ -45,7 +45,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 {
     // Constants
     // =========================================================================
-        
+
     const PROPAGATION_METHOD_NONE = 'none';
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
@@ -786,7 +786,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $resolver = function (SuperTableBlockElement $value) {
             return GqlEntityRegistry::getEntity($value->getGqlTypeName());
         };
-        
+
         return [
             'name' => $this->handle,
             'type' => Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver)),
@@ -1142,7 +1142,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $ownerId = null;
         }
 
-        $isLivePreview = Craft::$app->getRequest()->getIsLivePreview();
         $blocks = [];
         $sortOrder = 0;
         $prevBlock = null;

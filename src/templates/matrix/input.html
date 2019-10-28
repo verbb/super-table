@@ -4,7 +4,6 @@
 
         {% for block in blocks %}
             {% set blockId = block.id %}
-
             {% if not blockId %}
                 {% set totalNewBlocks = totalNewBlocks + 1 %}
                 {% set blockId = 'new' ~ totalNewBlocks %}

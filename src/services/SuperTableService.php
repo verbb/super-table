@@ -616,24 +616,24 @@ class SuperTableService extends Component
                 // Delete the old block types first, in case there's a handle conflict with one of the new ones
                 $oldBlockTypes = $this->getBlockTypesByFieldId($supertableField->id);
                 $oldBlockTypesById = [];
-                
+
                 foreach ($oldBlockTypes as $blockType) {
                     $oldBlockTypesById[$blockType->id] = $blockType;
                 }
-                
+
                 foreach ($supertableField->getBlockTypes() as $blockType) {
                     if (!$blockType->getIsNew()) {
                         unset($oldBlockTypesById[$blockType->id]);
                     }
                 }
-                
+
                 foreach ($oldBlockTypesById as $blockType) {
                     $this->deleteBlockType($blockType);
                 }
-                
+
                 $originalContentTable = Craft::$app->getContent()->contentTable;
                 Craft::$app->getContent()->contentTable = $supertableField->contentTable;
-                
+
                 foreach ($supertableField->getBlockTypes() as $blockType) {
                     $blockType->fieldId = $supertableField->id;
                     $this->saveBlockType($blockType, false);
@@ -737,7 +737,7 @@ class SuperTableService extends Component
                     $parentFieldId = Db::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
                 }
             }
-        
+
             if ($parentFieldId) {
                 $baseName = 'stc_' . $parentFieldId . '_' . strtolower($field->handle);
             }
@@ -766,13 +766,12 @@ class SuperTableService extends Component
     /**
      * Saves a Super Table field.
      *
-     * @param SuperTableField      $field The Super Table field
+     * @param SuperTableField  $field The Super Table field
      * @param ElementInterface $owner The element the field is associated with
-     * @param bool $checkOtherSites Whether to check other sites if the owner was just duplicated
      *
      * @throws \Throwable if reasons
      */
-    public function saveField(SuperTableField $field, ElementInterface $owner, $checkOtherSites = false)
+    public function saveField(SuperTableField $field, ElementInterface $owner)
     {
         /** @var Element $owner */
         $elementsService = Craft::$app->getElements();
@@ -781,7 +780,6 @@ class SuperTableService extends Component
         /** @var SuperTableBlockElement[] $blocks */
         $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
         $blockIds = [];
-        $collapsedBlockIds = [];
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -826,7 +824,7 @@ class SuperTableService extends Component
                     $cachedQuery = (clone $query)->anyStatus();
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
-                    
+
                     foreach ($otherTargets as $otherTarget) {
                         // Make sure we haven't already duplicated blocks for this site, via propagation from another site
                         if (isset($handledSiteIds[$otherTarget->siteId])) {

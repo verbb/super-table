@@ -78,6 +78,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
 
     /**
      * @inheritdoc
+     * @return SuperTableBlockQuery The newly created [[SuperTableBlockQuery]] instance.
      */
     public static function find(): ElementQueryInterface
     {
@@ -195,7 +196,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         $names = parent::extraFields();
         $names[] = 'owner';
         $names[] = 'type';
-        
+
         return $names;
     }
 

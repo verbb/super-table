@@ -37,10 +37,9 @@
             </thead>
             <tbody>
                 {% set totalNewBlocks = 0 %}
-                
+
                 {% for block in blocks %}
                     {% set blockId = block.id %}
-
                     {% if not blockId %}
                         {% set totalNewBlocks = totalNewBlocks + 1 %}
                         {% set blockId = 'new' ~ totalNewBlocks %}
@@ -50,7 +49,7 @@
                         <td class="hidden">
                             <input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
                         </td>
-                        
+
                         {% include "super-table/table/fields" with {
                             namespace: name ~ '[' ~ blockId ~ '][fields]',
                             element: block,
