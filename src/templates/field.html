@@ -19,6 +19,7 @@
 {% endif %}
 
 {% if not static %}
+    {% do view.registerDeltaName(field.handle) %}
 
     {# Special-case for Matrix-in-SuperTable #}
     {% if field.displayName() == 'Matrix' %}

@@ -44,10 +44,12 @@
                         {% set totalNewBlocks = totalNewBlocks + 1 %}
                         {% set blockId = 'new' ~ totalNewBlocks %}
                     {% endif %}
-                    {% set baseInputName = "#{name}[#{blockId}]" %}
+                    {% set baseInputName = "#{name}[blocks][#{blockId}]" %}
+                    {% do view.registerDeltaName(baseInputName) %}
 
                     <tr data-id="{{ blockId }}">
                         <td class="hidden">
+                            {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
                             {{ hiddenInput("#{baseInputName}[type]", block.getType().handle) }}
                         </td>
 

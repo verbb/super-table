@@ -8,9 +8,11 @@
                 {% set totalNewBlocks = totalNewBlocks + 1 %}
                 {% set blockId = 'new' ~ totalNewBlocks %}
             {% endif %}
-            {% set baseInputName = "#{name}[#{blockId}]" %}
+            {% set baseInputName = "#{name}[blocks][#{blockId}]" %}
+            {% do view.registerDeltaName(baseInputName) %}
 
             <div class="superTableRow" data-id="{{ blockId }}">
+                {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
                 {{ hiddenInput("#{baseInputName}[type]", block.getType().handle) }}
 
                 <table class="superTable-table superTable-layout-row">

@@ -154,6 +154,13 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     public $sortOrder;
 
     /**
+     * @var bool Whether the block has changed.
+     * @internal
+     * @since 2.4.0
+     */
+    public $dirty = false;
+
+    /**
      * @var bool Collapsed
      */
     public $collapsed = false;

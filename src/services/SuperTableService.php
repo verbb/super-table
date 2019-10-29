@@ -778,14 +778,33 @@ class SuperTableService extends Component
         /** @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
         /** @var SuperTableBlockElement[] $blocks */
-        $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
+        if (($blocks = $query->getCachedResult()) !== null) {
+            $saveAll = false;
+        } else {
+            $blocks = (clone $query)->anyStatus()->all();
+            $saveAll = true;
+        }
         $blockIds = [];
+        $sortOrder = 0;
+        $db = Craft::$app->getDb();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             foreach ($blocks as $block) {
-                $block->ownerId = $owner->id;
-                $elementsService->saveElement($block, false);
+                $sortOrder++;
+                if ($saveAll || !$block->id || $block->dirty) {
+                    $block->ownerId = $owner->id;
+                    $block->sortOrder = $sortOrder;
+                    $elementsService->saveElement($block);
+                } else if ((int)$block->sortOrder !== $sortOrder) {
+                    // Just update its sortOrder
+                    $block->sortOrder = $sortOrder;
+                    $db->createCommand()->update('{{%supertableblocks}}',
+                        ['sortOrder' => $sortOrder],
+                        ['id' => $block->id], [], false)
+                        ->execute();
+                }
+
                 $blockIds[] = $block->id;
             }
 
