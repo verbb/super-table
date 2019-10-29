@@ -8,14 +8,15 @@
                 {% set totalNewBlocks = totalNewBlocks + 1 %}
                 {% set blockId = 'new' ~ totalNewBlocks %}
             {% endif %}
+            {% set baseInputName = "#{name}[#{blockId}]" %}
 
             <div class="superTableRow" data-id="{{ blockId }}">
-                <input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
+                {{ hiddenInput("#{baseInputName}[type]", block.getType().handle) }}
 
                 <table class="superTable-table superTable-layout-row">
                     <tbody>
                         {% include "super-table/row/fields" with {
-                            namespace: name ~ '[' ~ blockId ~ '][fields]',
+                            namespace: "#{baseInputName}[fields]",
                             element: block,
                             fields: block.getType().getFieldLayout().getFields(),
                             settings: supertableField,
