@@ -1,3 +1,5 @@
+{% from '_includes/forms' import field %}
+
 {% set static = static is defined ? static : false %}
 {% set element = element is defined ? element : null %}
 
@@ -33,7 +35,7 @@
 {% endif %}
 
 {% if instructions or input %}
-    {% embed "_includes/forms/field" with {
+    {{ field({
         label: field.name|t('site')|e,
         translatable: translatable,
         translationDescription: translationDescription ?? null,
@@ -42,9 +44,15 @@
         instructions: instructions|e,
         id: field.handle,
         errors: errors,
-        input: input,
-        fieldType: className(field),
-    } only %}
-        {% block attr %}data-type="{{ fieldType }}"{% endblock %}
-    {% endembed %}
+        fieldAttributes: {
+            data: {
+                type: className(field),
+            },
+        },
+        inputAttributes: {
+            data: {
+                'delta-container': true,
+            },
+        },
+    }, input) }}
 {% endif %}
