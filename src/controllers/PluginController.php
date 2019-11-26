@@ -27,6 +27,9 @@ class PluginController extends Controller
 
     public function actionSettings()
     {
+        $view = $this->getView();
+        $view->setTemplateMode($view::TEMPLATE_MODE_CP);
+
         return $this->renderTemplate('super-table/plugin-settings', [
             'settings' => true,
             'checking' => true,
@@ -95,6 +98,9 @@ class PluginController extends Controller
 
         $output .= '<br>Field re-saving complete.';
 
+        $view = $this->getView();
+        $view->setTemplateMode($view::TEMPLATE_MODE_CP);
+
         return $this->renderTemplate('super-table/plugin-settings', [
             'resaving' => true,
             'resaveOutput' => $output,
@@ -123,6 +129,9 @@ class PluginController extends Controller
         $output = nl2br($output);
 
         $output .= '<br>Fixes complete.';
+
+        $view = $this->getView();
+        $view->setTemplateMode($view::TEMPLATE_MODE_CP);
 
         return $this->renderTemplate('super-table/plugin-settings', [
             'checking' => true,
@@ -348,6 +357,9 @@ class PluginController extends Controller
         if (!$errors) {
             $output .= 'No errors found.';
         }
+
+        $view = $this->getView();
+        $view->setTemplateMode($view::TEMPLATE_MODE_CP);
 
         return $this->renderTemplate('super-table/plugin-settings', [
             'checking' => true,
