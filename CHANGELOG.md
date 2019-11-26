@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.3.1 - 2019-11-27
+
+### Fixed
+- Fix matrix layout in some instances.
+- Ensure search keywords is checked by default.
+- Fix being unable to query ST fields directly.
+- Fix up GraphQL.
+- Fix width settings not saving correctly for project config.
+- Fix template mode for checker/fixers, producing 404 errors on direct-access.
+
 ## 2.3.0 - 2019-09-11
 
 ### Added
