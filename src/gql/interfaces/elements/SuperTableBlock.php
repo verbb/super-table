@@ -26,22 +26,20 @@ class SuperTableBlock extends Element
      */
     public static function getType($fields = null): Type
     {
-        if ($type = GqlEntityRegistry::getEntity(self::class)) {
+        if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
+        $type = GqlEntityRegistry::createEntity(self::getName(), new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
-            'description' => 'This is the interface implemented by all superTable blocks.',
+            'description' => 'This is the interface implemented by all Super Table blocks.',
             'resolveType' => function (SuperTableBlockElement $value) {
-                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+                return $value->getGqlTypeName();
             }
         ]));
 
-        foreach (SuperTableBlockType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        SuperTableBlockType::generateTypes();
 
         return $type;
     }
@@ -62,22 +60,22 @@ class SuperTableBlock extends Element
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::int(),
-                'description' => 'The ID of the field that owns the superTable block.'
+                'description' => 'The ID of the field that owns the Super Table block.'
             ],
             'ownerId' => [
                 'name' => 'ownerId',
                 'type' => Type::int(),
-                'description' => 'The ID of the element that owns the superTable block.'
+                'description' => 'The ID of the element that owns the Super Table block.'
             ],
             'typeId' => [
                 'name' => 'typeId',
                 'type' => Type::int(),
-                'description' => 'The ID of the superTable block\'s type.'
+                'description' => 'The ID of the Super Table block\'s type.'
             ],
             'sortOrder' => [
                 'name' => 'sortOrder',
                 'type' => Type::int(),
-                'description' => 'The sort order of the superTable block within the owner element field.'
+                'description' => 'The sort order of the Super Table block within the owner element field.'
             ],
         ]);
     }

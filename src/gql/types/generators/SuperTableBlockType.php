@@ -46,12 +46,19 @@ class SuperTableBlockType implements GeneratorInterface
                 $blockTypeFields = array_merge(SuperTableBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
                 // Generate a type for each entry type
-                $entity = GqlEntityRegistry::createEntity($typeName, new SuperTableBlock([
-                    'name' => $typeName,
-                    'fields' => function() use ($blockTypeFields) {
-                        return $blockTypeFields;
-                    }
-                ]));
+                $entity = GqlEntityRegistry::getEntity($typeName);
+
+                if (!$entity) {
+                    $entity = new SuperTableBlock([
+                        'name' => $typeName,
+                        'fields' => function() use ($blockTypeFields) {
+                            return $blockTypeFields;
+                        }
+                    ]);
+
+                    // It's possible that creating the matrix block triggered creating all matrix block types, so check again.
+                    $entity = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, $entity);
+                }
             }
 
             $gqlTypes[$typeName] = $entity;

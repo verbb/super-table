@@ -784,7 +784,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $typeArray = SuperTableBlockTypeGenerator::generateTypes($this);
         $typeName = $this->handle . '_SuperTableField';
         $resolver = function (SuperTableBlockElement $value) {
-            return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+            return $value->getGqlTypeName();
         };
         
         return [
