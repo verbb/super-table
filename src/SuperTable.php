@@ -33,7 +33,7 @@ class SuperTable extends Plugin
     // Public Properties
     // =========================================================================
 
-    public $schemaVersion = '2.2.0';
+    public $schemaVersion = '2.2.1';
     public $hasCpSettings = true;
 
     // Traits

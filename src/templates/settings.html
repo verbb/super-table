@@ -90,10 +90,10 @@
                                 {{ forms.textField({
                                     label: "Column Width" | t('super-table'),
                                     instructions: "Only applies for Table Layout. Set the width for this column in either pixels or percentage. i.e. `10px` or `10%`." | t('super-table'),
-                                    id: 'columns-' ~ fieldId ~ '-width',
-                                    name: 'columns[' ~ fieldId ~ '][width]',
+                                    id: 'columns-' ~ field.uid ~ '-width',
+                                    name: 'columns[' ~ field.uid ~ '][width]',
                                     size: 8,
-                                    value: supertableField.columns[fieldId].width ?? '',
+                                    value: supertableField.columns[field.uid].width ?? '',
                                 }) }}
 
                                 {% namespace 'blockTypes[' ~ blockTypeId ~ '][fields][' ~ fieldId ~ ']' %}
