@@ -33,7 +33,7 @@ class SuperTableVariable
     *       targetElement: entry,
     *       field: 'superTableFieldHandle.columnHandle',
     *   },
-    *   ownerSite: 'siteHandle',
+    *   site: 'siteHandle',
     *   elementType: 'craft\\elements\\Entry',
     *   criteria: {
     *       id: 'not 123',
@@ -88,9 +88,9 @@ class SuperTableVariable
             'relatedTo' => $params['relatedTo']
         ];
 
-        // Check for ownerSite param add to blockCriteria
-        if (isset($params['ownerSite'])) {
-            $blockCriteria['ownerSite'] = $params['ownerSite'];
+        // Check for site param add to blockCriteria
+        if (isset($params['site'])) {
+            $blockCriteria['site'] = $params['site'];
         }
 
         Craft::configure($blockQuery, $blockCriteria);
