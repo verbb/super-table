@@ -10,9 +10,11 @@ class m190714_000000_propagation_method extends Migration
 {
     public function safeUp()
     {
-        MigrationHelper::dropForeignKeyIfExists('{{%supertableblocks}}', ['ownerSiteId'], $this);
-        MigrationHelper::dropIndexIfExists('{{%supertableblocks}}', ['ownerSiteId'], false, $this);
-        $this->dropColumn('{{%supertableblocks}}', 'ownerSiteId');
+        if ($this->db->columnExists('{{%supertableblocks}}', 'ownerSiteId')) {
+            MigrationHelper::dropForeignKeyIfExists('{{%supertableblocks}}', ['ownerSiteId'], $this);
+            MigrationHelper::dropIndexIfExists('{{%supertableblocks}}', ['ownerSiteId'], false, $this);
+            $this->dropColumn('{{%supertableblocks}}', 'ownerSiteId');
+        }
     }
 
     public function safeDown()
