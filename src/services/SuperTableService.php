@@ -347,13 +347,13 @@ class SuperTableService extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
-        try {
-            // Store the current contexts.
-            $originalContentTable = $contentService->contentTable;
-            $originalFieldContext = $contentService->fieldContext;
-            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-            $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
+        // Store the current contexts.
+        $originalContentTable = $contentService->contentTable;
+        $originalFieldContext = $contentService->fieldContext;
+        $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+        $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
 
+        try {
             // Get the block type record
             $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
@@ -367,54 +367,60 @@ class SuperTableService extends Component
 
             /** @var SuperTableField $superTableField */
             $superTableField = $fieldsService->getFieldById($blockTypeRecord->fieldId);
-            $contentService->contentTable = $superTableField->contentTable;
-            $fieldsService->oldFieldColumnPrefix = 'field_';
 
-            $oldFields = $previousData['fields'] ?? [];
-            $newFields = $data['fields'] ?? [];
+            // Ignore it, if the parent field is not a SuperTable field.
+            if ($superTableField instanceof SuperTableField) {
+                $contentService->contentTable = $superTableField->contentTable;
+                $fieldsService->oldFieldColumnPrefix = 'field_';
 
-            // Remove fields that this block type no longer has
-            foreach ($oldFields as $fieldUid => $fieldData) {
-                if (!array_key_exists($fieldUid, $newFields)) {
-                    $fieldsService->applyFieldDelete($fieldUid);
+                $oldFields = $previousData['fields'] ?? [];
+                $newFields = $data['fields'] ?? [];
+
+                // Remove fields that this block type no longer has
+                foreach ($oldFields as $fieldUid => $fieldData) {
+                    if (!array_key_exists($fieldUid, $newFields)) {
+                        $fieldsService->applyFieldDelete($fieldUid);
+                    }
                 }
+
+                // (Re)save all the fields that now exist for this block.
+                foreach ($newFields as $fieldUid => $fieldData) {
+                    $fieldsService->applyFieldSave($fieldUid, $fieldData, 'superTableBlockType:' . $blockTypeUid);
+                }
+
+                // Refresh the schema cache
+                Craft::$app->getDb()->getSchema()->refresh();
+
+                if (!empty($data['fieldLayouts'])) {
+                    // Save the field layout
+                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                    $layout->id = $blockTypeRecord->fieldLayoutId;
+                    $layout->type = SuperTableBlockElement::class;
+                    $layout->uid = key($data['fieldLayouts']);
+
+                    $fieldsService->saveLayout($layout);
+                    $blockTypeRecord->fieldLayoutId = $layout->id;
+                } else if ($blockTypeRecord->fieldLayoutId) {
+                    // Delete the field layout
+                    $fieldsService->deleteLayoutById($blockTypeRecord->fieldLayoutId);
+                    $blockTypeRecord->fieldLayoutId = null;
+                }
+
+                // Save it
+                $blockTypeRecord->save(false);
             }
 
-            // (Re)save all the fields that now exist for this block.
-            foreach ($newFields as $fieldUid => $fieldData) {
-                $fieldsService->applyFieldSave($fieldUid, $fieldData, 'superTableBlockType:' . $blockTypeUid);
-            }
-
-            // Refresh the schema cache
-            Craft::$app->getDb()->getSchema()->refresh();
-
-            $contentService->fieldContext = $originalFieldContext;
-            $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-            $contentService->contentTable = $originalContentTable;
-            $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
-
-            if (!empty($data['fieldLayouts'])) {
-                // Save the field layout
-                $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
-                $layout->id = $blockTypeRecord->fieldLayoutId;
-                $layout->type = SuperTableBlockElement::class;
-                $layout->uid = key($data['fieldLayouts']);
-
-                $fieldsService->saveLayout($layout);
-                $blockTypeRecord->fieldLayoutId = $layout->id;
-            } else if ($blockTypeRecord->fieldLayoutId) {
-                // Delete the field layout
-                $fieldsService->deleteLayoutById($blockTypeRecord->fieldLayoutId);
-                $blockTypeRecord->fieldLayoutId = null;
-            }
-
-            // Save it
-            $blockTypeRecord->save(false);
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
+
+        // Restore the previous contexts.
+        $contentService->fieldContext = $originalFieldContext;
+        $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+        $contentService->contentTable = $originalContentTable;
+        $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
         // Clear caches
         unset(
