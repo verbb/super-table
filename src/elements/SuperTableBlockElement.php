@@ -39,9 +39,25 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('super-table', 'SuperTable block');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('super-table', 'SuperTable Blocks');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('super-table', 'SuperTable blocks');
     }
 
     /**
