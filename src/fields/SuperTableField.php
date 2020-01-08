@@ -6,6 +6,7 @@ use verbb\supertable\elements\db\SuperTableBlockQuery;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\models\SuperTableBlockTypeModel;
 use verbb\supertable\assetbundles\SuperTableAsset;
+use verbb\supertable\queue\jobs\ApplySuperTablePropagationMethod;
 
 use verbb\supertable\gql\arguments\elements\SuperTableBlock as SuperTableBlockArguments;
 use verbb\supertable\gql\resolvers\elements\SuperTableBlock as SuperTableBlockResolver;
@@ -869,15 +870,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         // If the propagation method just changed, resave all the SuperTable blocks
         if ($this->_oldPropagationMethod && $this->propagationMethod !== $this->_oldPropagationMethod) {
-            Craft::$app->getQueue()->push(new ResaveElements([
-                'elementType' => SuperTableBlockElement::class,
-                'criteria' => [
-                    'fieldId' => $this->id,
-                    'siteId' => '*',
-                    'unique' => true,
-                    'status' => null,
-                    'enabledForSite' => false,
-                ]
+            Craft::$app->getQueue()->push(new ApplySuperTablePropagationMethod([
+                'fieldId' => $this->id,
+                'oldPropagationMethod' => $this->_oldPropagationMethod,
+                'newPropagationMethod' => $this->propagationMethod,
             ]));
 
             $this->_oldPropagationMethod = null;

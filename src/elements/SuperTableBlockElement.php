@@ -224,7 +224,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return SuperTable::$plugin->getService()->getSupportedSiteIdsForField($this->_field(), $owner);
+        return SuperTable::$plugin->getService()->getSupportedSiteIds($this->_field()->propagationMethod, $owner);
     }
 
     /**

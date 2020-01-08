@@ -209,7 +209,6 @@
     {{ forms.selectField({
         label: 'Propagation Method' | t('app'),
         instructions: 'Which sites should blocks be saved to?' | t('app'),
-        warning: supertableField.id and supertableField.propagationMethod != 'none' ? 'Changing this may result in data loss.' | t('app'),
         id: 'propagationMethod',
         name: 'propagationMethod',
         options: [
@@ -220,6 +219,26 @@
         ],
         value: supertableField.propagationMethod
     }) }}
+
+    {% if supertableField.id and supertableField.propagationMethod != 'none' %}
+        {% js %}
+            (function() {
+                var showingWarning = false;
+                $("#{{ 'propagationMethod' | namespaceInputId }}").on('change', function() {
+                    if ($(this).val() !== '{{ supertableField.propagationMethod }}') {
+                        if (!showingWarning) {
+                            $('<p/>', {'class': 'warning', text: "{{ 'Applying this change to existing blocks can take some time.' | t('app') | e('js') }}"})
+                                .appendTo($("#{{ 'propagationMethod-field' | namespaceInputId }}"));
+                            showingWarning = true;
+                        }
+                    } else if (showingWarning) {
+                        $("#{{ 'propagationMethod-field' | namespaceInputId }} .warning").remove();
+                        showingWarning = false;
+                    }
+                });
+            })();
+        {% endjs %}
+    {% endif %}
 {% endif %}
 
 {{ forms.textField({
