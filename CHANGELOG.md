@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.3.2 - 2020-01-09
+
+### Added
+- Added `verbb\supertable\queue\jobs\ApplySuperTablePropagationMethod`.
+- Added `verbb\supertable\services\SuperTableService::getSupportedSiteIds()`.
+
+### Changed
+- When a Super Table field’s Propagation Method setting changes, the field’s blocks are now duplicated into any sites where their content would have otherwise been deleted.
+
+### Deprecated
+- Deprecated `verbb\supertable\services\SuperTableService::getSupportedSiteIdsForField()`. `getSupportedSiteIds()` should be used instead.
+
+### Fixed
+- Fixed an error that could occur when syncing the project config, that could occur if a Super Table block had been changed to something else.
+- Fixed a bug where importing project config changes would break if they contained a changed global set and orphaned Super Table block types.
+- Fixed an error that could occur when saving a Super Table field.
+
 ## 2.3.1 - 2019-11-27
 
 ### Fixed
