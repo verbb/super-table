@@ -25,7 +25,8 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.3.1.1"
+        "craftcms/cms": "^3.4.0-RC1",
+        "verbb/base": "^1.0.0"
     },
     "repositories": [
         {

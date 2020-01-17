@@ -292,12 +292,16 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             'typesettings' => null,
         ];
 
+        // Craft::dd('test');
+
         foreach ($blockTypes as $key => $config) {
             if ($config instanceof SuperTableBlockTypeModel) {
                 $this->_blockTypes[] = $config;
             } else {
                 $blockType = new SuperTableBlockTypeModel();
                 $blockType->fieldId = $this->id;
+
+                // Craft::dd($key);
 
                 // Existing block type?
                 if (is_numeric($key)) {
