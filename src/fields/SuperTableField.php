@@ -140,11 +140,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     private $_blockTypeFields;
 
     /**
-     * @var string The old propagation method for this field
-     */
-    private $_oldPropagationMethod;
-
-    /**
      * @var bool Whether this field is a Static type layout
      */
     public $staticField;
@@ -193,9 +188,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [
             ['propagationMethod'], 'in', 'range' => [
                 self::PROPAGATION_METHOD_NONE,
@@ -854,7 +849,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
             if ($oldField instanceof self) {
                 $this->contentTable = $oldField->contentTable;
-                $this->_oldPropagationMethod = $oldField->propagationMethod;
             }
         }
 
@@ -871,14 +865,16 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         SuperTable::$plugin->getService()->saveSettings($this, false);
 
         // If the propagation method just changed, resave all the SuperTable blocks
-        if ($this->_oldPropagationMethod && $this->propagationMethod !== $this->_oldPropagationMethod) {
-            Craft::$app->getQueue()->push(new ApplySuperTablePropagationMethod([
-                'fieldId' => $this->id,
-                'oldPropagationMethod' => $this->_oldPropagationMethod,
-                'newPropagationMethod' => $this->propagationMethod,
-            ]));
-
-            $this->_oldPropagationMethod = null;
+        if ($this->oldSettings !== null) {
+            $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
+            
+            if ($this->propagationMethod !== $oldPropagationMethod) {
+                Craft::$app->getQueue()->push(new ApplySuperTablePropagationMethod([
+                    'fieldId' => $this->id,
+                    'oldPropagationMethod' => $oldPropagationMethod,
+                    'newPropagationMethod' => $this->propagationMethod,
+                ]));
+            }
         }
 
         parent::afterSave($isNew);
