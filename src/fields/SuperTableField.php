@@ -600,33 +600,25 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         Craft::$app->getView()->registerAssetBundle(SuperTableAsset::class);
 
-        Craft::$app->getView()->registerJs('new Craft.SuperTable.Input('.
+        $js = 'var superTableInput = new Craft.SuperTable.Input('.
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
             Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE).', '.
             '"'.Craft::$app->getView()->namespaceInputName($this->handle).'", '.
             Json::encode($this, JSON_UNESCAPED_UNICODE).
-            ');');
+            ');';
 
-        // Safe to set the default blocks?
+        // Safe to create the default blocks?
         if ($createDefaultBlocks || $this->staticField) {
-            $blockType = $this->getBlockTypes()[0];
+            $blockTypeJs = Json::encode($this->getBlockTypes()[0]);
 
             $minRows = ($this->staticField) ? 1 : $this->minRows;
 
             for ($i = count($value); $i < $minRows; $i++) {
-                $block = new SuperTableBlockElement();
-                $block->fieldId = $this->id;
-                $block->typeId = $blockType->id;
-                $block->siteId = $element->siteId ?? Craft::$app->getSites()->getCurrentSite()->id;
-
-                // Set each field to be fresh for auto-generated or static rows
-                foreach ($blockType->getFieldLayout()->getFields() as $field) {
-                    $field->setIsFresh(true);
-                }
-
-                $value[] = $block;
+                $js .= "\nsuperTableInput.addBlock({$blockTypeJs});";
             }
         }
+
+        Craft::$app->getView()->registerJs($js);
 
         return Craft::$app->getView()->renderTemplate('super-table/input', [
             'id' => $id,

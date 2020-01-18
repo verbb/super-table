@@ -20,17 +20,23 @@ if (typeof Craft.SuperTable === typeof undefined) {
         $tbody: null,
         $addRowBtn: null,
 
+        $field: null,
+
         init: function(id, blockType, inputNamePrefix, settings) {
             blockType = blockType[0];
 
             if (settings.fieldLayout == 'table') {
-                new Craft.SuperTable.InputTable(id, blockType, inputNamePrefix, settings);
+                this.$field = new Craft.SuperTable.InputTable(id, blockType, inputNamePrefix, settings);
             } else if (settings.fieldLayout == 'matrix') {
-                new Craft.SuperTable.InputMatrix(id, blockType, inputNamePrefix, settings);
+                this.$field = new Craft.SuperTable.InputMatrix(id, blockType, inputNamePrefix, settings);
             } else {
-                new Craft.SuperTable.InputRow(id, blockType, inputNamePrefix, settings);
+                this.$field = new Craft.SuperTable.InputRow(id, blockType, inputNamePrefix, settings);
             }
-        }
+        },
+
+        addBlock: function() {
+            this.$field.addRow();
+        },
     });
 
     Craft.SuperTable.InputTable = Garnish.Base.extend({
