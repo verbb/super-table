@@ -34,7 +34,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
             }
         },
 
-        addBlock: function() {
+        addRow: function() {
             this.$field.addRow();
         },
     });
