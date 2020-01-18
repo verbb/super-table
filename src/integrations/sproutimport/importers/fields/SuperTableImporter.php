@@ -7,6 +7,10 @@ use barrelstrength\sproutbase\app\import\base\FieldImporter;
 use barrelstrength\sproutimport\SproutImport;
 use verbb\supertable\fields\SuperTableField;
 
+if (!class_exists(FieldImporter::class)) {
+    return;
+}
+
 class SuperTableImporter extends FieldImporter
 {
     /**
