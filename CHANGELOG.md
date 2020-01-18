@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.3 - 2020-01-19
+
+### Fixed
+- Fix webhooks incompatibility.
+- Remove `SuperTableBlockNotFoundException` class.
+
 ## 2.3.2 - 2020-01-09
 
 ### Added
