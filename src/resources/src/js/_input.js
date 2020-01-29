@@ -106,7 +106,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
             var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
                 footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
 
-            var html = '<tr data-id="' + id + '">' +
+            var html = '<tr data-id="' + id + '" data-type="' + type + '">' +
                 '<input type="hidden" name="' + this.inputNamePrefix + '[sortOrder][]" value="' + id + '" />' +
                 '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id + '][type]" value="' + type + '" />' +
                 '' + bodyHtml + '' +
@@ -239,17 +239,17 @@ if (typeof Craft.SuperTable === typeof undefined) {
             var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
                 footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
 
-            var html = '<div class="superTableRow" data-id="'+id+'">' +
-                '<input type="hidden" name="'+this.inputNamePrefix+'[sortOrder][]" value="'+id+'">' +
-                '<input type="hidden" name="'+this.inputNamePrefix+'[blocks]['+id+'][type]" value="'+type+'">' +
-                '<table id="'+id+'" class="superTable-table superTable-layout-row">' +
+            var html = '<div class="superTableRow" data-id="' + id + '" data-type="' + type + '">' +
+                '<input type="hidden" name="' + this.inputNamePrefix + '[sortOrder][]" value="' + id + '">' +
+                '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id  +'][type]" value="' + type + '">' +
+                '<table id="' + id + '" class="superTable-table superTable-layout-row">' +
                 '<tbody>' +
                 '' + bodyHtml + '' +
                 '</tbody>' +
                 '<tfoot>' +
                 '<tr>' +
-                '<td class="floating reorder"><a class="move icon" title="'+Craft.t('super-table', 'Reorder')+'"></a></td>' +
-                '<td class="floating delete"><a class="delete icon" title="'+Craft.t('super-table', 'Delete')+'"></a></td>' +
+                '<td class="floating reorder"><a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a></td>' +
+                '<td class="floating delete"><a class="delete icon" title="' + Craft.t('super-table', 'Delete') + '"></a></td>' +
                 '</tr>' +
                 '</tfoot>' +
                 '</table>' +
@@ -445,31 +445,31 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
             this.totalNewBlocks++;
 
-            var id = 'new'+this.totalNewBlocks;
+            var id = 'new'+ this.totalNewBlocks;
 
             var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
                 footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
 
             var html = '<div class="superTableMatrix matrixblock" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %}>' +
-                '<input type="hidden" name="'+this.inputNamePrefix+'[sortOrder][]" value="'+id+'">' +
-                '<input type="hidden" name="'+this.inputNamePrefix+'[blocks]['+id+'][type]" value="'+type+'">' +
+                '<input type="hidden" name="' + this.inputNamePrefix + '[sortOrder][]" value="' + id + '">' +
+                '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id + '][type]" value="' + type + '">' +
                 '<div class="titlebar">' +
                 '<div class="blocktype"></div>' +
                 '<div class="preview"></div>' +
                 '</div>' +
                 '<div class="actions">' +
-                '<a class="settings icon menubtn" title="'+Craft.t('app', 'Actions')+'" role="button"></a>' +
+                '<a class="settings icon menubtn" title="' + Craft.t('app', 'Actions') + '" role="button"></a>' +
                 '<div class="menu">' +
                 '<ul class="padded">' +
-                '<li><a data-icon="collapse" data-action="collapse">'+Craft.t('app', 'Collapse')+'</a></li>' +
-                '<li class="hidden"><a data-icon="expand" data-action="expand">'+Craft.t('app', 'Expand')+'</a></li>' +
+                '<li><a data-icon="collapse" data-action="collapse">' + Craft.t('app', 'Collapse') + '</a></li>' +
+                '<li class="hidden"><a data-icon="expand" data-action="expand">' + Craft.t('app', 'Expand') + '</a></li>' +
                 '</ul>' +
                 '<hr class="padded">' +
                 '<ul class="padded">' +
-                '<li><a class="error" data-icon="remove" data-action="delete">'+Craft.t('super-table', 'Delete')+'</a></li>' +
+                '<li><a class="error" data-icon="remove" data-action="delete">' + Craft.t('super-table', 'Delete') + '</a></li>' +
                 '</ul>' +
                 '</div>' +
-                '<a class="move icon" title="'+Craft.t('super-table', 'Reorder')+'" role="button"></a>' +
+                '<a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '" role="button"></a>' +
                 '</div>' +
                 '<div class="fields">' + bodyHtml + '</div>' +
                 '</div>';
@@ -738,8 +738,9 @@ if (typeof Craft.SuperTable === typeof undefined) {
             this.$tr.height('auto');
             this.$fieldsContainer.show();
             var expandedContainerHeight = this.$tr.height();
+            var displayValue = this.$fieldsContainer.css('display') || 'block';
             this.$tr.height(collapsedContainerHeight);
-            this.$fieldsContainer.hide().velocity('fadeIn', {duration: 'fast'});
+            this.$fieldsContainer.hide().velocity('fadeIn', {duration: 'fast', display: displayValue});
             this.$tr.velocity({height: expandedContainerHeight}, 'fast', $.proxy(function() {
                 this.$previewContainer.html('');
                 this.$tr.height('auto');
