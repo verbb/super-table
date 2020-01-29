@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.1 - 2020-01-30
+
+### Fixed
+- Fix Craft 3.4 issues.
+
 ## 2.4.0 - 2020-01-29
 
 ### Added
