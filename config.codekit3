@@ -204,6 +204,14 @@
 		"oAP": "/build/src/models",
 		"oF": 0
 		},
+	"/src/queue/jobs/ApplySuperTablePropagationMethod.php": {
+		"cB": 0,
+		"ft": 8192,
+		"hM": 0,
+		"oA": 2,
+		"oAP": "/src/queue/jobs/ApplySuperTablePropagationMethod.php",
+		"oF": 0
+		},
 	"/src/records": {
 		"ft": 65536,
 		"oA": 1,

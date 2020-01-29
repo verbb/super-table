@@ -5,6 +5,8 @@ use Craft;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
+use verbb\base\assetbundles\CpAsset as VerbbCpAsset;
+
 class SuperTableAsset extends AssetBundle
 {
     // Public Methods
@@ -15,6 +17,7 @@ class SuperTableAsset extends AssetBundle
         $this->sourcePath = "@verbb/supertable/resources/dist";
 
         $this->depends = [
+            VerbbCpAsset::class,
             CpAsset::class,
         ];
 

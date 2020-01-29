@@ -311,7 +311,8 @@ class SuperTableService extends Component
         ];
 
         $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save super table block type for parent field “{$parentField->handle}”");
+
 
         if ($isNewBlockType) {
             $blockType->id = Db::idByUid('{{%supertableblocktypes}}', $blockType->uid);
@@ -438,7 +439,7 @@ class SuperTableService extends Component
      */
     public function deleteBlockType(SuperTableBlockTypeModel $blockType): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid, "Delete super table block type for parent field “{$blockType->getField()->handle}”");
 
         return true;
     }
@@ -491,35 +492,39 @@ class SuperTableService extends Component
 
             /** @var SuperTableField $superTableField */
             $superTableField = $fieldsService->getFieldById($blockType->fieldId);
-            $contentService->contentTable = $superTableField->contentTable;
+            
+            // Ignore it, if the parent field is not a Super Table field.
+            if ($superTableField instanceof SuperTableField) {
+                $contentService->contentTable = $superTableField->contentTable;
 
-            // Set the new fieldColumnPrefix
-            $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
-            Craft::$app->getContent()->fieldColumnPrefix = 'field_';
+                // Set the new fieldColumnPrefix
+                $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
+                Craft::$app->getContent()->fieldColumnPrefix = 'field_';
 
-            // Now delete the block type fields
-            foreach ($blockType->getFields() as $field) {
-                Craft::$app->getFields()->deleteField($field);
+                // Now delete the block type fields
+                foreach ($blockType->getFields() as $field) {
+                    Craft::$app->getFields()->deleteField($field);
+                }
+
+                // Restore the contentTable and the fieldColumnPrefix to original values.
+                Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
+                $contentService->contentTable = $originalContentTable;
+
+                // Delete the field layout
+                $fieldLayoutId = (new Query())
+                    ->select(['fieldLayoutId'])
+                    ->from(['{{%supertableblocktypes}}'])
+                    ->where(['id' => $blockTypeRecord->id])
+                    ->scalar();
+
+                // Delete the field layout
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+
+                // Finally delete the actual block type
+                $db->createCommand()
+                    ->delete('{{%supertableblocktypes}}', ['id' => $blockTypeRecord->id])
+                    ->execute();
             }
-
-            // Restore the contentTable and the fieldColumnPrefix to original values.
-            Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
-            $contentService->contentTable = $originalContentTable;
-
-            // Delete the field layout
-            $fieldLayoutId = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from(['{{%supertableblocktypes}}'])
-                ->where(['id' => $blockTypeRecord->id])
-                ->scalar();
-
-            // Delete the field layout
-            Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-
-            // Finally delete the actual block type
-            $db->createCommand()
-                ->delete('{{%supertableblocktypes}}', ['id' => $blockTypeRecord->id])
-                ->execute();
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -622,24 +627,24 @@ class SuperTableService extends Component
                 // Delete the old block types first, in case there's a handle conflict with one of the new ones
                 $oldBlockTypes = $this->getBlockTypesByFieldId($supertableField->id);
                 $oldBlockTypesById = [];
-                
+
                 foreach ($oldBlockTypes as $blockType) {
                     $oldBlockTypesById[$blockType->id] = $blockType;
                 }
-                
+
                 foreach ($supertableField->getBlockTypes() as $blockType) {
                     if (!$blockType->getIsNew()) {
                         unset($oldBlockTypesById[$blockType->id]);
                     }
                 }
-                
+
                 foreach ($oldBlockTypesById as $blockType) {
                     $this->deleteBlockType($blockType);
                 }
-                
+
                 $originalContentTable = Craft::$app->getContent()->contentTable;
                 Craft::$app->getContent()->contentTable = $supertableField->contentTable;
-                
+
                 foreach ($supertableField->getBlockTypes() as $blockType) {
                     $blockType->fieldId = $supertableField->id;
                     $this->saveBlockType($blockType, false);
@@ -743,7 +748,7 @@ class SuperTableService extends Component
                     $parentFieldId = Db::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
                 }
             }
-        
+
             if ($parentFieldId) {
                 $baseName = 'stc_' . $parentFieldId . '_' . strtolower($field->handle);
             }
@@ -772,28 +777,45 @@ class SuperTableService extends Component
     /**
      * Saves a Super Table field.
      *
-     * @param SuperTableField      $field The Super Table field
+     * @param SuperTableField  $field The Super Table field
      * @param ElementInterface $owner The element the field is associated with
-     * @param bool $checkOtherSites Whether to check other sites if the owner was just duplicated
      *
      * @throws \Throwable if reasons
      */
-    public function saveField(SuperTableField $field, ElementInterface $owner, $checkOtherSites = false)
+    public function saveField(SuperTableField $field, ElementInterface $owner)
     {
         /** @var Element $owner */
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
         /** @var SuperTableBlockElement[] $blocks */
-        $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
+        if (($blocks = $query->getCachedResult()) !== null) {
+            $saveAll = false;
+        } else {
+            $blocks = (clone $query)->anyStatus()->all();
+            $saveAll = true;
+        }
         $blockIds = [];
-        $collapsedBlockIds = [];
+        $sortOrder = 0;
+        $db = Craft::$app->getDb();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             foreach ($blocks as $block) {
-                $block->ownerId = $owner->id;
-                $elementsService->saveElement($block, false);
+                $sortOrder++;
+                if ($saveAll || !$block->id || $block->dirty) {
+                    $block->ownerId = $owner->id;
+                    $block->sortOrder = $sortOrder;
+                    $elementsService->saveElement($block);
+                } else if ((int)$block->sortOrder !== $sortOrder) {
+                    // Just update its sortOrder
+                    $block->sortOrder = $sortOrder;
+                    $db->createCommand()->update('{{%supertableblocks}}',
+                        ['sortOrder' => $sortOrder],
+                        ['id' => $block->id], [], false)
+                        ->execute();
+                }
+
                 $blockIds[] = $block->id;
             }
 
@@ -832,7 +854,7 @@ class SuperTableService extends Component
                     $cachedQuery = (clone $query)->anyStatus();
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
-                    
+
                     foreach ($otherTargets as $otherTarget) {
                         // Make sure we haven't already duplicated blocks for this site, via propagation from another site
                         if (isset($handledSiteIds[$otherTarget->siteId])) {

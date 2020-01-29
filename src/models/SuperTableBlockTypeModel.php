@@ -56,20 +56,22 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
      */
     public function behaviors()
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => SuperTableBlockElement::class
-            ],
+        $behaviors = parent::behaviors();
+
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => SuperTableBlockElement::class,
         ];
+
+        return $behaviors;
     }
 
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'fieldId'], 'number', 'integerOnly' => true];
 
         return $rules;

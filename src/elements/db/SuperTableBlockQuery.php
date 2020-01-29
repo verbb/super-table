@@ -19,16 +19,21 @@ use craft\models\Site;
 use yii\base\Exception;
 use yii\db\Connection;
 
+/**
+ * @method SuperTableBlockElement[]|array all($db = null)
+ * @method SuperTableBlockElement|array|null nth(int $n, Connection $db = null)
+ * @method SuperTableBlockElement|array|null one($db = null)
+ */
 class SuperTableBlockQuery extends ElementQuery
 {
     // Properties
     // =========================================================================
-    
+
     /**
      * @inheritdoc
      */
     protected $defaultOrderBy = ['supertableblocks.sortOrder' => SORT_ASC];
-    
+
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -52,7 +57,7 @@ class SuperTableBlockQuery extends ElementQuery
      * @var int|int[]|null The block type ID(s) that the resulting SuperTable blocks must have.
      */
     public $typeId;
-    
+
 
     // Public Methods
     // =========================================================================
