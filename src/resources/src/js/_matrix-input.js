@@ -224,8 +224,9 @@ Craft.SuperTable.MatrixInputAlt = Garnish.Base.extend({
 
         var html =
             '<div class="matrixblock" data-id="' + id + '" data-type="' + type + '">' +
-            '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][type]" value="' + type + '"/>' +
-            '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][enabled]" value="1"/>' +
+            '<input type="hidden" name="' + this.inputNamePrefix + '[sortOrder][]" value="' + id + '"/>' +
+            '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id + '][type]" value="' + type + '"/>' +
+            '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id + '][enabled]" value="1"/>' +
             '<div class="titlebar">' +
             '<div class="blocktype">' + this.getBlockTypeByHandle(type).name + '</div>' +
             '<div class="preview"></div>' +
@@ -295,6 +296,9 @@ Craft.SuperTable.MatrixInputAlt = Garnish.Base.extend({
             Garnish.requestAnimationFrame(function() {
                 // Scroll to the block
                 Garnish.scrollContainerToElement($block);
+
+                // Focus on the first text input
+                $block.find('.text:first').trigger('focus');
             });
         }, this));
     },

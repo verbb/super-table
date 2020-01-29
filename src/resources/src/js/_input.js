@@ -240,7 +240,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
                 footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
 
             var html = '<div class="superTableRow" data-id="'+id+'">' +
-                '<input type="hidden" name="'+this.inputNamePrefix+'[sortOrder]" value="'+id+'">' +
+                '<input type="hidden" name="'+this.inputNamePrefix+'[sortOrder][]" value="'+id+'">' +
                 '<input type="hidden" name="'+this.inputNamePrefix+'[blocks]['+id+'][type]" value="'+type+'">' +
                 '<table id="'+id+'" class="superTable-table superTable-layout-row">' +
                 '<tbody>' +
@@ -451,7 +451,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
                 footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
 
             var html = '<div class="superTableMatrix matrixblock" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %}>' +
-                '<input type="hidden" name="'+this.inputNamePrefix+'[sortOrder]" value="'+id+'">' +
+                '<input type="hidden" name="'+this.inputNamePrefix+'[sortOrder][]" value="'+id+'">' +
                 '<input type="hidden" name="'+this.inputNamePrefix+'[blocks]['+id+'][type]" value="'+type+'">' +
                 '<div class="titlebar">' +
                 '<div class="blocktype"></div>' +
