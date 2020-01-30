@@ -253,16 +253,16 @@ class SuperTableBlockQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on whether the Super Table blocks’ owners are drafts.
+     * Narrows the query results based on whether the Super Table blocks’ owners are revisions.
      *
      * @param bool|null $value The property value
      * @return static self reference
      * @uses $allowOwnerDrafts
      * @since 2.4.1
      */
-    public function allowOwnerDrafts($value = true)
+    public function allowOwnerRevisions($value = true)
     {
-        $this->allowOwnerDrafts = $value;
+        $this->allowOwnerRevisions = $value;
         return $this;
     }
 
