@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.4.2 - 2020-01-31
+
+### Fixed
+- Fix more Craft 3.4 issues.
+- Fixed a bug where fields weren’t always showing validation errors.
+- Fixed a bug where unsaved blocks could be lost if an entry was saved with validation errors, and any unsaved blocks weren’t modified before reattempting to save the entry.
+- Fixed a bug where it wasn’t possible to eager-load blocks on a draft.
+
 ## 2.4.1 - 2020-01-30
 
 ### Fixed
