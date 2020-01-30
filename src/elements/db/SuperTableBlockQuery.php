@@ -10,8 +10,9 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\db\Table;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\models\Site;
@@ -52,6 +53,20 @@ class SuperTableBlockQuery extends ElementQuery
      * @deprecated in 2.2.0
      */
     public $ownerSiteId;
+
+    /**
+     * @var bool|null Whether the owner elements can be drafts.
+     * @used-by allowOwnerDrafts()
+     * @since 2.4.2
+     */
+    public $allowOwnerDrafts;
+
+    /**
+     * @var bool|null Whether the owner elements can be revisions.
+     * @used-by allowOwnerRevisions()
+     * @since 2.4.2
+     */
+    public $allowOwnerRevisions;
 
     /**
      * @var int|int[]|null The block type ID(s) that the resulting SuperTable blocks must have.
@@ -111,6 +126,42 @@ class SuperTableBlockQuery extends ElementQuery
         }
 
         return parent::__call($name, $params);
+    }
+
+    /**
+     * Narrows the query results based on the field the Super Table blocks belong to.
+     *
+     * @param string|string[]|SuperTableField|null $value The property value
+     * @return static self reference
+     * @uses $fieldId
+     * @since 2.4.1
+     */
+    public function field($value)
+    {
+        if ($value instanceof SuperTableField) {
+            $this->fieldId = $value->id;
+        } else if (is_string($value) || (is_array($value) && count($value) === 1)) {
+            if (!is_string($value)) {
+                $value = reset($value);
+            }
+            $field = Craft::$app->getFields()->getFieldByHandle($value);
+            if ($field && $field instanceof SuperTableField) {
+                $this->fieldId = $field->id;
+            } else {
+                $this->fieldId = false;
+            }
+        } else if ($value !== null) {
+            $this->fieldId = (new Query())
+                ->select(['id'])
+                ->from([Table::FIELDS])
+                ->where(Db::parseParam('handle', $value))
+                ->andWhere(['type' => SuperTableField::class])
+                ->column();
+        } else {
+            $this->fieldId = null;
+        }
+
+        return $this;
     }
 
     /**
@@ -188,6 +239,34 @@ class SuperTableBlockQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on whether the Super Table blocks’ owners are drafts.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerDrafts
+     * @since 2.4.1
+     */
+    public function allowOwnerDrafts($value = true)
+    {
+        $this->allowOwnerDrafts = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on whether the Super Table blocks’ owners are drafts.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerDrafts
+     * @since 2.4.1
+     */
+    public function allowOwnerDrafts($value = true)
+    {
+        $this->allowOwnerDrafts = $value;
+        return $this;
+    }
+
+    /**
      * Sets the [[typeId]] property based on a given block type(s)’s id(s).
      *
      * @param string|string[]|SuperTableBlockType|null $value The property value
@@ -233,6 +312,10 @@ class SuperTableBlockQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if ($this->fieldId !== null && empty($this->fieldId)) {
+            throw new QueryAbortedException();
+        }
+
         $this->joinElementTable('supertableblocks');
 
         // Figure out which content table to use
@@ -283,14 +366,20 @@ class SuperTableBlockQuery extends ElementQuery
         }
 
         // Ignore revision/draft blocks by default
-        if (!$this->id && !$this->ownerId) {
+        $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->ownerId);
+        $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->ownerId);
+
+        if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
             // todo: we will need to expand on this when Super Table blocks can be nested.
-            $this->subQuery
-                ->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[supertableblocks.ownerId]]')
-                ->andWhere([
-                    'owners.draftId' => null,
-                    'owners.revisionId' => null,
-                ]);
+            $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[supertableblocks.ownerId]]');
+
+            if (!$allowOwnerDrafts) {
+                $this->subQuery->andWhere(['owners.draftId' => null]);
+            }
+
+            if (!$allowOwnerRevisions) {
+                $this->subQuery->andWhere(['owners.revisionId' => null]);
+            }
         }
 
         return parent::beforePrepare();

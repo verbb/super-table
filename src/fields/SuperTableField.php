@@ -770,7 +770,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         return [
             'elementType' => SuperTableBlockElement::class,
             'map' => $map,
-            'criteria' => ['fieldId' => $this->id]
+            'criteria' => [
+                'fieldId' => $this->id,
+                'allowOwnerDrafts' => true,
+                'allowOwnerRevisions' => true,
+            ]
         ];
     }
 
