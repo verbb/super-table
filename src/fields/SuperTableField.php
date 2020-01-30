@@ -665,20 +665,30 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         /** @var Element $element */
         /** @var SuperTableBlockQuery $value */
         $value = $element->getFieldValue($this->handle);
+        $blocks = $value->all();
+        $allBlocksValidate = true;
 
-        foreach ($value->all() as $i => $block) {
+        foreach ($blocks as $i => $block) {
             /** @var SuperTableBlockElement $block */
             if ($element->getScenario() === Element::SCENARIO_LIVE) {
                 $block->setScenario(Element::SCENARIO_LIVE);
             }
 
             if (!$block->validate()) {
-                foreach ($block->getErrors() as $attribute => $errors) {
-                    $element->addErrors([
-                        "{$this->handle}[{$i}].{$attribute}" => $errors,
-                    ]);
-                }
+                $element->addModelErrors($block, "{$this->handle}[{$i}]");
+                $allBlocksValidate = false;
+
+                // foreach ($block->getErrors() as $attribute => $errors) {
+                //     $element->addErrors([
+                //         "{$this->handle}[{$i}].{$attribute}" => $errors,
+                //     ]);
+                // }
             }
+        }
+
+        if (!$allBlocksValidate) {
+            // Just in case the blocks weren't already cached
+            $value->setCachedResult($blocks);
         }
     }
 
