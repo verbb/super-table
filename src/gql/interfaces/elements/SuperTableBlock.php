@@ -4,9 +4,9 @@ namespace verbb\supertable\gql\interfaces\elements;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\gql\types\generators\SuperTableBlockType;
 
-use craft\gql\interfaces\Element;
-use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\Element;
+use craft\gql\TypeManager;
 
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -56,7 +56,7 @@ class SuperTableBlock extends Element
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::int(),
@@ -77,6 +77,6 @@ class SuperTableBlock extends Element
                 'type' => Type::int(),
                 'description' => 'The sort order of the Super Table block within the owner element field.'
             ],
-        ]);
+        ]), self::getName());
     }
 }

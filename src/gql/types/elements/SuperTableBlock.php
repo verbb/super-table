@@ -6,10 +6,11 @@ use verbb\supertable\gql\interfaces\elements\SuperTableBlock as SuperTableBlockI
 
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\base\ObjectType;
+use craft\gql\types\elements\Element;
 
 use GraphQL\Type\Definition\ResolveInfo;
 
-class SuperTableBlock extends ObjectType
+class SuperTableBlock extends Element
 {
     /**
      * @inheritdoc
@@ -18,7 +19,6 @@ class SuperTableBlock extends ObjectType
     {
         $config['interfaces'] = [
             SuperTableBlockInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);
@@ -32,7 +32,7 @@ class SuperTableBlock extends ObjectType
         /** @var SuperTableBlockElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        return $source->$fieldName;
+        return parent::resolve($source, $arguments, $context, $resolveInfo);
     }
 
 }

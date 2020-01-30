@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Field;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 
 class SuperTableBlockType implements GeneratorInterface
 {
@@ -43,7 +44,7 @@ class SuperTableBlockType implements GeneratorInterface
                     $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
                 }
 
-                $blockTypeFields = array_merge(SuperTableBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes);
+                $blockTypeFields = TypeManager::prepareFieldDefinitions(array_merge(SuperTableBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
                 // Generate a type for each entry type
                 $entity = GqlEntityRegistry::getEntity($typeName);
