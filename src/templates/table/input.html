@@ -50,7 +50,7 @@
                     <tr data-id="{{ blockId }}">
                         <td class="hidden">
                             {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
-                            {{ hiddenInput("#{baseInputName}[type]", block.getType().handle) }}
+                            {{ hiddenInput("#{baseInputName}[type]", block.getType().id) }}
                         </td>
 
                         {% include "super-table/table/fields" with {

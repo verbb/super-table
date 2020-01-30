@@ -13,7 +13,7 @@
 
             <div class="superTableMatrix matrixblock" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %}>
                 {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
-                {{ hiddenInput("#{baseInputName}[type]", block.getType().handle) }}
+                {{ hiddenInput("#{baseInputName}[type]", block.getType().id) }}
 
                 {% if not staticField %}
                     <div class="titlebar">

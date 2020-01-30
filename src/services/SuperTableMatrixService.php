@@ -18,6 +18,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
+use craft\events\BlockTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -28,9 +29,12 @@ use craft\web\assets\matrixsettings\MatrixSettingsAsset;
 
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 class SuperTableMatrixService extends Component
 {
+    const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
+
     // Public Methods
     // =========================================================================
 
@@ -146,50 +150,62 @@ class SuperTableMatrixService extends Component
 
     public function getMatrixInputHtml($matrixField, $value, ElementInterface $element = null): string
     {
-        $id = Craft::$app->getView()->formatInputId($matrixField->handle);
-
-        // Get the block types data
-        $blockTypeInfo = $this->_getBlockTypeInfoForInput($matrixField, $element);
-
-        $createDefaultBlocks = $matrixField->minBlocks != 0 && count($blockTypeInfo) === 1;
-        $staticBlocks = $createDefaultBlocks && $matrixField->minBlocks == $matrixField->maxBlocks;
-
-        Craft::$app->getView()->registerAssetBundle(SuperTableAsset::class);
-
-        Craft::$app->getView()->registerJs('new Craft.SuperTable.MatrixInputAlt('.
-            '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
-            Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE).', '.
-            '"'.Craft::$app->getView()->namespaceInputName($matrixField->handle).'", '.
-            ($matrixField->maxBlocks ?: 'null').
-            ');');
-
-        /** @var Element $element */
         if ($element !== null && $element->hasEagerLoadedElements($matrixField->handle)) {
             $value = $element->getEagerLoadedElements($matrixField->handle);
         }
 
         if ($value instanceof MatrixBlockQuery) {
-            $value = $value->anyStatus()->all();
+            $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
         }
 
-        // Safe to set the default blocks?
-        if ($createDefaultBlocks) {
-            $blockType = $matrixField->getBlockTypes()[0];
+        $id = Craft::$app->getView()->formatInputId($matrixField->handle);
 
+        // Let plugins/modules override which block types should be available for this field
+        $event = new BlockTypesEvent([
+            'blockTypes' => $matrixField->getBlockTypes(),
+            'element' => $element,
+            'value' => $value,
+        ]);
+        $this->trigger(self::EVENT_SET_FIELD_BLOCK_TYPES, $event);
+        $blockTypes = array_values($event->blockTypes);
+
+        if (empty($blockTypes)) {
+            throw new InvalidConfigException('At least one block type is required.');
+        }
+
+        // Get the block types data
+        $blockTypeInfo = $this->_getBlockTypeInfoForInput($matrixField, $element, $blockTypes);
+        $createDefaultBlocks = $matrixField->minBlocks != 0 && count($blockTypeInfo) === 1;
+        $staticBlocks = (
+            $createDefaultBlocks &&
+            $matrixField->minBlocks == $matrixField->maxBlocks &&
+            $matrixField->maxBlocks >= count($value)
+        );
+
+        Craft::$app->getView()->registerAssetBundle(SuperTableAsset::class);
+
+        $js = 'var matrixInputAlt = new Craft.SuperTable.MatrixInputAlt(' . 
+            '"' . Craft::$app->getView()->namespaceInputId($id) . '", ' .
+            Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
+            '"' . Craft::$app->getView()->namespaceInputName($matrixField->handle) . '", ' .
+            ($matrixField->maxBlocks ?: 'null') .
+            ');';
+
+        // Safe to create the default blocks?
+        if ($createDefaultBlocks) {
+            $blockTypeJs = Json::encode($blockTypes[0]->handle);
             for ($i = count($value); $i < $matrixField->minBlocks; $i++) {
-                $block = new MatrixBlock();
-                $block->fieldId = $matrixField->id;
-                $block->typeId = $blockType->id;
-                $block->siteId = $element->siteId ?? Craft::$app->getSites()->getCurrentSite()->id;
-                $value[] = $block;
+                $js .= "\nmatrixInputAlt.addBlock({$blockTypeJs});";
             }
         }
+
+        Craft::$app->getView()->registerJs($js);
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
             [
                 'id' => $id,
                 'name' => $matrixField->handle,
-                'blockTypes' => $matrixField->getBlockTypes(),
+                'blockTypes' => $blockTypes,
                 'blocks' => $value,
                 'static' => false,
                 'staticBlocks' => $staticBlocks,
@@ -244,17 +260,17 @@ class SuperTableMatrixService extends Component
         return $fieldTypes;
     }
 
-    private function _getBlockTypeInfoForInput($matrixField, ElementInterface $element = null): array
+    private function _getBlockTypeInfoForInput($matrixField, ElementInterface $element = null, array $blockTypes): array
     {
         /** @var Element $element */
-        $blockTypes = [];
+        $blockTypeInfo = [];
 
         // Set a temporary namespace for these
         $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName($matrixField->handle.'[__BLOCK2__][fields]', $originalNamespace);
+        $namespace = Craft::$app->getView()->namespaceInputName($matrixField->handle . '[blocks][__BLOCK2__][fields]', $originalNamespace);
         Craft::$app->getView()->setNamespace($namespace);
 
-        foreach ($matrixField->getBlockTypes() as $blockType) {
+        foreach ($blockTypes as $blockType) {
             // Create a fake MatrixBlock so the field types have a way to get at the owner element, if there is one
             $block = new MatrixBlock();
             $block->fieldId = $matrixField->id;
@@ -287,7 +303,7 @@ class SuperTableMatrixService extends Component
 
             $footHtml = Craft::$app->getView()->clearJsBuffer();
 
-            $blockTypes[] = [
+            $blockTypeInfo[] = [
                 'handle' => $blockType->handle,
                 'name' => Craft::t('site', $blockType->name),
                 'bodyHtml' => $bodyHtml,
@@ -297,7 +313,7 @@ class SuperTableMatrixService extends Component
 
         Craft::$app->getView()->setNamespace($originalNamespace);
 
-        return $blockTypes;
+        return $blockTypeInfo;
     }
 
 }
