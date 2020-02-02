@@ -98,10 +98,11 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
         addRow: function() {
             var type = this.blockType.type;
+            var isStatic = this.settings.staticField;
 
             this.totalNewBlocks++;
 
-            var id = 'new'+this.totalNewBlocks;
+            var id = 'new' + this.totalNewBlocks;
 
             var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
                 footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
@@ -109,10 +110,14 @@ if (typeof Craft.SuperTable === typeof undefined) {
             var html = '<tr data-id="' + id + '" data-type="' + type + '">' +
                 '<input type="hidden" name="' + this.inputNamePrefix + '[sortOrder][]" value="' + id + '" />' +
                 '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id + '][type]" value="' + type + '" />' +
-                '' + bodyHtml + '' +
-                '<td class="thin action super-table-action"><a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a></td>' +
-                '<td class="thin action super-table-action"><a class="delete icon" title="' + Craft.t('super-table', 'Delete') + '"></a></td>' +
-                '</tr>';
+                '' + bodyHtml + '';
+
+            if (!isStatic) {
+                html += '<td class="thin action super-table-action"><a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a></td>' +
+                    '<td class="thin action super-table-action"><a class="delete icon" title="' + Craft.t('super-table', 'Delete') + '"></a></td>';
+            }
+
+            html += '</tr>';
 
             var $tr = $(html).appendTo(this.$tbody);
 
@@ -231,6 +236,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
         addRow: function() {
             var type = this.blockType.type;
+            var isStatic = this.settings.staticField;
 
             this.totalNewBlocks++;
 
@@ -245,14 +251,18 @@ if (typeof Craft.SuperTable === typeof undefined) {
                 '<table id="' + id + '" class="superTable-table superTable-layout-row">' +
                 '<tbody>' +
                 '' + bodyHtml + '' +
-                '</tbody>' +
-                '<tfoot>' +
-                '<tr>' +
-                '<td class="floating reorder"><a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a></td>' +
-                '<td class="floating delete"><a class="delete icon" title="' + Craft.t('super-table', 'Delete') + '"></a></td>' +
-                '</tr>' +
-                '</tfoot>' +
-                '</table>' +
+                '</tbody>';
+
+            if (!isStatic) {
+                html += '<tfoot>' +
+                    '<tr>' +
+                    '<td class="floating reorder"><a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a></td>' +
+                    '<td class="floating delete"><a class="delete icon" title="' + Craft.t('super-table', 'Delete') + '"></a></td>' + 
+                    '</tr>' +
+                    '</tfoot>';
+            }
+
+            html += '</table>' +
                 '</div>';
 
             var $tr = $(html).appendTo(this.$divInner);
