@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.3 - 2020-02-02
+
+### Fixed
+- Fix issue with static blocks not appearing correctly.
+
 ## 2.4.2 - 2020-01-31
 
 ### Fixed
