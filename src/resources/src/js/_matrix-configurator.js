@@ -122,14 +122,14 @@ Craft.SuperTable.MatrixConfiguratorAlt = Garnish.Base.extend({
 
             var $item = $(
                 '<div class="matrixconfigitem mci-blocktype" data-id="' + id + '">' +
-                    '<div class="name"></div>' +
-                    '<div class="handle code"></div>' +
-                    '<div class="actions">' +
-                        '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '"></a>' +
-                        '<a class="settings icon" title="' + Craft.t('app', 'Settings') + '"></a>' +
-                    '</div>' +
-                    '<input class="hidden" name="' + this.inputNamePrefix + '[blockTypes][' + id + '][name]">' +
-                    '<input class="hidden" name="' + this.inputNamePrefix + '[blockTypes][' + id + '][handle]">' +
+                '<div class="name"></div>' +
+                '<div class="handle code"></div>' +
+                '<div class="actions">' +
+                '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '"></a>' +
+                '<a class="settings icon" title="' + Craft.t('app', 'Settings') + '"></a>' +
+                '</div>' +
+                '<input class="hidden" name="' + this.inputNamePrefix + '[blockTypes][' + id + '][name]">' +
+                '<input class="hidden" name="' + this.inputNamePrefix + '[blockTypes][' + id + '][handle]">' +
                 '</div>'
             ).appendTo(this.$blockTypeItemsContainer);
 
@@ -191,7 +191,7 @@ var BlockTypeSettingsModalAlt = Garnish.Modal.extend(
 
         this.handleGenerator = new Craft.HandleGenerator(this.$nameInput, this.$handleInput);
 
-        // By default, this will close all other Modals - nah man!
+        // CRAWF - By default, this will close all other Modals - nah man!
         // this.base(this.$form, {
         //     closeOtherModals: false,
         //     autoShow: false,
@@ -530,8 +530,8 @@ var FieldAlt = Garnish.Base.extend({
         }
 
         this.addListener(this.$item, 'click', 'select');
-        this.addListener(this.$nameInput, 'textchange', 'updateNameLabel');
-        this.addListener(this.$handleInput, 'textchange', 'updateHandleLabel');
+        this.addListener(this.$nameInput, 'input', 'updateNameLabel');
+        this.addListener(this.$handleInput, 'input', 'updateHandleLabel');
         this.addListener(this.$requiredCheckbox, 'change', 'updateRequiredIcon');
         this.addListener(this.$typeSelect, 'change', 'onTypeSelectChange');
         this.addListener(this.$deleteBtn, 'click', 'confirmDelete');
@@ -676,7 +676,8 @@ var FieldAlt = Garnish.Base.extend({
         Craft.ui.createCheckboxField({
             label: Craft.t('app', 'Use this field’s values as search keywords?'),
             id: this.inputIdPrefix + '-searchable',
-            name: this.inputNamePrefix + '[searchable]'
+            name: this.inputNamePrefix + '[searchable]',
+            checked: true,
         }).appendTo($container);
 
         var fieldTypeOptions = [];

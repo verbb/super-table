@@ -328,6 +328,7 @@ class SuperTableService extends Component
      */
     public function handleChangedBlockType(ConfigEvent $event)
     {
+
         if ($this->ignoreProjectConfigChanges) {
             return;
         }
@@ -786,13 +787,14 @@ class SuperTableService extends Component
     {
         /** @var Element $owner */
         $elementsService = Craft::$app->getElements();
-        /** @var MatrixBlockQuery $query */
+        /** @var SuperTableBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
         /** @var SuperTableBlockElement[] $blocks */
         if (($blocks = $query->getCachedResult()) !== null) {
             $saveAll = false;
         } else {
-            $blocks = (clone $query)->anyStatus()->all();
+            $blocksQuery = clone $query;
+            $blocks = $blocksQuery->anyStatus()->all();
             $saveAll = true;
         }
         $blockIds = [];
@@ -806,7 +808,7 @@ class SuperTableService extends Component
                 if ($saveAll || !$block->id || $block->dirty) {
                     $block->ownerId = $owner->id;
                     $block->sortOrder = $sortOrder;
-                    $elementsService->saveElement($block);
+                    $elementsService->saveElement($block, false);
                 } else if ((int)$block->sortOrder !== $sortOrder) {
                     // Just update its sortOrder
                     $block->sortOrder = $sortOrder;
@@ -851,7 +853,8 @@ class SuperTableService extends Component
                     // Duplicate SuperTable blocks, ensuring we don't process the same blocks more than once
                     $handledSiteIds = [];
 
-                    $cachedQuery = (clone $query)->anyStatus();
+                    $cachedQuery = clone $query;
+                    $cachedQuery->anyStatus();
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
 
