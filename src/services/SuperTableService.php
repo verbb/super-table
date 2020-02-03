@@ -311,8 +311,11 @@ class SuperTableService extends Component
         ];
 
         $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
-        $projectConfig->set($configPath, $configData, "Save super table block type for parent field “{$parentField->handle}”");
 
+        // Ensure any Matrix blocks are processed first, in the case of M-ST-M fields
+        $projectConfig->processConfigChanges('matrixBlockTypes', false);
+
+        $projectConfig->set($configPath, $configData, "Save super table block type for parent field “{$parentField->handle}”");
 
         if ($isNewBlockType) {
             $blockType->id = Db::idByUid('{{%supertableblocktypes}}', $blockType->uid);
