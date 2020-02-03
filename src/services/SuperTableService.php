@@ -899,10 +899,13 @@ class SuperTableService extends Component
         /** @var SuperTableBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
         /** @var SuperTableBlockElement[] $blocks */
-        $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
+        if (($blocks = $query->getCachedResult()) === null) {
+            $blocksQuery = clone $query;
+            $blocks = $blocksQuery->anyStatus()->all();
+        }
         $newBlockIds = [];
-        $transaction = Craft::$app->getDb()->beginTransaction();
 
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             foreach ($blocks as $block) {
                 /** @var SuperTableBlockElement $newBlock */
@@ -912,7 +915,6 @@ class SuperTableService extends Component
                     'siteId' => $target->siteId,
                     'propagating' => false,
                 ]);
-
                 $newBlockIds[] = $newBlock->id;
             }
 
