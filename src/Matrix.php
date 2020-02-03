@@ -8,1103 +8,2195 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
-use craft\base\Field;
+use craft\base\Plugin;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\db\MatrixBlockQuery;
-use craft\elements\MatrixBlock;
-use craft\errors\MatrixBlockTypeNotFoundException;
+use craft\elements\User;
+use craft\errors\OperationAbortedException;
 use craft\events\ConfigEvent;
-use craft\fields\Matrix as MatrixField;
+use craft\events\RebuildConfigEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
-use craft\helpers\ElementHelper;
-use craft\helpers\Html;
-use craft\helpers\MigrationHelper;
-use craft\helpers\StringHelper;
-use craft\migrations\CreateMatrixContentTable;
-use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
-use craft\models\MatrixBlockType;
-use craft\models\Site;
-use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
-use craft\web\assets\matrix\MatrixAsset;
-use craft\web\View;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\FileHelper;
+use craft\helpers\Json;
+use craft\helpers\Path as PathHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use Symfony\Component\Yaml\Yaml;
+use yii\base\Application;
 use yii\base\Component;
+use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\NotSupportedException;
+use yii\web\ServerErrorHttpException;
 
 /**
- * The Matrix service provides APIs for managing Matrix fields.
- * An instance of the Matrix service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getMatrix()|`Craft::$app->matrix`]].
+ * Project config service.
+ * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::ProjectConfig()|`Craft::$app->projectConfig`]].
  *
+ * @property-read bool $isApplyingYamlChanges
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 3.1.0
  */
-class Matrix extends Component
+class ProjectConfig extends Component
 {
+    // Constants
+    // =========================================================================
+
+    // Cache settings
+    // -------------------------------------------------------------------------
+
+    const CACHE_KEY = 'project.config.files';
+    const CACHE_DURATION = 2592000; // 30 days
+
+    // Array key to use if not using config files.
+    const CONFIG_KEY = 'storedConfig';
+
+    // Filename for base config file
+    const CONFIG_FILENAME = 'project.yaml';
+
+    // Key to use for schema version storage.
+    const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
+
+    // TODO move this to UID validator class
+    // TODO update StringHelper::isUUID() to use that
+    // Regexp patterns
+    // -------------------------------------------------------------------------
+
+    const UID_PATTERN = '[a-zA-Z0-9_-]+';
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @event ConfigEvent The event that is triggered when an item is added to the config.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\events\ParseConfigEvent;
+     * use craft\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, function(ParseConfigEvent $e) {
+     *     // Ensure the item is also added in the database...
+     * });
+     * ```
+     */
+    const EVENT_ADD_ITEM = 'addItem';
+
+    /**
+     * @event ConfigEvent The event that is triggered when an item is updated in the config.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\events\ParseConfigEvent;
+     * use craft\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, function(ParseConfigEvent $e) {
+     *     // Ensure the item is also updated in the database...
+     * });
+     * ```
+     */
+    const EVENT_UPDATE_ITEM = 'updateItem';
+
+    /**
+     * @event ConfigEvent The event that is triggered when an item is removed from the config.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\events\ParseConfigEvent;
+     * use craft\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, function(ParseConfigEvent $e) {
+     *     // Ensure the item is also removed in the database...
+     * });
+     * ```
+     */
+    const EVENT_REMOVE_ITEM = 'removeItem';
+
+    /**
+     * @event Event The event that is triggered after pending changes in `config/project.yaml` have been applied.
+     */
+    const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
+
+    /**
+     * @event RebuildConfigEvent The event that is triggered when the project config is being rebuilt.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\events\RebuildConfigEvent;
+     * use craft\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function(RebuildConfigEvent $e) {
+     *     // Add plugin's project config data...
+     *    $e->config['myPlugin']['key'] = $value;
+     * });
+     * ```
+     *
+     * @since 3.1.20
+     */
+    const EVENT_REBUILD = 'rebuild';
+
     // Properties
     // =========================================================================
 
     /**
-     * @var bool Whether to ignore changes to the project config.
-     * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
+     * @var int The maximum number of project.yaml backups to store in storage/config-backups/
      */
-    public $ignoreProjectConfigChanges = false;
+    public $maxBackups = 50;
 
     /**
-     * @var
+     * @var int The maximum number of times deferred events can be re-deferred before we give up on them
+     * @see defer()
+     * @see _applyChanges()
      */
-    private $_blockTypesById;
+    public $maxDefers = 500;
 
     /**
-     * @var
+     * @var bool Whether the project config is read-only.
      */
-    private $_blockTypesByFieldId;
+    public $readOnly = false;
 
     /**
-     * @var
+     * @var bool Whether events generated by config changes should be muted.
+     * @since 3.1.2
      */
-    private $_fetchedAllBlockTypesForFieldId;
+    public $muteEvents = false;
 
     /**
-     * @var
+     * @var bool Whether project config should force updates on entries that aren't new or being removed.
      */
-    private $_blockTypeRecordsById;
+    public $forceUpdate = false;
 
     /**
-     * @var string[]
+     * @var array Current config as stored in database.
      */
-    private $_uniqueBlockTypeAndFieldHandles = [];
+    private $_storedConfig;
 
-    const CONFIG_BLOCKTYPE_KEY = 'matrixBlockTypes';
+    /**
+     * @var array The currently-loaded config, possibly with pending changes
+     * that will be stored in the database & project.yaml at the end of the request
+     */
+    private $_loadedConfig;
 
+    /**
+     * @var array A list of already parsed change paths
+     */
+    private $_parsedChanges = [];
 
-    // Public Methods
+    /**
+     * @var array An array of paths to data structures used as intermediate storage.
+     */
+    private $_parsedConfigs = [];
+
+    /**
+     * @var array A list of all config files, defined by import directives in configuration files.
+     */
+    private $_configFileList = [];
+
+    /**
+     * @var array A list of Yaml files that have been modified during this request and need to be saved.
+     */
+    private $_modifiedYamlFiles = [];
+
+    /**
+     * @var array Config map currently used
+     * @see _getStoredConfigMap()
+     */
+    private $_configMap;
+
+    /**
+     * @var bool Whether to update the config map on request end
+     */
+    private $_updateConfigMap = false;
+
+    /**
+     * @var bool Whether to update the config on request end
+     */
+    private $_updateConfig = false;
+
+    /**
+     * @var bool Whether we’re listening for the request end, to update the Yaml caches.
+     * @see updateParsedConfigTimes()
+     */
+    private $_waitingToUpdateParsedConfigTimes = false;
+
+    /**
+     * @var bool Whether project.yaml changes are currently being applied.
+     * @see applyYamlChanges()
+     * @see getIsApplyingYamlChanges()
+     */
+    private $_applyingYamlChanges = false;
+
+    /**
+     * @var bool Whether we're saving project configs to project.yaml
+     * @see _useConfigFile()
+     */
+    private $_useConfigFile;
+
+    /**
+     * @var bool Whether the config's dateModified timestamp has been updated by this request.
+     */
+    private $_timestampUpdated = false;
+
+    /**
+     * @var array The current changeset being applied, if applying changes by array.
+     */
+    private $_changesBeingApplied;
+
+    /**
+     * @var array Deferred config sync events
+     * @see defer()
+     * @see _applyChanges()
+     */
+    private $_deferredEvents = [];
+
+    // Public methods
     // =========================================================================
 
     /**
-     * Returns the block types for a given Matrix field.
-     *
-     * @param int $fieldId The Matrix field ID.
-     * @return MatrixBlockType[] An array of block types.
+     * @inheritdoc
      */
-    public function getBlockTypesByFieldId(int $fieldId): array
+    public function init()
     {
-        if (!empty($this->_fetchedAllBlockTypesForFieldId[$fieldId])) {
-            return $this->_blockTypesByFieldId[$fieldId];
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData'], null, false);
+
+        // If we're not using the project config file, load the stored config to emulate config files.
+        // This is needed so we can make comparisons between the existing config and the modified config, as we're firing events.
+        if (!$this->_useConfigFile()) {
+            $this->_getConfigurationFromYaml();
         }
 
-        $this->_blockTypesByFieldId[$fieldId] = [];
-
-        $results = $this->_createBlockTypeQuery()
-            ->where(['bt.fieldId' => $fieldId])
-            ->all();
-
-        foreach ($results as $result) {
-            $blockType = new MatrixBlockType($result);
-            $this->_blockTypesById[$blockType->id] = $blockType;
-            $this->_blockTypesByFieldId[$fieldId][] = $blockType;
-        }
-
-        $this->_fetchedAllBlockTypesForFieldId[$fieldId] = true;
-
-        return $this->_blockTypesByFieldId[$fieldId];
+        parent::init();
     }
 
     /**
-     * Returns all the block types.
+     * Resets the internal state.
      *
-     * @return MatrixBlockType[] An array of block types.
-     * @since 3.3.0
+     * @internal
      */
-    public function getAllBlockTypes(): array
+    public function reset()
     {
-        $results = $this->_createBlockTypeQuery()
-            ->innerJoin(Table::FIELDS . ' f', '[[f.id]] = [[bt.fieldId]]')
-            ->where(['f.type' => MatrixField::class])
-            ->all();
+        $this->_storedConfig = null;
+        $this->_loadedConfig = null;
+        $this->_parsedChanges = [];
+        $this->_parsedConfigs = [];
+        $this->_configFileList = [];
+        $this->_modifiedYamlFiles = [];
+        $this->_configMap = null;
+        $this->_updateConfigMap = false;
+        $this->_updateConfig = false;
+        $this->_applyingYamlChanges = false;
+        $this->_timestampUpdated = false;
+        $this->_changesBeingApplied = null;
 
-        foreach ($results as $key => $result) {
-            $results[$key] = new MatrixBlockType($result);
-        }
-
-        return $results;
+        $this->init();
     }
 
     /**
-     * Returns a block type by its ID.
+     * Returns a config item value value by its path.
      *
-     * @param int $blockTypeId The block type ID.
-     * @return MatrixBlockType|null The block type, or `null` if it didn’t exist.
+     * ---
+     *
+     * ```php
+     * $value = Craft::$app->projectConfig->get('foo.bar');
+     * ```
+     *
+     * @param string $path The config item path
+     * @param bool $getFromYaml whether data should be fetched from `config/project.yaml` instead of the loaded config. Defaults to `false`.
+     * @return mixed The config item value
      */
-    public function getBlockTypeById(int $blockTypeId)
+    public function get(string $path = null, $getFromYaml = false)
     {
-        if ($this->_blockTypesById !== null && array_key_exists($blockTypeId, $this->_blockTypesById)) {
-            return $this->_blockTypesById[$blockTypeId];
-        }
-
-        $result = $this->_createBlockTypeQuery()
-            ->where(['bt.id' => $blockTypeId])
-            ->one();
-
-        return $this->_blockTypesById[$blockTypeId] = $result ? new MatrixBlockType($result) : null;
-    }
-
-    /**
-     * Validates a block type.
-     *
-     * If the block type doesn’t validate, any validation errors will be stored on the block type.
-     *
-     * @param MatrixBlockType $blockType The block type.
-     * @param bool $validateUniques Whether the Name and Handle attributes should be validated to
-     * ensure they’re unique. Defaults to `true`.
-     * @return bool Whether the block type validated.
-     */
-    public function validateBlockType(MatrixBlockType $blockType, bool $validateUniques = true): bool
-    {
-        $validates = true;
-
-        $blockTypeRecord = $this->_getBlockTypeRecord($blockType);
-
-        $blockTypeRecord->fieldId = $blockType->fieldId;
-        $blockTypeRecord->name = $blockType->name;
-        $blockTypeRecord->handle = $blockType->handle;
-
-        $blockTypeRecord->validateUniques = $validateUniques;
-
-        if (!$blockTypeRecord->validate()) {
-            $validates = false;
-            $blockType->addErrors($blockTypeRecord->getErrors());
-        }
-
-        $blockTypeRecord->validateUniques = true;
-
-        // Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
-        // handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
-        // field handle validation takes its length into account.
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-
-        $contentService->fieldContext = StringHelper::randomString(10);
-        $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
-
-        foreach ($blockType->getFields() as $field) {
-            /** @var Field $field */
-            // Hack to allow blank field names
-            if (!$field->name) {
-                $field->name = '__blank__';
-            }
-
-            $field->validate();
-
-            // Make sure the block type handle + field handle combo is unique for the whole field. This prevents us from
-            // worrying about content column conflicts like "a" + "b_c" == "a_b" + "c".
-            if ($blockType->handle && $field->handle) {
-                $blockTypeAndFieldHandle = $blockType->handle . '_' . $field->handle;
-
-                if (in_array($blockTypeAndFieldHandle, $this->_uniqueBlockTypeAndFieldHandles, true)) {
-                    // This error *might* not be entirely accurate, but it's such an edge case that it's probably better
-                    // for the error to be worded for the common problem (two duplicate handles within the same block
-                    // type).
-                    $error = Craft::t('app', '{attribute} "{value}" has already been taken.',
-                        [
-                            'attribute' => Craft::t('app', 'Handle'),
-                            'value' => $field->handle
-                        ]);
-
-                    $field->addError('handle', $error);
-                } else {
-                    $this->_uniqueBlockTypeAndFieldHandles[] = $blockTypeAndFieldHandle;
-                }
-            }
-
-            if ($field->hasErrors()) {
-                $blockType->hasFieldErrors = true;
-                $validates = false;
-            }
-        }
-
-        $contentService->fieldContext = $originalFieldContext;
-        $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-
-        return $validates;
-    }
-
-    /**
-     * Saves a block type.
-     *
-     * @param MatrixBlockType $blockType The block type to be saved.
-     * @param bool $runValidation Whether the block type should be validated before being saved.
-     * Defaults to `true`.
-     * @return bool
-     * @throws Exception if an error occurs when saving the block type
-     * @throws \Throwable if reasons
-     */
-    public function saveBlockType(MatrixBlockType $blockType, bool $runValidation = true): bool
-    {
-        Craft::dump('saveBlockType');
-
-        if ($runValidation && !$blockType->validate()) {
-            return false;
-        }
-
-        $fieldsService = Craft::$app->getFields();
-
-        /** @var Field $parentField */
-        $parentField = $fieldsService->getFieldById($blockType->fieldId);
-        $isNewBlockType = $blockType->getIsNew();
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        $configData = [
-            'field' => $parentField->uid,
-            'name' => $blockType->name,
-            'handle' => $blockType->handle,
-            'sortOrder' => (int)$blockType->sortOrder,
-        ];
-
-        // Now, take care of the field layout for this block type
-        // -------------------------------------------------------------
-        $fieldLayoutFields = [];
-        $sortOrder = 0;
-
-        $configData['fields'] = [];
-
-        foreach ($blockType->getFields() as $field) {
-            /** @var Field $field */
-            $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
-
-            $field->sortOrder = ++$sortOrder;
-            $fieldLayoutFields[] = $field;
-        }
-
-        $fieldLayoutTab = new FieldLayoutTab();
-        $fieldLayoutTab->name = 'Content';
-        $fieldLayoutTab->sortOrder = 1;
-        $fieldLayoutTab->setFields($fieldLayoutFields);
-
-        $fieldLayout = $blockType->getFieldLayout();
-
-        if ($fieldLayout->uid) {
-            $layoutUid = $fieldLayout->uid;
+        if ($getFromYaml) {
+            $source = $this->_changesBeingApplied ?? $this->_getConfigurationFromYaml();
         } else {
-            $layoutUid = StringHelper::UUID();
-            $fieldLayout->uid = $layoutUid;
+            $source = $this->_getLoadedConfig();
         }
 
-        $fieldLayout->setTabs([$fieldLayoutTab]);
-        $fieldLayout->setFields($fieldLayoutFields);
-
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        $configData['fieldLayouts'] = [
-            $layoutUid => $fieldLayoutConfig
-        ];
-
-        $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
-        $projectConfig->set($configPath, $configData);
-
-        if ($isNewBlockType) {
-            $blockType->id = Db::idByUid(Table::MATRIXBLOCKTYPES, $blockType->uid);
+        if ($path === null) {
+            return $source;
         }
 
-        return true;
+        return $this->_traverseDataArray($source, $path);
     }
 
     /**
-     * Handle block type change
+     * Sets a config item value at the given path.
      *
-     * @param ConfigEvent $event
+     * ---
+     *
+     * ```php
+     * Craft::$app->projectConfig->set('foo.bar', 'value');
+     * ```
+     *
+     * @param string $path The config item path
+     * @param mixed $value The config item value
+     * @throws NotSupportedException if the service is set to read-only mode
+     * @throws ErrorException
+     * @throws Exception
+     * @throws ServerErrorHttpException
+     * @todo make sure $value is serializable and unserialable
      */
-    public function handleChangedBlockType(ConfigEvent $event)
+    public function set(string $path, $value)
     {
-        Craft::dump($this->ignoreProjectConfigChanges);
-        
-        if ($this->ignoreProjectConfigChanges) {
-            return;
+        if (\is_array($value)) {
+            $value = ProjectConfigHelper::cleanupConfig($value);
         }
 
-        $blockTypeUid = $event->tokenMatches[0];
-        $data = $event->newValue;
-        $previousData = $event->oldValue;
-
-        // Make sure the field has been synced
-        $fieldId = Db::idByUid(Table::FIELDS, $data['field']);
-        if ($fieldId === null) {
-            Craft::$app->getProjectConfig()->defer($event, [$this, __FUNCTION__]);
-            return;
-        }
-
-        $fieldsService = Craft::$app->getFields();
-        $contentService = Craft::$app->getContent();
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        // Store the current contexts.
-        $originalContentTable = $contentService->contentTable;
-        $originalFieldContext = $contentService->fieldContext;
-        $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-        $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
-
-        try {
-            // Get the block type record
-            $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
-
-            // Set the basic info on the new block type record
-            $blockTypeRecord->fieldId = $fieldId;
-            $blockTypeRecord->name = $data['name'];
-            $blockTypeRecord->handle = $data['handle'];
-            $blockTypeRecord->sortOrder = $data['sortOrder'];
-            $blockTypeRecord->uid = $blockTypeUid;
-
-            // Make sure that alterations, if any, occur in the correct context.
-            $contentService->fieldContext = 'matrixBlockType:' . $blockTypeUid;
-            $contentService->fieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
-            /** @var MatrixField $matrixField */
-            $matrixField = $fieldsService->getFieldById($blockTypeRecord->fieldId);
-
-            // Ignore it, if the parent field is not a Matrix field.
-            if ($matrixField instanceof MatrixField) {
-                $contentService->contentTable = $matrixField->contentTable;
-                $fieldsService->oldFieldColumnPrefix = 'field_' . ($blockTypeRecord->getOldAttribute('handle') ?? $data['handle']) . '_';
-
-                $oldFields = $previousData['fields'] ?? [];
-                $newFields = $data['fields'] ?? [];
-
-                // Remove fields that this block type no longer has
-                foreach ($oldFields as $fieldUid => $fieldData) {
-                    if (!array_key_exists($fieldUid, $newFields)) {
-                        $fieldsService->applyFieldDelete($fieldUid);
-                    }
+        if ($value !== $this->get($path)) {
+            if ($this->readOnly) {
+                // If we're applying yaml changes that are coming in via `project.yaml`, anyway, bail silently.
+                if ($this->getIsApplyingYamlChanges() && $value === $this->get($path, true)) {
+                    return;
                 }
 
-                // (Re)save all the fields that now exist for this block.
-                foreach ($newFields as $fieldUid => $fieldData) {
-                    $fieldsService->applyFieldSave($fieldUid, $fieldData, 'matrixBlockType:' . $blockTypeUid);
-                }
-
-                // Refresh the schema cache
-                Craft::$app->getDb()->getSchema()->refresh();
-
-                if (!empty($data['fieldLayouts'])) {
-                    // Save the field layout
-                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
-                    $layout->id = $blockTypeRecord->fieldLayoutId;
-                    $layout->type = MatrixBlock::class;
-                    $layout->uid = key($data['fieldLayouts']);
-                    $fieldsService->saveLayout($layout);
-                    $blockTypeRecord->fieldLayoutId = $layout->id;
-                } else if ($blockTypeRecord->fieldLayoutId) {
-                    // Delete the field layout
-                    $fieldsService->deleteLayoutById($blockTypeRecord->fieldLayoutId);
-                    $blockTypeRecord->fieldLayoutId = null;
-                }
-
-                // Save it
-                $blockTypeRecord->save(false);
+                throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
             }
 
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
+            if (!$this->_timestampUpdated) {
+                $this->_timestampUpdated = true;
+                $this->set('dateModified', DateTimeHelper::currentTimeStamp());
+            }
         }
 
-        // Restore the previous contexts.
-        $contentService->fieldContext = $originalFieldContext;
-        $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-        $contentService->contentTable = $originalContentTable;
-        $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
+        $targetFilePath = null;
 
-        // Clear caches
-        unset(
-            $this->_blockTypesById[$blockTypeRecord->id],
-            $this->_blockTypesByFieldId[$blockTypeRecord->fieldId]
-        );
-        $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
+        if ($this->_useConfigFile()) {
+            $configMap = $this->_getStoredConfigMap();
+
+            $topNode = explode('.', $path, 2)[0];
+            $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getProjectConfigFilePath();
+
+            $config = $this->_parseYamlFile($targetFilePath);
+
+            // For new top nodes, update the map
+            if (empty($configMap[$topNode])) {
+                $this->_mapNodeLocation($topNode, Craft::$app->getPath()->getProjectConfigFilePath());
+                $this->_updateConfigMap = true;
+            }
+        } else {
+            $config = $this->_getConfigurationFromYaml();
+        }
+
+        $this->_traverseDataArray($config, $path, $value, $value === null);
+
+        $this->_saveConfig($config, $targetFilePath);
+
+        // Ensure that new data is processed
+        unset($this->_parsedChanges[$path]);
+
+        $this->processConfigChanges($path, true);
     }
 
     /**
-     * Deletes a block type.
+     * Removes a config item at the given path.
      *
-     * @param MatrixBlockType $blockType The block type.
-     * @return bool Whether the block type was deleted successfully.
+     * ---
+     * ```php
+     * Craft::$app->projectConfig->remove('foo.bar');
+     * ```
+     *
+     * @param string $path The config item path
      */
-    public function deleteBlockType(MatrixBlockType $blockType): bool
+    public function remove(string $path)
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid);
-        return true;
+        $this->set($path, null);
     }
 
     /**
-     * Handle block type change
-     *
-     * @param ConfigEvent $event
-     * @throws \Throwable if reasons
+     * Regenerates `project.yaml` based on the loaded project config.
      */
-    public function handleDeletedBlockType(ConfigEvent $event)
+    public function regenerateYamlFromConfig()
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
-        $blockTypeUid = $event->tokenMatches[0];
-        $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
-
-        if (!$blockTypeRecord->id) {
-            return;
-        }
-
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
-
-        try {
-            $blockType = $this->getBlockTypeById($blockTypeRecord->id);
-
-            if (!$blockType) {
-                return;
-            }
-
-            // First delete the blocks of this type
-            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                $blocks = MatrixBlock::find()
-                    ->siteId($siteId)
-                    ->typeId($blockType->id)
-                    ->all();
-
-                foreach ($blocks as $block) {
-                    Craft::$app->getElements()->deleteElement($block);
-                }
-            }
-
-            // Set the new contentTable
-            $contentService = Craft::$app->getContent();
-            $fieldsService = Craft::$app->getFields();
-            $originalContentTable = $contentService->contentTable;
-
-            /** @var MatrixField $matrixField */
-            $matrixField = $fieldsService->getFieldById($blockType->fieldId);
-
-            // Ignore it, if the parent field is not a Matrix field.
-            if ($matrixField instanceof MatrixField) {
-                $contentService->contentTable = $matrixField->contentTable;
-
-                // Set the new fieldColumnPrefix
-                $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
-                Craft::$app->getContent()->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
-
-                // Now delete the block type fields
-                foreach ($blockType->getFields() as $field) {
-                    Craft::$app->getFields()->deleteField($field);
-                }
-
-                // Restore the contentTable and the fieldColumnPrefix to original values.
-                Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
-                $contentService->contentTable = $originalContentTable;
-
-                // Delete the field layout
-                $fieldLayoutId = (new Query())
-                    ->select(['fieldLayoutId'])
-                    ->from([Table::MATRIXBLOCKTYPES])
-                    ->where(['id' => $blockTypeRecord->id])
-                    ->scalar();
-
-                // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-
-                // Finally delete the actual block type
-                $db->createCommand()
-                    ->delete(Table::MATRIXBLOCKTYPES, ['id' => $blockTypeRecord->id])
-                    ->execute();
-            }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
-        }
-
-        // Clear caches
-        unset(
-            $this->_blockTypesById[$blockTypeRecord->id],
-            $this->_blockTypesByFieldId[$blockTypeRecord->fieldId],
-            $this->_blockTypeRecordsById[$blockTypeRecord->id]
-        );
-        $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
+        $loadedConfig = $this->_getLoadedConfig();
+        $baseFile = Craft::$app->getPath()->getProjectConfigFilePath();
+        $this->_saveConfig($loadedConfig, $baseFile);
+        $this->updateParsedConfigTimesAfterRequest();
     }
 
     /**
-     * Validates a Matrix field's settings.
-     *
-     * If the settings don’t validate, any validation errors will be stored on the settings model.
-     *
-     * @param MatrixField $matrixField The Matrix field
-     * @return bool Whether the settings validated.
+     * Applies changes in `project.yaml` to the project config.
      */
-    public function validateFieldSettings(MatrixField $matrixField): bool
+    public function applyYamlChanges()
     {
-        $validates = true;
+        $mutex = Craft::$app->getMutex();
+        $lockName = 'project-config-sync';
 
-        $this->_uniqueBlockTypeAndFieldHandles = [];
-
-        $uniqueAttributes = ['name', 'handle'];
-        $uniqueAttributeValues = [];
-
-        foreach ($matrixField->getBlockTypes() as $blockType) {
-            if (!$this->validateBlockType($blockType, false)) {
-                // Don't break out of the loop because we still want to get validation errors for the remaining block
-                // types.
-                $validates = false;
-            }
-
-            // Do our own unique name/handle validation, since the DB-based validation can't be trusted when saving
-            // multiple records at once
-            foreach ($uniqueAttributes as $attribute) {
-                $value = $blockType->$attribute;
-
-                if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value, $uniqueAttributeValues[$attribute], true))) {
-                    $uniqueAttributeValues[$attribute][] = $value;
-                } else {
-                    $blockType->addError($attribute, Craft::t('app', '{attribute} "{value}" has already been taken.',
-                        [
-                            'attribute' => $blockType->getAttributeLabel($attribute),
-                            'value' => Html::encode($value)
-                        ]));
-
-                    $validates = false;
-                }
-            }
+        if (!$mutex->acquire($lockName, 15)) {
+            throw new Exception('Could not acquire a lock for the syncing project config.');
         }
 
-        return $validates;
+        $this->_applyingYamlChanges = true;
+        Craft::$app->getCache()->delete(self::CACHE_KEY);
+
+        $changes = $this->_getPendingChanges();
+
+        $this->_applyChanges($changes);
+
+        $mutex->release($lockName);
     }
 
     /**
-     * Saves a Matrix field's settings.
+     * Applies given changes to the project config.
      *
-     * @param MatrixField $matrixField The Matrix field
-     * @param bool $validate Whether the settings should be validated before being saved.
-     * @return bool Whether the settings saved successfully.
-     * @throws \Throwable if reasons
+     * @param array $configData
      */
-    public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
+    public function applyConfigChanges(array $configData)
     {
-        Craft::dump('saveSettings');
+        $this->_applyingYamlChanges = true;
 
-        if (!$matrixField->contentTable) {
-            throw new Exception('Unable to save a Matrix field’s settings without knowing its content table.');
+        $changes = $this->_getPendingChanges($configData);
+
+        $this->_changesBeingApplied = $configData;
+        $this->_applyChanges($changes);
+        $this->_changesBeingApplied = null;
+
+        // Cover an edge-case where we're applying changes, but there's no config file yet
+        $configPath = Craft::$app->getPath()->getProjectConfigFilePath();
+
+        if ($this->_useConfigFile() && empty($this->_parsedConfigs[$configPath])) {
+            $this->_parsedConfigs[$configPath] = $configData;
         }
+    }
 
-        if ($validate && !$this->validateFieldSettings($matrixField)) {
+    /**
+     * Returns whether project.yaml changes are currently being applied
+     *
+     * @return bool
+     */
+    public function getIsApplyingYamlChanges(): bool
+    {
+        return $this->_applyingYamlChanges;
+    }
+
+    /**
+     * Returns whether `project.yaml` has any pending changes that need to be applied to the project config.
+     *
+     * @param string|null $path A specific config path that should be checked for pending changes.
+     * If this is null, then `true` will be returned if there are *any* pending changes in `project.yaml.`.
+     * @return bool
+     */
+    public function areChangesPending(string $path = null): bool
+    {
+        // TODO remove after next breakpoint
+        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
             return false;
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
-        try {
-            // Do we need to create/rename the content table?
-            if (!$db->tableExists($matrixField->contentTable)) {
-                $oldContentTable = $matrixField->oldSettings['contentTable'] ?? null;
-                if ($oldContentTable && $db->tableExists($oldContentTable)) {
-                    MigrationHelper::renameTable($oldContentTable, $matrixField->contentTable);
-                } else {
-                    $this->_createContentTable($matrixField->contentTable);
-                }
-            }
-
-            Craft::dump(Craft::$app->getProjectConfig()->areChangesPending(self::CONFIG_BLOCKTYPE_KEY));
-
-            if (!Craft::$app->getProjectConfig()->areChangesPending(self::CONFIG_BLOCKTYPE_KEY)) {
-                // Delete the old block types first, in case there's a handle conflict with one of the new ones
-                $oldBlockTypes = $this->getBlockTypesByFieldId($matrixField->id);
-                $oldBlockTypesById = [];
-
-                foreach ($oldBlockTypes as $blockType) {
-                    $oldBlockTypesById[$blockType->id] = $blockType;
-                }
-
-                foreach ($matrixField->getBlockTypes() as $blockType) {
-                    if (!$blockType->getIsNew()) {
-                        unset($oldBlockTypesById[$blockType->id]);
-                    }
-                }
-
-                foreach ($oldBlockTypesById as $blockType) {
-                    $this->deleteBlockType($blockType);
-                }
-
-                // Save the new ones
-                $sortOrder = 0;
-
-                $originalContentTable = Craft::$app->getContent()->contentTable;
-                Craft::$app->getContent()->contentTable = $matrixField->contentTable;
-
-                foreach ($matrixField->getBlockTypes() as $blockType) {
-                    $sortOrder++;
-                    $blockType->fieldId = $matrixField->id;
-                    $blockType->sortOrder = $sortOrder;
-                    $this->saveBlockType($blockType, false);
-                }
-
-                Craft::$app->getContent()->contentTable = $originalContentTable;
-            }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
+        // If the file does not exist, but should, generate it
+        if ($this->_useConfigFile() && !file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+            $this->regenerateYamlFromConfig();
+            $this->saveModifiedConfigData();
         }
 
-        // Clear caches
-        unset(
-            $this->_blockTypesByFieldId[$matrixField->id],
-            $this->_fetchedAllBlockTypesForFieldId[$matrixField->id]
-        );
+        if (!$this->_useConfigFile() || !$this->_areConfigFilesModified()) {
+            return false;
+        }
 
-        return true;
+        if ($path !== null) {
+            $storedConfig = $this->_getStoredConfig();
+            $oldValue = $this->_traverseDataArray($storedConfig, $path);
+            $newValue = $this->get($path, true);
+            return Json::encode($oldValue) !== Json::encode($newValue);
+        }
+
+        $changes = $this->_getPendingChanges();
+
+        foreach ($changes as $changeType) {
+            if (!empty($changeType)) {
+                return true;
+            }
+        }
+
+        $this->updateParsedConfigTimes();
+
+        return false;
     }
 
     /**
-     * Deletes a Matrix field.
+     * Processes changes in `config/project.yaml` for a given path.
      *
-     * @param MatrixField $matrixField The Matrix field.
-     * @return bool Whether the field was deleted successfully.
-     * @throws \Throwable
+     * @param string $path The config item path
+     * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
      */
-    public function deleteMatrixField(MatrixField $matrixField): bool
+    public function processConfigChanges(string $path, bool $triggerUpdate = false)
     {
-        // Clear the schema cache
-        $db = Craft::$app->getDb();
-        $db->getSchema()->refresh();
+        if (!empty($this->_parsedChanges[$path])) {
+            return;
+        }
 
-        $transaction = $db->beginTransaction();
-        try {
-            $originalContentTable = Craft::$app->getContent()->contentTable;
-            Craft::$app->getContent()->contentTable = $matrixField->contentTable;
+        $this->_parsedChanges[$path] = true;
 
-            // Delete the block types
-            $blockTypes = $this->getBlockTypesByFieldId($matrixField->id);
+        $storedConfig = $this->_getStoredConfig();
+        $oldValue = $this->_traverseDataArray($storedConfig, $path);
+        $newValue = $this->get($path, true);
 
-            foreach ($blockTypes as $blockType) {
-                $this->deleteBlockType($blockType);
+        $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
+
+        if ($newValue === null) {
+            // Fire a 'removeItem' event
+            if (!$this->muteEvents) {
+                $this->trigger(self::EVENT_REMOVE_ITEM, $event);
+            }
+        } else if ($oldValue === null) {
+            // Fire an 'addItem' event
+            if (!$this->muteEvents) {
+                $this->trigger(self::EVENT_ADD_ITEM, $event);
+            }
+        } else if ($this->forceUpdate ||
+            $triggerUpdate ||
+            Json::encode($oldValue) !== Json::encode($newValue)
+        ) {
+            // Fire an 'updateItem' event
+            if (!$this->muteEvents) {
+                $this->trigger(self::EVENT_UPDATE_ITEM, $event);
+            }
+        } else {
+            return;
+        }
+
+        // Memoize the new config data
+        $currentLoadedConfig = $this->_getLoadedConfig();
+        $this->_traverseDataArray($currentLoadedConfig, $path, $newValue, $newValue === null);
+        $this->_loadedConfig = $currentLoadedConfig;
+
+        $this->updateStoredConfigAfterRequest();
+        $this->updateParsedConfigTimesAfterRequest();
+    }
+
+    /**
+     * Updates the stored config after the request ends.
+     */
+    public function updateStoredConfigAfterRequest()
+    {
+        $this->_updateConfig = true;
+    }
+
+    /**
+     * Updates cached config file modified times after the request ends.
+     */
+    public function updateParsedConfigTimesAfterRequest()
+    {
+        if ($this->_waitingToUpdateParsedConfigTimes || !$this->_useConfigFile()) {
+            return;
+        }
+
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateParsedConfigTimes']);
+        $this->_waitingToUpdateParsedConfigTimes = true;
+    }
+
+    /**
+     * Updates cached config file modified times immediately.
+     *
+     * @return bool
+     */
+    public function updateParsedConfigTimes(): bool
+    {
+        $fileList = $this->_getConfigFileModifiedTimes();
+        return Craft::$app->getCache()->set(self::CACHE_KEY, $fileList, self::CACHE_DURATION);
+    }
+
+    /**
+     * Saves all the config data that has been modified up to now.
+     *
+     * @throws ErrorException
+     */
+    public function saveModifiedConfigData()
+    {
+        if (!empty($this->_modifiedYamlFiles) && $this->_useConfigFile()) {
+            // Save modified yaml files
+
+            foreach (array_keys($this->_modifiedYamlFiles) as $filePath) {
+                $data = $this->_parsedConfigs[$filePath];
+                $data = ProjectConfigHelper::cleanupConfig($data);
+                ksort($data);
+                FileHelper::writeToFile($filePath, Yaml::dump($data, 20, 2));
+            }
+        }
+
+        if (!$this->_updateConfig && !($this->_updateConfigMap && $this->_useConfigFile())) {
+            return;
+        }
+
+        $previousConfig = $this->_getStoredConfig();
+        $value = ProjectConfigHelper::cleanupConfig($previousConfig);
+        ksort($value);
+        $this->_storeYamlHistory($value);
+
+        $info = Craft::$app->getInfo();
+
+        if ($this->_updateConfigMap && $this->_useConfigFile()) {
+            $configMap = $this->_generateConfigMap();
+
+            foreach ($configMap as &$filePath) {
+                $filePath = Craft::alias($filePath);
             }
 
-            // Drop the content table
-            $db->createCommand()
-                ->dropTable($matrixField->contentTable)
-                ->execute();
+            $info->configMap = Json::encode($configMap);
+        }
 
-            Craft::$app->getContent()->contentTable = $originalContentTable;
+        if ($this->_updateConfig) {
+            $info->config = Json::encode($this->_getConfigurationFromYaml());
+        }
 
-            $transaction->commit();
+        Craft::$app->saveInfoAfterRequest();
+    }
 
+    /**
+     * Returns a summary of all pending config changes.
+     *
+     * @return array
+     */
+    public function getPendingChangeSummary(): array
+    {
+        $pendingChanges = $this->_getPendingChanges();
+
+        $summary = [];
+
+        // Reduce all the small changes to overall item changes.
+        foreach ($pendingChanges as $type => $changes) {
+            $summary[$type] = [];
+            foreach ($changes as $path) {
+                $pathParts = explode('.', $path);
+                if (count($pathParts) > 1) {
+                    $summary[$type][$pathParts[0] . '.' . $pathParts[1]] = true;
+                }
+            }
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Returns whether all schema versions stored in the config are compatible with the actual codebase.
+     * The schemas must match exactly to avoid unpredictable behavior that can occur when running migrations
+     * and applying project config changes at the same time.
+     *
+     * @param array $issues Passed by reference and populated with issues on error in
+     *                      the following format: `[$pluginName, $existingSchema, $incomingSchema]`
+     *
+     * @return bool|array
+     */
+    public function getAreConfigSchemaVersionsCompatible(&$issues = [])
+    {
+        // TODO remove after next breakpoint
+        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
             return true;
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
         }
+
+        $incomingSchema = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
+        $existingSchema = (string)Craft::$app->schemaVersion;
+
+        // Compare existing Craft schema version with the one that is being applied.
+        if (!version_compare($existingSchema, $incomingSchema, '=')) {
+            $issues[] = [
+                'cause' => 'Craft CMS',
+                'existing' => $existingSchema,
+                'incoming' => $incomingSchema
+            ];
+        }
+
+        $plugins = Craft::$app->getPlugins()->getAllPlugins();
+
+        foreach ($plugins as $plugin) {
+            /** @var Plugin $plugin */
+            $incomingSchema = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion', true);
+            $existingSchema = (string)$plugin->schemaVersion;
+
+            // Compare existing plugin schema version with the one that is being applied.
+            if ($incomingSchema && !version_compare($existingSchema, $incomingSchema, '=')) {
+                $issues[] = [
+                    'cause' => $plugin->name,
+                    'existing' => $existingSchema,
+                    'incoming' => $incomingSchema
+                ];
+            }
+        }
+
+        return empty($issues);
     }
 
+    // Config Change Event Registration
+    // -------------------------------------------------------------------------
+
     /**
-     * Returns the content table name for a given Matrix field.
+     * Attaches an event handler for when an item is added to the config at a given path.
      *
-     * @param MatrixField $matrixField The Matrix field.
-     * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
-     * @deprecated in 3.0.23. Use [[MatrixField::contentTableName]] instead.
+     * ---
+     *
+     * ```php
+     * use craft\events\ConfigEvent;
+     * use craft\helpers\Db;
+     *
+     * Craft::$app->projectConfig->onAdd('foo.{uid}', function(ConfigEvent $event) {
+     *     // Get the UID from the item path
+     *     $uid = $event->tokenMatches[0];
+     *
+     *     // Prep the row data
+     *     $data = array_merge($event->newValue);
+     *
+     *     // See if the row already exists (maybe it was soft-deleted)
+     *     $id = Db::idByUid('{{%tablename}}', $uid);
+     *
+     *     if ($id) {
+     *         $data['dateDeleted'] = null;
+     *         Craft::$app->db->createCommand()->update('{{%tablename}}', $data, [
+     *             'id' => $id,
+     *         ]);
+     *     } else {
+     *         $data['uid'] = $uid;
+     *         Craft::$app->db->createCommand()->insert('{{%tablename}}', $data);
+     *     }
+     * });
+     * ```
+     *
+     * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
+     * @param callable $handler The handler method.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     * @return static self reference
      */
-    public function getContentTableName(MatrixField $matrixField)
+    public function onAdd(string $path, $handler, $data = null): self
     {
-        return $matrixField->contentTable;
+        $this->registerChangeEventHandler(self::EVENT_ADD_ITEM, $path, $handler, $data);
+        return $this;
     }
 
     /**
-     * Defines a new Matrix content table name.
+     * Attaches an event handler for when an item is updated in the config at a given path.
      *
-     * @param MatrixField $field
-     * @return string
-     * @since 3.0.23
+     * ---
+     *
+     * ```php
+     * use craft\events\ConfigEvent;
+     *
+     * Craft::$app->projectConfig->onUpdate('foo.{uid}', function(ConfigEvent $event) {
+     *     // Get the UID from the item path
+     *     $uid = $event->tokenMatches[0];
+     *
+     *     // Update the item in the database
+     *     $data = array_merge($event->newValue);
+     *     Craft::$app->db->createCommand()->update('{{%tablename}}', $data, [
+     *         'uid' => $uid,
+     *     ]);
+     * });
+     * ```
+     *
+     * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
+     * @param callable $handler The handler method.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     * @return static self reference
      */
-    public function defineContentTableName(MatrixField $field): string
+    public function onUpdate(string $path, $handler, $data = null): self
     {
-        $baseName = 'matrixcontent_' . strtolower($field->handle);
-        $db = Craft::$app->getDb();
-        $i = -1;
-        do {
-            $i++;
-            $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
-        } while ($name !== $field->contentTable && $db->tableExists($name));
-        return $name;
+        $this->registerChangeEventHandler(self::EVENT_UPDATE_ITEM, $path, $handler, $data);
+        return $this;
     }
 
     /**
-     * Returns a block by its ID.
+     * Attaches an event handler for when an item is removed from the config at a given path.
      *
-     * @param int $blockId The Matrix block’s ID.
-     * @param int|null $siteId The site ID to return. Defaults to the current site.
-     * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
+     * ---
+     *
+     * ```php
+     * use craft\events\ConfigEvent;
+     *
+     * Craft::$app->projectConfig->onRemove('foo.{uid}', function(ConfigEvent $event) {
+     *     // Get the UID from the item path
+     *     $uid = $event->tokenMatches[0];
+     *
+     *     // Soft-delete the item from the database
+     *     Craft::$app->db->createCommand()->softDelete('{{%tablename}}', [
+     *         'uid' => $uid,
+     *     ]);
+     * });
+     * ```
+     *
+     * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
+     * @param callable $handler The handler method.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     * @return static self reference
      */
-    public function getBlockById(int $blockId, int $siteId = null)
+    public function onRemove(string $path, $handler, $data = null): self
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);
+        $this->registerChangeEventHandler(self::EVENT_REMOVE_ITEM, $path, $handler, $data);
+        return $this;
     }
 
     /**
-     * Saves a Matrix field.
+     * Defers an event until all other project config changes have been processed.
      *
-     * @param MatrixField $field The Matrix field
-     * @param ElementInterface $owner The element the field is associated with
+     * @param ConfigEvent $event
+     * @param callable $handler
+     * @since 3.1.13
+     */
+    public function defer(ConfigEvent $event, callable $handler)
+    {
+        Craft::info('Deferring event handler for ' . $event->path, __METHOD__);
+        $this->_deferredEvents[] = [$event, $event->tokenMatches, $handler];
+    }
+
+    /**
+     * Registers a config change event listener, for a specific config path pattern.
+     *
+     * @param string $event The event name
+     * @param string $path The config path pattern. Can contain `{uid}` tokens, which will be passed to the handler.
+     * @param callable $handler The handler method.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     */
+    public function registerChangeEventHandler(string $event, string $path, $handler, $data = null)
+    {
+        $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
+        $pattern = str_replace('\\{uid\\}', '(' . self::UID_PATTERN . ')', $pattern);
+
+        $this->on($event, function(ConfigEvent $event) use ($pattern, $handler) {
+            if (preg_match($pattern, $event->path, $matches)) {
+                // Is this a nested path?
+                if (isset($matches['extra'])) {
+                    $this->processConfigChanges($matches['path']);
+                    return;
+                }
+
+                // Chop off [0] (full match) and ['path'] & [1] (requested path)
+                $event->tokenMatches = array_values(array_slice($matches, 3));
+                $handler($event);
+                $event->tokenMatches = null;
+            }
+        }, $data);
+    }
+
+    /**
+     * Rebuilds the project config from the current state in the database.
+     *
      * @throws \Throwable if reasons
+     * @since 3.1.20
      */
-    public function saveField(MatrixField $field, ElementInterface $owner)
+    public function rebuild()
     {
-        /** @var Element $owner */
-        $elementsService = Craft::$app->getElements();
-        /** @var MatrixBlockQuery $query */
-        $query = $owner->getFieldValue($field->handle);
-        /** @var MatrixBlock[] $blocks */
-        if (($blocks = $query->getCachedResult()) === null) {
-            $blocksQuery = clone $query;
-            $blocks = $blocksQuery->anyStatus()->all();
-        }
-        $blockIds = [];
-        $collapsedBlockIds = [];
+        // Create a backup of current config.
+        $this->reset();
+        $currentConfig = $this->_getStoredConfig();
+        $this->_storeYamlHistory($currentConfig);
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            foreach ($blocks as $block) {
-                $block->ownerId = $owner->id;
-                $elementsService->saveElement($block, false);
-                $blockIds[] = $block->id;
+        // Gather everything that we can about the current state of affairs
+        $configData = $this->_getCurrentStateData();
 
-                // Tell the browser to collapse this block?
-                if ($block->collapsed) {
-                    $collapsedBlockIds[] = $block->id;
-                }
-            }
+        // Fire a 'rebuild' event
+        $event = new RebuildConfigEvent([
+            'config' => $configData,
+        ]);
+        $this->trigger(self::EVENT_REBUILD, $event);
 
-            // Delete any blocks that shouldn't be there anymore
-            $this->_deleteOtherBlocks($field, $owner, $blockIds);
+        // Remove any existing user groups and fieldlayouts from $currentConfig
+        unset($currentConfig['users']['groups'], $currentConfig['users']['fieldLayouts']);
 
-            // Should we duplicate the blocks to other sites?
-            if (
-                $field->propagationMethod !== MatrixField::PROPAGATION_METHOD_ALL &&
-                ($owner->propagateAll || !empty($owner->newSiteIds))
-            ) {
-                // Find the owner's site IDs that *aren't* supported by this site's Matrix blocks
-                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-                $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner);
-                $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
+        // Merge the new data over the existing one.
+        $configData = array_replace_recursive([
+            'system' => $currentConfig['system'],
+            'routes' => $currentConfig['routes'] ?? [],
+            'plugins' => $currentConfig['plugins'] ?? [],
+            'users' => $currentConfig['users'] ?? [],
+            'email' => $currentConfig['email'] ?? [],
+        ], $event->config);
 
-                // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
-                if (!$owner->propagateAll) {
-                    $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
-                }
+        $this->muteEvents = true;
+        $readOnly = $this->readOnly;
+        $this->readOnly = false;
 
-                if (!empty($otherSiteIds)) {
-                    // Get the original element and duplicated element for each of those sites
-                    /** @var Element[] $otherTargets */
-                    $otherTargets = $owner::find()
-                        ->drafts($owner->getIsDraft())
-                        ->revisions($owner->getIsRevision())
-                        ->id($owner->id)
-                        ->siteId($otherSiteIds)
-                        ->anyStatus()
-                        ->all();
-
-                    // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
-                    $handledSiteIds = [];
-
-                    $cachedQuery = clone $query;
-                    $cachedQuery->anyStatus();
-                    $cachedQuery->setCachedResult($blocks);
-                    $owner->setFieldValue($field->handle, $cachedQuery);
-
-                    foreach ($otherTargets as $otherTarget) {
-                        // Make sure we haven't already duplicated blocks for this site, via propagation from another site
-                        if (isset($handledSiteIds[$otherTarget->siteId])) {
-                            continue;
-                        }
-
-                        $this->duplicateBlocks($field, $owner, $otherTarget);
-
-                        // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherTarget);
-                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
-                    }
-
-                    $owner->setFieldValue($field->handle, $query);
-                }
-            }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
+        foreach ($configData as $path => $value) {
+            $this->set($path, $value);
         }
 
-        // Tell the browser to collapse any new block IDs
-        if (!Craft::$app->getRequest()->getIsConsoleRequest() && !Craft::$app->getResponse()->isSent && !empty($collapsedBlockIds)) {
-            Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
-
-            foreach ($collapsedBlockIds as $blockId) {
-                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId(' . $blockId . ');', View::POS_END);
-            }
-        }
+        $this->readOnly = $readOnly;
+        $this->muteEvents = false;
     }
 
-    /**
-     * Duplicates Matrix blocks from one owner element to another.
-     *
-     * @param MatrixField $field The Matrix field to duplicate blocks for
-     * @param ElementInterface $source The source element blocks should be duplicated from
-     * @param ElementInterface $target The target element blocks should be duplicated to
-     * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
-     * @throws \Throwable if reasons
-     * @since 3.2.0
-     */
-    public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
-    {
-        /** @var Element $source */
-        /** @var Element $target */
-        $elementsService = Craft::$app->getElements();
-        /** @var MatrixBlockQuery $query */
-        $query = $source->getFieldValue($field->handle);
-        /** @var MatrixBlock[] $blocks */
-        if (($blocks = $query->getCachedResult()) === null) {
-            $blocksQuery = clone $query;
-            $blocks = $blocksQuery->anyStatus()->all();
-        }
-        $newBlockIds = [];
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            foreach ($blocks as $block) {
-                /** @var MatrixBlock $newBlock */
-                $newBlock = $elementsService->duplicateElement($block, [
-                    'ownerId' => $target->id,
-                    'owner' => $target,
-                    'siteId' => $target->siteId,
-                    'propagating' => false,
-                ]);
-                $newBlockIds[] = $newBlock->id;
-            }
-
-            // Delete any blocks that shouldn't be there anymore
-            $this->_deleteOtherBlocks($field, $target, $newBlockIds);
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
-        }
-
-        // Duplicate blocks for other sites as well?
-        if ($checkOtherSites && $field->propagationMethod !== MatrixField::PROPAGATION_METHOD_ALL) {
-            // Find the target's site IDs that *aren't* supported by this site's Matrix blocks
-            $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
-            $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $target);
-            $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
-
-            if (!empty($otherSiteIds)) {
-                // Get the original element and duplicated element for each of those sites
-                /** @var Element[] $otherSources */
-                $otherSources = $target::find()
-                    ->drafts($source->getIsDraft())
-                    ->revisions($source->getIsRevision())
-                    ->id($source->id)
-                    ->siteId($otherSiteIds)
-                    ->anyStatus()
-                    ->all();
-                /** @var Element[] $otherTargets */
-                $otherTargets = $target::find()
-                    ->drafts($target->getIsDraft())
-                    ->revisions($target->getIsRevision())
-                    ->id($target->id)
-                    ->siteId($otherSiteIds)
-                    ->anyStatus()
-                    ->indexBy('siteId')
-                    ->all();
-
-                // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
-                $handledSiteIds = [];
-
-                foreach ($otherSources as $otherSource) {
-                    // Make sure the target actually exists for this site
-                    if (!isset($otherTargets[$otherSource->siteId])) {
-                        continue;
-                    }
-
-                    // Make sure we haven't already duplicated blocks for this site, via propagation from another site
-                    if (in_array($otherSource->siteId, $handledSiteIds, false)) {
-                        continue;
-                    }
-
-                    $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
-
-                    // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                    $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherSource);
-                    $handledSiteIds = array_merge($handledSiteIds, $sourceSupportedSiteIds);
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns the site IDs that are supported by Matrix blocks for the given Matrix field and owner element.
-     *
-     * @param MatrixField $field
-     * @param ElementInterface $owner
-     * @return int[]
-     * @since 3.2.0
-     * @deprecated in 3.3.18. Use [[getSupportedSiteIds()]] instead.
-     */
-    public function getSupportedSiteIdsForField(MatrixField $field, ElementInterface $owner): array
-    {
-        return $this->getSupportedSiteIds($field->propagationMethod, $owner);
-    }
-
-    /**
-     * Returns the site IDs that are supported by Matrix blocks for the given propagation method and owner element.
-     *
-     * @param string $propagationMethod
-     * @param ElementInterface $owner
-     * @return int[]
-     * @since 3.3.18
-     */
-    public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner): array
-    {
-        /** @var Element $owner */
-        /** @var Site[] $allSites */
-        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
-        $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-        $siteIds = [];
-
-        foreach ($ownerSiteIds as $siteId) {
-            switch ($propagationMethod) {
-                case MatrixField::PROPAGATION_METHOD_NONE:
-                    $include = $siteId == $owner->siteId;
-                    break;
-                case MatrixField::PROPAGATION_METHOD_SITE_GROUP:
-                    $include = $allSites[$siteId]->groupId == $allSites[$owner->siteId]->groupId;
-                    break;
-                case MatrixField::PROPAGATION_METHOD_LANGUAGE:
-                    $include = $allSites[$siteId]->language == $allSites[$owner->siteId]->language;
-                    break;
-                default:
-                    $include = true;
-                    break;
-            }
-
-            if ($include) {
-                $siteIds[] = $siteId;
-            }
-        }
-
-        return $siteIds;
-    }
-
-    // Private Methods
+    // Private methods
     // =========================================================================
 
     /**
-     * Returns a Query object prepped for retrieving block types.
+     * Applies changes from a configuration array.
      *
-     * @return Query
+     * @param array $changes array nested array with keys `removedItems`, `changedItems` and `newItems`
+     * @throws OperationAbortedException
      */
-    private function _createBlockTypeQuery(): Query
+    private function _applyChanges(array $changes)
     {
-        return (new Query())
+        Craft::info('Looking for pending changes', __METHOD__);
+
+        // If we're parsing all the changes, we better work the actual config map.
+        $this->_configMap = $this->_generateConfigMap();
+
+        if (!empty($changes['removedItems'])) {
+            Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
+            foreach ($changes['removedItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        if (!empty($changes['changedItems'])) {
+            Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
+            foreach ($changes['changedItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        if (!empty($changes['newItems'])) {
+            Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
+            foreach ($changes['newItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        $defers = -count($this->_deferredEvents);
+        while (!empty($this->_deferredEvents)) {
+            if ($defers > $this->maxDefers) {
+                $paths = [];
+
+                // Grab a list of all deferred event paths
+                foreach ($this->_deferredEvents as list($deferredEvent)) {
+                    // Save us the trouble of filtering out duplicates later
+                    $paths[$deferredEvent->path] = true;
+                }
+
+                $message = "The following config paths could not be processed successfully:\n" . implode("\n", array_keys($paths));
+                throw new OperationAbortedException($message);
+            }
+
+            /** @var ConfigEvent $event */
+            /** @var string[]|null $tokenMatches */
+            /** @var callable $handler */
+            list($event, $tokenMatches, $handler) = array_shift($this->_deferredEvents);
+            Craft::info('Re-triggering deferred event for ' . $event->path, __METHOD__);
+            $event->tokenMatches = $tokenMatches;
+            $handler($event);
+            $event->tokenMatches = null;
+            $defers++;
+        }
+
+        Craft::info('Finalizing configuration parsing', __METHOD__);
+
+        // Fire an 'afterApplyChanges' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_CHANGES)) {
+            $this->trigger(self::EVENT_AFTER_APPLY_CHANGES);
+        }
+
+        $this->updateParsedConfigTimesAfterRequest();
+        $this->_updateConfigMap = true;
+        $this->_applyingYamlChanges = false;
+    }
+
+    /**
+     * Retrieve a a config file tree with modified times based on the main configuration file.
+     *
+     * @return array
+     */
+    private function _getConfigFileModifiedTimes(): array
+    {
+        $fileList = $this->_getConfigFileList();
+
+        $output = [];
+
+        clearstatcache();
+        foreach ($fileList as $file) {
+            if (file_exists($file)) {
+                $output[$file] = FileHelper::lastModifiedTime($file);
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Generate the configuration based on the configuration files.
+     *
+     * @return array
+     */
+    private function _getConfigurationFromYaml(): array
+    {
+        if ($this->_useConfigFile()) {
+            $fileList = $this->_getConfigFileList();
+            $fileConfigs = [];
+            foreach ($fileList as $file) {
+                $fileConfigs[] = $this->_parseYamlFile($file);
+            }
+            $generatedConfig = array_merge(...$fileConfigs);
+        } else {
+            if (empty($this->_parsedConfigs[self::CONFIG_KEY])) {
+                $this->_parsedConfigs[self::CONFIG_KEY] = $this->_getLoadedConfig();
+            }
+            $generatedConfig = $this->_parsedConfigs[self::CONFIG_KEY];
+        }
+
+        return $generatedConfig;
+    }
+
+    /**
+     * Return parsed YAML contents of a file, holding the data in cache.
+     *
+     * @param string $file
+     * @return mixed
+     */
+    private function _parseYamlFile(string $file)
+    {
+        if (empty($this->_parsedConfigs[$file])) {
+            $this->_parsedConfigs[$file] = file_exists($file) ? Yaml::parse(file_get_contents($file)) : [];
+        }
+
+        return $this->_parsedConfigs[$file];
+    }
+
+    /**
+     * Map a new node to a yaml file.
+     *
+     * @param $node
+     * @param $location
+     * @throws ServerErrorHttpException
+     */
+    private function _mapNodeLocation($node, $location)
+    {
+        $this->_getStoredConfigMap();
+        $this->_configMap[$node] = $location;
+    }
+
+    /**
+     * Get the stored config map.
+     *
+     * @return array
+     * @throws ServerErrorHttpException
+     */
+    private function _getStoredConfigMap(): array
+    {
+        if ($this->_configMap !== null) {
+            return $this->_configMap;
+        }
+
+        $configMap = Json::decode(Craft::$app->getInfo()->configMap) ?? [];
+
+        foreach ($configMap as &$filePath) {
+            $filePath = FileHelper::normalizePath(Craft::getAlias($filePath));
+
+            // If any of the file doesn't exist, return a generated map and make sure we save it as request ends
+            if (!file_exists($filePath)) {
+                $configMap = $this->_generateConfigMap();
+                $this->_updateConfigMap = true;
+                break;
+            }
+        }
+
+        return $this->_configMap = $configMap;
+    }
+
+    /**
+     * Returns the loaded config.
+     *
+     * @return array
+     */
+    private function _getLoadedConfig(): array
+    {
+        // _loadedConfig will be set if we've made any changes in this request
+        if ($this->_loadedConfig !== null) {
+            return $this->_loadedConfig;
+        }
+
+        // Otherwise just return whatever's in the DB
+        return $this->_getStoredConfig();
+    }
+
+    /**
+     * Returns the stored config.
+     *
+     * @return array
+     */
+    private function _getStoredConfig(): array
+    {
+        if ($this->_storedConfig !== null) {
+            return $this->_storedConfig;
+        }
+
+        $info = Craft::$app->getInfo();
+        if (!$info->config) {
+            return $this->_storedConfig = [];
+        }
+        if ($info->config[0] === '{') {
+            return $this->_storedConfig = Json::decode($info->config);
+        }
+        return $this->_storedConfig = unserialize($info->config, ['allowed_classes' => false]);
+    }
+
+    /**
+     * Return a nested array for pending config changes
+     *
+     * @param array $configData config data to use. If null, config is fetched from `config/project.yaml`
+     * @return array
+     */
+    private function _getPendingChanges(array $configData = null): array
+    {
+        $newItems = [];
+        $changedItems = [];
+
+        if ($configData === null) {
+            $configData = $this->_getConfigurationFromYaml();
+        }
+
+        $currentConfig = $this->_getLoadedConfig();
+
+        $flatConfig = [];
+        $flatCurrent = [];
+
+        unset($configData['dateModified'], $currentConfig['dateModified'], $configData['imports'], $currentConfig['imports']);
+
+        // flatten both configs so we can compare them.
+
+        $flatten = function($array, $path, &$result) use (&$flatten) {
+            foreach ($array as $key => $value) {
+                $thisPath = ltrim($path . '.' . $key, '.');
+
+                if (is_array($value)) {
+                    $flatten($value, $thisPath, $result);
+                } else {
+                    $result[$thisPath] = $value;
+                }
+            }
+        };
+
+        $flatten($configData, '', $flatConfig);
+        $flatten($currentConfig, '', $flatCurrent);
+
+        // Compare and if something is different, mark the immediate parent as changed.
+        foreach ($flatConfig as $key => $value) {
+            // Drop the last part of path
+            $immediateParent = pathinfo($key, PATHINFO_FILENAME);
+
+            if (!array_key_exists($key, $flatCurrent)) {
+                $newItems[] = $immediateParent;
+            } else if ($this->forceUpdate || $flatCurrent[$key] !== $value) {
+                $changedItems[] = $immediateParent;
+            }
+
+            unset($flatCurrent[$key]);
+        }
+
+        $removedItems = array_keys($flatCurrent);
+
+        foreach ($removedItems as &$removedItem) {
+            // Drop the last part of path
+            $removedItem = pathinfo($removedItem, PATHINFO_FILENAME);
+        }
+
+        // Sort by number of dots to ensure deepest paths listed first
+        $sorter = function($a, $b) {
+            $aDepth = substr_count($a, '.');
+            $bDepth = substr_count($b, '.');
+
+            if ($aDepth === $bDepth) {
+                return 0;
+            }
+
+            return $aDepth > $bDepth ? -1 : 1;
+        };
+
+        $newItems = array_unique($newItems);
+        $removedItems = array_unique($removedItems);
+        $changedItems = array_unique($changedItems);
+
+        uasort($newItems, $sorter);
+        uasort($removedItems, $sorter);
+        uasort($changedItems, $sorter);
+
+        return compact('newItems', 'removedItems', 'changedItems');
+    }
+
+    /**
+     * Generate the configuration mapping data from configuration files.
+     *
+     * @return array
+     */
+    private function _generateConfigMap(): array
+    {
+        $fileList = $this->_getConfigFileList();
+        $nodes = [];
+
+        foreach ($fileList as $file) {
+            $config = $this->_parseYamlFile($file);
+
+            // Take record of top nodes
+            $topNodes = array_keys($config);
+            foreach ($topNodes as $topNode) {
+                $nodes[$topNode] = $file;
+            }
+        }
+
+        unset($nodes['imports']);
+        return $nodes;
+    }
+
+    /**
+     * Return true if any of the config files have been modified since last we checked.
+     *
+     * @return bool
+     */
+    private function _areConfigFilesModified(): bool
+    {
+        $cachedModifiedTimes = Craft::$app->getCache()->get(self::CACHE_KEY);
+
+        if (!is_array($cachedModifiedTimes) || empty($cachedModifiedTimes)) {
+            return true;
+        }
+
+        foreach ($cachedModifiedTimes as $file => $modified) {
+            if (!file_exists($file) || FileHelper::lastModifiedTime($file) > $modified) {
+                return true;
+            }
+        }
+
+        // Re-cache
+        Craft::$app->getCache()->set(self::CACHE_KEY, $cachedModifiedTimes, self::CACHE_DURATION);
+
+        return false;
+    }
+
+    /**
+     * Load the config file and figure out all the files imported and used.
+     *
+     * @return array
+     */
+    private function _getConfigFileList(): array
+    {
+        if (!empty($this->_configFileList)) {
+            return $this->_configFileList;
+        }
+
+        $baseFile = Craft::$app->getPath()->getProjectConfigFilePath();
+
+        $traverseFile = function($filePath) use (&$traverseFile) {
+            $fileList = [$filePath];
+            $config = $this->_parseYamlFile($filePath);
+            $fileDir = pathinfo($filePath, PATHINFO_DIRNAME);
+
+            if (isset($config['imports'])) {
+                foreach ($config['imports'] as $file) {
+                    if (PathHelper::ensurePathIsContained($file)) {
+                        $fileList = array_merge($fileList, $traverseFile($fileDir . DIRECTORY_SEPARATOR . $file));
+                    }
+                }
+            }
+
+            return $fileList;
+        };
+
+        return $this->_configFileList = $traverseFile($baseFile);
+    }
+
+    /**
+     * Save configuration data to a path.
+     *
+     * @param array $data
+     * @param string|null $path
+     * @throws ErrorException
+     */
+    private function _saveConfig(array $data, string $path = null)
+    {
+        if ($this->_useConfigFile() && $path) {
+            $this->_parsedConfigs[$path] = $data;
+            $this->_modifiedYamlFiles[$path] = true;
+        } else {
+            $this->_parsedConfigs[self::CONFIG_KEY] = $data;
+        }
+    }
+
+    /**
+     * Whether to use the config file or not.
+     *
+     * @return bool
+     */
+    private function _useConfigFile(): bool
+    {
+        if ($this->_useConfigFile !== null) {
+            return $this->_useConfigFile;
+        }
+
+        return $this->_useConfigFile = Craft::$app->getConfig()->getGeneral()->useProjectConfigFile;
+    }
+
+    /**
+     * Traverse a nested data array according to path and perform an action depending on parameters.
+     *
+     * @param array $data A nested array of data to traverse
+     * @param array|string $path Path used to traverse the array. Either an array or a dot.based.path
+     * @param mixed $value Value to set at the destination. If null, will return the value, unless deleting
+     * @param bool $delete Whether to delete the value at the destination or not.
+     * @return mixed|null
+     */
+    private function _traverseDataArray(array &$data, $path, $value = null, $delete = false)
+    {
+        if (is_string($path)) {
+            $path = explode('.', $path);
+        }
+
+        $nextSegment = array_shift($path);
+
+        // Last piece?
+        if (count($path) === 0) {
+            if ($delete) {
+                unset($data[$nextSegment]);
+            } else if ($value === null) {
+                return $data[$nextSegment] ?? null;
+            } else {
+                $data[$nextSegment] = $value;
+            }
+        } else {
+            if (!isset($data[$nextSegment])) {
+                // If the path doesn't exist, it's fine if we wanted to delete or read
+                if ($delete || $value === null) {
+                    return null;
+                }
+
+                $data[$nextSegment] = [];
+            } else if (!is_array($data[$nextSegment])) {
+                // If the next part is not an array, but we have to travel further, make it an array.
+                $data[$nextSegment] = [];
+            }
+
+            return $this->_traverseDataArray($data[$nextSegment], $path, $value, $delete);
+        }
+
+        return null;
+    }
+
+    /**
+     * Store yaml history
+     *
+     * @param array $configData config data to be saved as history
+     * @throws Exception
+     */
+    private function _storeYamlHistory(array $configData)
+    {
+        // Add a `dateApplied` key for audit purposes.
+        $configData['dateApplied'] = date('Y-m-d H:i:s');
+        $basePath = Craft::$app->getPath()->getConfigBackupPath() . '/' . self::CONFIG_FILENAME;
+
+        // Go through all of them and move them forward.
+        for ($i = $this->maxBackups; $i > 0; $i--) {
+            $thisFile = $basePath . ($i == 1 ? '' : '.' . ($i - 1));
+            if (file_exists($thisFile)) {
+                if ($i === $this->maxBackups) {
+                    @unlink($thisFile);
+                } else {
+                    @rename($thisFile, "$basePath.$i");
+                }
+            }
+        }
+
+        file_put_contents($basePath, Yaml::dump($configData, 20, 2));
+    }
+
+    // Private methods for rebuilding project config
+    // =========================================================================
+
+    /**
+     * Return project config array.
+     * TODO: this is just a reminder that this part *needs* to be kept up-to-date as Craft evolves.
+     *
+     * @return array
+     */
+    private function _getCurrentStateData(): array
+    {
+        $data = [
+            'dateModified' => DateTimeHelper::currentTimeStamp(),
+            'siteGroups' => $this->_getSiteGroupData(),
+            'sites' => $this->_getSiteData(),
+            'sections' => $this->_getSectionData(),
+            'fieldGroups' => $this->_getFieldGroupData(),
+            'fields' => $this->_getFieldData(),
+            'matrixBlockTypes' => $this->_getMatrixBlockTypeData(),
+            'volumes' => $this->_getVolumeData(),
+            'categoryGroups' => $this->_getCategoryGroupData(),
+            'tagGroups' => $this->_getTagGroupData(),
+            'users' => $this->_getUserData(),
+            'globalSets' => $this->_getGlobalSetData(),
+            'plugins' => $this->_getPluginData(),
+            'imageTransforms' => $this->_getTransformData(),
+        ];
+
+        return $data;
+    }
+
+    /**
+     * Return site data config array.
+     *
+     * @return array
+     */
+    private function _getSiteGroupData(): array
+    {
+        $data = [];
+
+        $siteGroups = (new Query())
             ->select([
-                'bt.id',
+                'uid',
+                'name',
+            ])
+            ->from([Table::SITEGROUPS])
+            ->where(['dateDeleted' => null])
+            ->pairs();
+
+        foreach ($siteGroups as $uid => $name) {
+            $data[$uid] = ['name' => $name];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return site data config array.
+     *
+     * @return array
+     */
+    private function _getSiteData(): array
+    {
+        $data = [];
+
+        $sites = (new Query())
+            ->select([
+                'sites.name',
+                'sites.handle',
+                'sites.language',
+                'sites.hasUrls',
+                'sites.baseUrl',
+                'sites.sortOrder',
+                'sites.groupId',
+                'sites.uid',
+                'sites.primary',
+                'siteGroups.uid AS siteGroup',
+            ])
+            ->from(['{{%sites}} sites'])
+            ->innerJoin('{{%sitegroups}} siteGroups', '[[sites.groupId]] = [[siteGroups.id]]')
+            ->where(['sites.dateDeleted' => null])
+            ->andWhere(['siteGroups.dateDeleted' => null])
+            ->all();
+
+        foreach ($sites as $site) {
+            $uid = $site['uid'];
+            unset($site['uid'], $site['groupId']);
+
+            $site['sortOrder'] = (int)$site['sortOrder'];
+            $site['hasUrls'] = (bool)$site['hasUrls'];
+            $site['primary'] = (bool)$site['primary'];
+
+            $data[$uid] = $site;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return section data config array.
+     *
+     * @return array
+     */
+    private function _getSectionData(): array
+    {
+        $sectionRows = (new Query())
+            ->select([
+                'sections.id',
+                'sections.name',
+                'sections.handle',
+                'sections.type',
+                'sections.enableVersioning',
+                'sections.propagationMethod',
+                'sections.previewTargets',
+                'sections.uid',
+                'structures.uid AS structure',
+                'structures.maxLevels AS structureMaxLevels',
+            ])
+            ->from(['{{%sections}} sections'])
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
+            ->where(['sections.dateDeleted' => null])
+            ->andWhere(['structures.dateDeleted' => null])
+            ->all();
+
+        $sectionData = [];
+
+        foreach ($sectionRows as $section) {
+            if (!empty($section['structure'])) {
+                $section['structure'] = [
+                    'uid' => $section['structure'],
+                    'maxLevels' => (int)$section['structureMaxLevels'] ?: null,
+                ];
+            } else {
+                unset($section['structure']);
+            }
+
+            $uid = $section['uid'];
+            unset($section['id'], $section['structureMaxLevels'], $section['uid']);
+
+            $section['enableVersioning'] = (bool)$section['enableVersioning'];
+
+            $sectionData[$uid] = $section;
+            $sectionData[$uid]['entryTypes'] = [];
+            $sectionData[$uid]['siteSettings'] = [];
+            $sectionData[$uid]['previewTargets'] = Json::decodeIfJson($section['previewTargets']);
+        }
+
+        $sectionSiteRows = (new Query())
+            ->select([
+                'sections_sites.enabledByDefault',
+                'sections_sites.hasUrls',
+                'sections_sites.uriFormat',
+                'sections_sites.template',
+                'sites.uid AS siteUid',
+                'sections.uid AS sectionUid',
+            ])
+            ->from(['{{%sections_sites}} sections_sites'])
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
+            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[sections_sites.sectionId]]')
+            ->where(['sites.dateDeleted' => null])
+            ->andWhere(['sections.dateDeleted' => null])
+            ->all();
+
+        foreach ($sectionSiteRows as $sectionSiteRow) {
+            $sectionUid = $sectionSiteRow['sectionUid'];
+            $siteUid = $sectionSiteRow['siteUid'];
+            unset($sectionSiteRow['sectionUid'], $sectionSiteRow['siteUid']);
+
+            $sectionSiteRow['hasUrls'] = (bool)$sectionSiteRow['hasUrls'];
+            $sectionSiteRow['enabledByDefault'] = (bool)$sectionSiteRow['enabledByDefault'];
+
+            $sectionData[$sectionUid]['siteSettings'][$siteUid] = $sectionSiteRow;
+        }
+
+        $entryTypeRows = (new Query())
+            ->select([
+                'entrytypes.fieldLayoutId',
+                'entrytypes.name',
+                'entrytypes.handle',
+                'entrytypes.hasTitleField',
+                'entrytypes.titleLabel',
+                'entrytypes.titleFormat',
+                'entrytypes.sortOrder',
+                'entrytypes.uid',
+                'sections.uid AS sectionUid',
+            ])
+            ->from(['{{%entrytypes}} as entrytypes'])
+            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entrytypes.sectionId]]')
+            ->where(['sections.dateDeleted' => null])
+            ->andWhere(['entrytypes.dateDeleted' => null])
+            ->all();
+
+        $layoutIds = array_filter(ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId'));
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($entryTypeRows as $entryType) {
+            $uid = ArrayHelper::remove($entryType, 'uid');
+            $sectionUid = ArrayHelper::remove($entryType, 'sectionUid');
+            $fieldLayoutId = ArrayHelper::remove($entryType, 'fieldLayoutId');
+
+            $entryType['hasTitleField'] = (bool)$entryType['hasTitleField'];
+            $entryType['sortOrder'] = (int)$entryType['sortOrder'];
+
+            if ($fieldLayoutId) {
+                $layout = array_merge($fieldLayouts[$fieldLayoutId]);
+                $layoutUid = ArrayHelper::remove($layout, 'uid');
+                $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            }
+
+            $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
+        }
+
+        return $sectionData;
+    }
+
+    /**
+     * Return field data config array.
+     *
+     * @return array
+     */
+    private function _getFieldGroupData(): array
+    {
+        $data = [];
+
+        $fieldGroups = (new Query())
+            ->select([
+                'uid',
+                'name',
+            ])
+            ->from([Table::FIELDGROUPS])
+            ->pairs();
+
+        foreach ($fieldGroups as $uid => $name) {
+            $data[$uid] = ['name' => $name];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return field data config array.
+     *
+     * @return array
+     */
+    private function _getFieldData(): array
+    {
+        $data = [];
+
+        $fieldRows = (new Query())
+            ->select([
+                'fields.id',
+                'fields.name',
+                'fields.handle',
+                'fields.instructions',
+                'fields.searchable',
+                'fields.translationMethod',
+                'fields.translationKeyFormat',
+                'fields.type',
+                'fields.settings',
+                'fields.uid',
+                'fieldGroups.uid AS fieldGroup',
+            ])
+            ->from(['{{%fields}} fields'])
+            ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
+            ->where(['fields.context' => 'global'])
+            ->all();
+
+        $fields = [];
+        $fieldService = Craft::$app->getFields();
+
+        // Massage the data and index by UID
+        foreach ($fieldRows as $fieldRow) {
+            $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
+            $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
+            $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+
+            $fieldRow['searchable'] = (bool)$fieldRow['searchable'];
+
+            $fields[$fieldRow['uid']] = $fieldRow;
+        }
+
+        foreach ($fields as $field) {
+            $fieldUid = $field['uid'];
+            unset($field['id'], $field['uid']);
+            $data[$fieldUid] = $field;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return matrix block type data config array.
+     *
+     * @return array
+     */
+    private function _getMatrixBlockTypeData(): array
+    {
+        $data = [];
+
+        $matrixBlockTypes = (new Query())
+            ->select([
                 'bt.fieldId',
                 'bt.fieldLayoutId',
                 'bt.name',
                 'bt.handle',
                 'bt.sortOrder',
-                'bt.uid'
+                'bt.uid',
+                'f.uid AS field',
             ])
-            ->from(['bt' => Table::MATRIXBLOCKTYPES])
-            ->orderBy(['bt.sortOrder' => SORT_ASC]);
-    }
-
-    /**
-     * Returns a block type record by its model or UID or creates a new one.
-     *
-     * @param MatrixBlockType|string $blockType
-     * @return MatrixBlockTypeRecord
-     * @throws MatrixBlockTypeNotFoundException if $blockType->id is invalid
-     */
-    private function _getBlockTypeRecord($blockType): MatrixBlockTypeRecord
-    {
-        if (is_string($blockType)) {
-            $blockTypeRecord = MatrixBlockTypeRecord::findOne(['uid' => $blockType]) ?? new MatrixBlockTypeRecord();
-
-            if (!$blockTypeRecord->getIsNewRecord()) {
-                $this->_blockTypeRecordsById[$blockTypeRecord->id] = $blockTypeRecord;
-            }
-
-            return $blockTypeRecord;
-        }
-
-        if ($blockType->getIsNew()) {
-            return new MatrixBlockTypeRecord();
-        }
-
-        if (isset($this->_blockTypeRecordsById[$blockType->id])) {
-            return $this->_blockTypeRecordsById[$blockType->id];
-        }
-
-        $blockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
-
-        if ($blockTypeRecord === null) {
-            throw new MatrixBlockTypeNotFoundException('Invalid block type ID: ' . $blockType->id);
-        }
-
-        return $this->_blockTypeRecordsById[$blockType->id] = $blockTypeRecord;
-    }
-
-    /**
-     * Creates the content table for a Matrix field.
-     *
-     * @param string $tableName
-     */
-    private function _createContentTable(string $tableName)
-    {
-        $migration = new CreateMatrixContentTable([
-            'tableName' => $tableName
-        ]);
-
-        ob_start();
-        $migration->up();
-        ob_end_clean();
-    }
-
-    /**
-     * Deletes blocks from an owner element
-     *
-     * @param MatrixField $field The Matrix field
-     * @param ElementInterface The owner element
-     * @param int[] $except Block IDs that should be left alone
-     */
-    private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except)
-    {
-        /** @var Element $owner */
-        $deleteBlocks = MatrixBlock::find()
-            ->anyStatus()
-            ->ownerId($owner->id)
-            ->fieldId($field->id)
-            ->siteId($owner->siteId)
-            ->andWhere(['not', ['elements.id' => $except]])
+            ->from(['{{%matrixblocktypes}} bt'])
+            ->innerJoin('{{%fields}} f', '[[bt.fieldId]] = [[f.id]]')
             ->all();
 
-        $elementsService = Craft::$app->getElements();
+        $layoutIds = [];
+        $blockTypeData = [];
 
-        foreach ($deleteBlocks as $deleteBlock) {
-            $elementsService->deleteElement($deleteBlock);
+        foreach ($matrixBlockTypes as $matrixBlockType) {
+            $fieldId = $matrixBlockType['fieldId'];
+            unset($matrixBlockType['fieldId']);
+
+            $layoutIds[] = $matrixBlockType['fieldLayoutId'];
+
+            $matrixBlockType['sortOrder'] = (int)$matrixBlockType['sortOrder'];
+
+            $blockTypeData[$fieldId][$matrixBlockType['uid']] = $matrixBlockType;
         }
+
+        $matrixFieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        // Fetch the subfields
+        $matrixSubfieldRows = (new Query())
+            ->select([
+                'fields.id',
+                'fields.name',
+                'fields.handle',
+                'fields.instructions',
+                'fields.searchable',
+                'fields.translationMethod',
+                'fields.translationKeyFormat',
+                'fields.type',
+                'fields.settings',
+                'fields.context',
+                'fields.uid',
+                'fieldGroups.uid AS fieldGroup',
+            ])
+            ->from(['{{%fields}} fields'])
+            ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
+            ->where(['like', 'fields.context', 'matrixBlockType:'])
+            ->all();
+
+        $matrixSubFields = [];
+        $fieldService = Craft::$app->getFields();
+
+        // Massage the data and index by UID
+        foreach ($matrixSubfieldRows as $matrixSubfieldRow) {
+            $matrixSubfieldRow['settings'] = Json::decodeIfJson($matrixSubfieldRow['settings']);
+            $fieldInstance = $fieldService->getFieldById($matrixSubfieldRow['id']);
+            $matrixSubfieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+            list (, $blockTypeUid) = explode(':', $matrixSubfieldRow['context']);
+
+            if (empty($matrixSubFields[$blockTypeUid])) {
+                $matrixSubFields[$blockTypeUid] = [];
+            }
+
+            $fieldUid = $matrixSubfieldRow['uid'];
+            unset($matrixSubfieldRow['uid'], $matrixSubfieldRow['id'], $matrixSubfieldRow['context']);
+
+            $matrixSubfieldRow['searchable'] = (bool)$matrixSubfieldRow['searchable'];
+
+            $matrixSubFields[$blockTypeUid][$fieldUid] = $matrixSubfieldRow;
+        }
+
+        foreach ($blockTypeData as &$blockTypes) {
+            foreach ($blockTypes as &$blockType) {
+                $blockTypeUid = $blockType['uid'];
+                $layout = $matrixFieldLayouts[$blockType['fieldLayoutId']];
+                unset($blockType['uid'], $blockType['fieldLayoutId']);
+                $blockType['fieldLayouts'] = [$layout['uid'] => ['tabs' => $layout['tabs']]];
+                $blockType['fields'] = $matrixSubFields[$blockTypeUid] ?? [];
+                $data[$blockTypeUid] = $blockType;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return volume data config array.
+     *
+     * @return array
+     */
+    private function _getVolumeData(): array
+    {
+        $volumes = (new Query())
+            ->select([
+                'volumes.fieldLayoutId',
+                'volumes.name',
+                'volumes.handle',
+                'volumes.type',
+                'volumes.hasUrls',
+                'volumes.url',
+                'volumes.settings',
+                'volumes.sortOrder',
+                'volumes.uid',
+            ])
+            ->from(['{{%volumes}} volumes'])
+            ->where(['volumes.dateDeleted' => null])
+            ->all();
+
+        $layoutIds = [];
+
+        foreach ($volumes as $volume) {
+            $layoutIds[] = $volume['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        $data = [];
+
+        foreach ($volumes as $volume) {
+            if (isset($fieldLayouts[$volume['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$volume['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$volume['fieldLayoutId']]['uid']);
+                $volume['fieldLayouts'] = [$layoutUid => $fieldLayouts[$volume['fieldLayoutId']]];
+            }
+
+            $volume['settings'] = Json::decodeIfJson($volume['settings']);
+
+            $uid = $volume['uid'];
+            unset($volume['fieldLayoutId'], $volume['uid']);
+
+            $volume['hasUrls'] = (bool)$volume['hasUrls'];
+            $volume['sortOrder'] = (int)$volume['sortOrder'];
+
+            $data[$uid] = $volume;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return user group data config array.
+     *
+     * @return array
+     */
+    private function _getUserData(): array
+    {
+        $data = [];
+
+        $layoutId = (new Query())
+            ->select(['id'])
+            ->from([Table::FIELDLAYOUTS])
+            ->where(['type' => User::class])
+            ->andWhere(['dateDeleted' => null])
+            ->scalar();
+
+        if ($layoutId) {
+            $layouts = array_values($this->_generateFieldLayoutArray([$layoutId]));
+            $layout = reset($layouts);
+            $uid = $layout['uid'];
+            unset($layout['uid']);
+            $data['fieldLayouts'] = [$uid => $layout];
+        }
+
+        $groups = (new Query())
+            ->select(['id', 'name', 'handle', 'uid'])
+            ->from([Table::USERGROUPS])
+            ->all();
+
+        $permissions = (new Query())
+            ->select(['id', 'name'])
+            ->from([Table::USERPERMISSIONS])
+            ->pairs();
+
+        $groupPermissions = (new Query())
+            ->select(['permissionId', 'groupId'])
+            ->from([Table::USERPERMISSIONS_USERGROUPS])
+            ->all();
+
+        $permissionList = [];
+
+        foreach ($groupPermissions as $groupPermission) {
+            $permissionList[$groupPermission['groupId']][] = $permissions[$groupPermission['permissionId']];
+        }
+
+        foreach ($groups as $group) {
+            $data['groups'][$group['uid']] = [
+                'name' => $group['name'],
+                'handle' => $group['handle'],
+                'permissions' => $permissionList[$group['id']] ?? []
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return category group data config array.
+     *
+     * @return array
+     */
+    private function _getCategoryGroupData(): array
+    {
+        $groupRows = (new Query())
+            ->select([
+                'groups.name',
+                'groups.handle',
+                'groups.uid',
+                'groups.fieldLayoutId',
+                'structures.uid AS structure',
+                'structures.maxLevels AS structureMaxLevels',
+            ])
+            ->from(['{{%categorygroups}} groups'])
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[groups.structureId]]')
+            ->where(['groups.dateDeleted' => null])
+            ->andWhere(['structures.dateDeleted' => null])
+            ->all();
+
+        $groupData = [];
+
+        $layoutIds = [];
+
+        foreach ($groupRows as $group) {
+            $layoutIds[] = $group['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($groupRows as $group) {
+            if (!empty($group['structure'])) {
+                $group['structure'] = [
+                    'uid' => $group['structure'],
+                    'maxLevels' => (int)$group['structureMaxLevels'] ?: null,
+                ];
+            } else {
+                unset($group['structure']);
+            }
+
+            if (isset($fieldLayouts[$group['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$group['fieldLayoutId']]['uid']);
+                $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
+            }
+
+            $uid = $group['uid'];
+            unset($group['structureMaxLevels'], $group['uid'], $group['fieldLayoutId']);
+
+            $groupData[$uid] = $group;
+            $groupData[$uid]['siteSettings'] = [];
+        }
+
+        $groupSiteRows = (new Query())
+            ->select([
+                'groups_sites.hasUrls',
+                'groups_sites.uriFormat',
+                'groups_sites.template',
+                'sites.uid AS siteUid',
+                'groups.uid AS groupUid',
+            ])
+            ->from(['{{%categorygroups_sites}} groups_sites'])
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[groups_sites.siteId]]')
+            ->innerJoin('{{%categorygroups}} groups', '[[groups.id]] = [[groups_sites.groupId]]')
+            ->where(['groups.dateDeleted' => null])
+            ->andWhere(['sites.dateDeleted' => null])
+            ->all();
+
+        foreach ($groupSiteRows as $groupSiteRow) {
+            $groupUid = $groupSiteRow['groupUid'];
+            $siteUid = $groupSiteRow['siteUid'];
+            unset($groupSiteRow['siteUid'], $groupSiteRow['groupUid']);
+
+            $groupSiteRow['hasUrls'] = (bool)$groupSiteRow['hasUrls'];
+
+            $groupData[$groupUid]['siteSettings'][$siteUid] = $groupSiteRow;
+        }
+
+        return $groupData;
+    }
+
+    /**
+     * Return tag group data config array.
+     *
+     * @return array
+     */
+    private function _getTagGroupData(): array
+    {
+        $groupRows = (new Query())
+            ->select([
+                'groups.name',
+                'groups.handle',
+                'groups.uid',
+                'groups.fieldLayoutId',
+            ])
+            ->from(['{{%taggroups}} groups'])
+            ->where(['groups.dateDeleted' => null])
+            ->all();
+
+        $groupData = [];
+        $layoutIds = [];
+
+        foreach ($groupRows as $group) {
+            $layoutIds[] = $group['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($groupRows as $group) {
+            if (isset($fieldLayouts[$group['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$group['fieldLayoutId']]['uid']);
+                $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
+            }
+
+            $uid = $group['uid'];
+            unset($group['uid'], $group['fieldLayoutId']);
+
+            $groupData[$uid] = $group;
+        }
+
+        return $groupData;
+    }
+
+    /**
+     * Return global set data config array.
+     *
+     * @return array
+     */
+    private function _getGlobalSetData(): array
+    {
+        $setRows = (new Query())
+            ->select([
+                'sets.name',
+                'sets.handle',
+                'sets.uid',
+                'sets.fieldLayoutId',
+            ])
+            ->from(['{{%globalsets}} sets'])
+            ->all();
+
+        $setData = [];
+        $layoutIds = [];
+
+        foreach ($setRows as $setRow) {
+            $layoutIds[] = $setRow['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($setRows as $setRow) {
+            if (isset($fieldLayouts[$setRow['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$setRow['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$setRow['fieldLayoutId']]['uid']);
+                $setRow['fieldLayouts'] = [$layoutUid => $fieldLayouts[$setRow['fieldLayoutId']]];
+            }
+
+            $uid = $setRow['uid'];
+            unset($setRow['uid'], $setRow['fieldLayoutId']);
+
+            $setData[$uid] = $setRow;
+        }
+
+        return $setData;
+    }
+
+    /**
+     * Return plugin data config array
+     *
+     * @return array
+     */
+    private function _getPluginData(): array
+    {
+        $plugins = (new Query())
+            ->select([
+                'handle',
+                'schemaVersion',
+            ])
+            ->from([Table::PLUGINS])
+            ->all();
+
+        $pluginData = [];
+
+        foreach ($plugins as $plugin) {
+            $pluginData[$plugin['handle']] = [
+                'schemaVersion' => $plugin['schemaVersion'],
+            ];
+        }
+
+        return $pluginData;
+    }
+
+
+    /**
+     * Return asset transform config array
+     *
+     * @return array
+     */
+    private function _getTransformData(): array
+    {
+        $transformRows = (new Query())
+            ->select([
+                'name',
+                'handle',
+                'mode',
+                'position',
+                'width',
+                'height',
+                'format',
+                'quality',
+                'interlace',
+                'uid',
+            ])
+            ->from([Table::ASSETTRANSFORMS])
+            ->indexBy('uid')
+            ->all();
+
+        foreach ($transformRows as &$row) {
+            unset($row['uid']);
+            $row['width'] = (int)$row['width'] ?: null;
+            $row['height'] = (int)$row['height'] ?: null;
+            $row['quality'] = (int)$row['quality'] ?: null;
+        }
+
+        return $transformRows;
+    }
+
+    /**
+     * Generate field layout config data for a list of array ids
+     *
+     * @param int[] $layoutIds
+     *
+     * @return array
+     */
+    private function _generateFieldLayoutArray(array $layoutIds): array
+    {
+        // Get all the UIDs
+        $fieldLayoutUids = (new Query())
+            ->select(['id', 'uid'])
+            ->from([Table::FIELDLAYOUTS])
+            ->where(['id' => $layoutIds])
+            ->pairs();
+
+        $fieldLayouts = [];
+        foreach ($fieldLayoutUids as $id => $uid) {
+            $fieldLayouts[$id] = [
+                'uid' => $uid,
+                'tabs' => [],
+            ];
+        }
+
+        // Get the tabs and fields
+        $fieldRows = (new Query())
+            ->select([
+                'fields.handle',
+                'fields.uid AS fieldUid',
+                'layoutFields.fieldId',
+                'layoutFields.required',
+                'layoutFields.sortOrder AS fieldOrder',
+                'tabs.id AS tabId',
+                'tabs.name as tabName',
+                'tabs.sortOrder AS tabOrder',
+                'tabs.uid AS tabUid',
+                'layouts.id AS layoutId',
+            ])
+            ->from(['{{%fieldlayoutfields}} AS layoutFields'])
+            ->innerJoin('{{%fieldlayouttabs}} AS tabs', '[[layoutFields.tabId]] = [[tabs.id]]')
+            ->innerJoin('{{%fieldlayouts}} AS layouts', '[[layoutFields.layoutId]] = [[layouts.id]]')
+            ->innerJoin('{{%fields}} AS fields', '[[layoutFields.fieldId]] = [[fields.id]]')
+            ->where(['layouts.id' => $layoutIds])
+            ->andWhere(['layouts.dateDeleted' => null])
+            ->orderBy(['tabs.sortOrder' => SORT_ASC, 'layoutFields.sortOrder' => SORT_ASC])
+            ->all();
+
+        foreach ($fieldRows as $fieldRow) {
+            $layout = &$fieldLayouts[$fieldRow['layoutId']];
+
+            if (empty($layout['tabs'][$fieldRow['tabUid']])) {
+                $layout['tabs'][$fieldRow['tabUid']] =
+                    [
+                        'name' => $fieldRow['tabName'],
+                        'sortOrder' => (int)$fieldRow['tabOrder'],
+                    ];
+            }
+
+            $tab = &$layout['tabs'][$fieldRow['tabUid']];
+
+            $field['required'] = (bool)$fieldRow['required'];
+            $field['sortOrder'] = (int)$fieldRow['fieldOrder'];
+
+            $tab['fields'][$fieldRow['fieldUid']] = $field;
+        }
+
+        // Get rid of UIDs
+        foreach ($fieldLayouts as &$fieldLayout) {
+            $fieldLayout['tabs'] = array_values($fieldLayout['tabs']);
+        }
+
+        return $fieldLayouts;
     }
 }
