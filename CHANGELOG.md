@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.4 - 2020-02-03
+
+### Fixed
+- Fix being unable to save Matrix-SuperTable-Matrix fields.
+
 ## 2.4.3 - 2020-02-02
 
 ### Fixed
