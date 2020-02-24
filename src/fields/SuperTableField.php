@@ -488,9 +488,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         // Existing element?
         if ($element && $element->id) {
-            $query->ownerId($element->id);
+            $query->ownerId = $element->id;
+
+            // Clear out id=false if this query was populated previously
+            if ($query->id === false) {
+                $query->id = null;
+            }
         } else {
-            $query->id(false);
+            $query->id = false;
         }
 
         $query
