@@ -6,6 +6,9 @@
 - Move `getRelatedElements()` to Service. (thanks @joshua-martin).
 - Now requires Craft ^3.4.8.
 
+### Fixed
+- Fixed a bug where querying for blocks on a newly-created element’s Super Table field value would yield no results..
+
 ### Deprecated
 - Deprecated `verbb\supertable\queue\jobs\ApplySuperTablePropagationMethod`.
 
