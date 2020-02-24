@@ -2,15 +2,13 @@
 namespace verbb\supertable\fields;
 
 use verbb\supertable\SuperTable;
+use verbb\supertable\assetbundles\SuperTableAsset;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
 use verbb\supertable\elements\SuperTableBlockElement;
-use verbb\supertable\models\SuperTableBlockTypeModel;
-use verbb\supertable\assetbundles\SuperTableAsset;
-use verbb\supertable\queue\jobs\ApplySuperTablePropagationMethod;
-
 use verbb\supertable\gql\arguments\elements\SuperTableBlock as SuperTableBlockArguments;
 use verbb\supertable\gql\resolvers\elements\SuperTableBlock as SuperTableBlockResolver;
 use verbb\supertable\gql\types\generators\SuperTableBlockType as SuperTableBlockTypeGenerator;
+use verbb\supertable\models\SuperTableBlockTypeModel;
 
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
@@ -32,6 +30,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use craft\services\Fields;
@@ -884,10 +883,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
             
             if ($this->propagationMethod !== $oldPropagationMethod) {
-                Craft::$app->getQueue()->push(new ApplySuperTablePropagationMethod([
-                    'fieldId' => $this->id,
-                    'oldPropagationMethod' => $oldPropagationMethod,
-                    'newPropagationMethod' => $this->propagationMethod,
+                Craft::$app->getQueue()->push(new ApplyNewPropagationMethod([
+                    'description' => Craft::t('app', 'Applying new propagation method to Super Table blocks'),
+                    'elementType' => SuperTableBlockElement::class,
+                    'criteria' => [
+                        'fieldId' => $this->id,
+                    ],
                 ]));
             }
         }
