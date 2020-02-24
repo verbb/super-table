@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.4.5 - 2020-02-24
+
+### Added
+- Added `verbb\supertable\queue\jobs\ApplyNewPropagationMethod`.
+
+### Changed
+- Move `getRelatedElements()` to Service. (thanks @joshua-martin).
+- Now requires Craft ^3.4.8.
+
+### Deprecated
+- Deprecated `verbb\supertable\queue\jobs\ApplySuperTablePropagationMethod`.
+
 ## 2.4.4 - 2020-02-03
 
 ### Fixed
