@@ -2,9 +2,6 @@
 
 ## 2.4.5 - 2020-02-24
 
-### Added
-- Added `verbb\supertable\queue\jobs\ApplyNewPropagationMethod`.
-
 ### Changed
 - Move `getRelatedElements()` to Service. (thanks @joshua-martin).
 - Now requires Craft ^3.4.8.
