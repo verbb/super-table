@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.6 - 2020-02-28
+
+### Fixed
+- Fix PHP error.
+- Fix number field alignment.
+
 ## 2.4.5 - 2020-02-24
 
 ### Changed
