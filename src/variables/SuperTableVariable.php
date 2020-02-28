@@ -1,6 +1,8 @@
 <?php
 namespace verbb\supertable\variables;
 
+use Craft;
+
 use verbb\supertable\SuperTable;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
 use verbb\supertable\elements\SuperTableBlockElement;
