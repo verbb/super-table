@@ -256,4 +256,8 @@ body.ltr .superTableMatrix > .titlebar {
     margin-bottom: 7px;
 }
 
+.superTableContainer .field[data-type="craft\\fields\\Number"] .flex:not(.flex-nowrap) > * {
+    margin-bottom: 0 !important;
+}
+
 
