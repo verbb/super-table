@@ -57,12 +57,4 @@ trait PluginTrait
         BaseHelper::registerModule();
     }
 
-    private function _setLogging()
-    {
-        Craft::getLogger()->dispatcher->targets[] = new FileTarget([
-            'logFile' => Craft::getAlias('@storage/logs/super-table.log'),
-            'categories' => ['super-table'],
-        ]);
-    }
-
 }

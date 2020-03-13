@@ -52,7 +52,6 @@ class SuperTable extends Plugin
         self::$plugin = $this;
 
         $this->_setPluginComponents();
-        $this->_setLogging();
         $this->_registerCpRoutes();
         $this->_registerVariables();
         $this->_registerFieldTypes();
