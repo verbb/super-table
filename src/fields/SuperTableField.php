@@ -462,10 +462,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $view->registerJs('new Craft.SuperTable.Configurator(' .
             Json::encode($tableId, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode(Craft::$app->getView()->getNamespace(), JSON_UNESCAPED_UNICODE) .
+            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) .
         ');');
 
-        return Craft::$app->getView()->renderTemplate('super-table/settings', [
+        return $view->renderTemplate('super-table/settings', [
             'supertableField' => $this,
             'fieldTypes' => $fieldTypeOptions,
             'blockTypes' => $blockTypes,
@@ -580,7 +580,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
         }
 
-        $id = Craft::$app->getView()->formatInputId($this->handle);
+        $view = Craft::$app->getView();
+        $id = $view->formatInputId($this->handle);
 
         // Get the block types data
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
@@ -593,13 +594,13 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $this->maxRows >= count($value)
         );
 
-        Craft::$app->getView()->registerAssetBundle(SuperTableAsset::class);
+        $view->registerAssetBundle(SuperTableAsset::class);
 
-        $js = 'var superTableInput = new Craft.SuperTable.Input('.
-            '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
-            Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE).', '.
-            '"'.Craft::$app->getView()->namespaceInputName($this->handle).'", '.
-            Json::encode($this, JSON_UNESCAPED_UNICODE).
+        $js = 'var superTableInput = new Craft.SuperTable.Input(' .
+            '"' . $view->namespaceInputId($id) . '", ' .
+            Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
+            '"' . $view->namespaceInputName($this->handle) . '", ' .
+            Json::encode($this, JSON_UNESCAPED_UNICODE) .
             ');';
 
         // Safe to create the default blocks?
@@ -613,9 +614,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             }
         }
 
-        Craft::$app->getView()->registerJs($js);
+        $view->registerJs($js);
 
-        return Craft::$app->getView()->renderTemplate('super-table/input', [
+        return $view->renderTemplate('super-table/input', [
             'id' => $id,
             'name' => $this->handle,
             'blockTypes' => $this->getBlockTypes(),
@@ -739,10 +740,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         }
 
         $id = StringHelper::randomString();
+        $view = Craft::$app->getView();
 
-        Craft::$app->getView()->registerAssetBundle(SuperTableAsset::class);
+        $view->registerAssetBundle(SuperTableAsset::class);
 
-        return Craft::$app->getView()->renderTemplate('super-table/input', [
+        return $view->renderTemplate('super-table/input', [
             'id' => $id,
             'name' => $id,
             'blockTypes' => $this->getBlockTypes(),
@@ -993,10 +995,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     {
         $fieldTypes = [];
 
+        $view = Craft::$app->getView();
+
         // Set a temporary namespace for these
-        $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName('blockTypes[__BLOCK_TYPE_ST__][fields][__FIELD_ST__][typesettings]', $originalNamespace);
-        Craft::$app->getView()->setNamespace($namespace);
+        $originalNamespace = $view->getNamespace();
+        $namespace = $view->namespaceInputName('blockTypes[__BLOCK_TYPE_ST__][fields][__FIELD_ST__][typesettings]', $originalNamespace);
+        $view->setNamespace($namespace);
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             /** @var Field|string $class */
@@ -1005,7 +1009,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                 continue;
             }
 
-            Craft::$app->getView()->startJsBuffer();
+            $view->startJsBuffer();
 
             /** @var FieldInterface $field */
             $field = new $class();
@@ -1013,12 +1017,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             // A Matrix field will fetch all available fields, grabbing their Settings HTML. Then Super Table will do the same,
             // causing an infinite loop - extract some methods from MatrixFieldType
             if ($class === Matrix::class) {
-                $settingsBodyHtml = Craft::$app->getView()->namespaceInputs((string)SuperTable::$plugin->matrixService->getMatrixSettingsHtml($field));
+                $settingsBodyHtml = $view->namespaceInputs((string)SuperTable::$plugin->matrixService->getMatrixSettingsHtml($field));
             } else {
-                $settingsBodyHtml = Craft::$app->getView()->namespaceInputs((string)$field->getSettingsHtml());
+                $settingsBodyHtml = $view->namespaceInputs((string)$field->getSettingsHtml());
             }
 
-            $settingsFootHtml = Craft::$app->getView()->clearJsBuffer();
+            $settingsFootHtml = $view->clearJsBuffer();
 
             $fieldTypes[] = [
                 'type' => $class,
@@ -1031,7 +1035,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         // Sort them by name
         ArrayHelper::multisort($fieldTypes, 'name');
 
-        Craft::$app->getView()->setNamespace($originalNamespace);
+        $view->setNamespace($originalNamespace);
 
         return $fieldTypes;
     }
@@ -1049,10 +1053,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         $blockTypes = [];
 
+        $view = Craft::$app->getView();
+
         // Set a temporary namespace for these
-        $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName($this->handle . '[blocks][__BLOCK_ST__][fields]', $originalNamespace);
-        Craft::$app->getView()->setNamespace($namespace);
+        $originalNamespace = $view->getNamespace();
+        $namespace = $view->namespaceInputName($this->handle . '[blocks][__BLOCK_ST__][fields]', $originalNamespace);
+        $view->setNamespace($namespace);
 
         foreach ($this->getBlockTypes() as $blockType) {
             // Create a fake SuperTableBlockElement so the field types have a way to get at the owner element, if there is one
@@ -1071,9 +1077,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                 $field->setIsFresh(true);
             }
 
-            Craft::$app->getView()->startJsBuffer();
+            $view->startJsBuffer();
 
-            $bodyHtml = Craft::$app->getView()->namespaceInputs(Craft::$app->getView()->renderTemplate('super-table/fields', [
+            $bodyHtml = $view->namespaceInputs($view->renderTemplate('super-table/fields', [
                 'namespace' => null,
                 'fields' => $fieldLayoutFields,
                 'element' => $block,
@@ -1086,7 +1092,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                 $field->setIsFresh(null);
             }
 
-            $footHtml = Craft::$app->getView()->clearJsBuffer();
+            $footHtml = $view->clearJsBuffer();
 
             $blockTypes[] = [
                 'type' => $blockType->id,
@@ -1095,7 +1101,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             ];
         }
 
-        Craft::$app->getView()->setNamespace($originalNamespace);
+        $view->setNamespace($originalNamespace);
 
         return $blockTypes;
     }

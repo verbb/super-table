@@ -54,7 +54,7 @@ class SuperTableMatrixService extends Component
 
         $view->registerJs('new Craft.SuperTable.MatrixConfiguratorAlt(' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode(Craft::$app->getView()->getNamespace(), JSON_UNESCAPED_UNICODE) .
+            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) .
         ');');
 
         // Look for any missing fields and convert to Plain Text
@@ -139,7 +139,7 @@ class SuperTableMatrixService extends Component
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/settings',
+        return $view->renderTemplate('_components/fieldtypes/Matrix/settings',
             [
                 'matrixField' => $matrixField,
                 'fieldTypes' => $fieldTypeOptions,
@@ -158,7 +158,8 @@ class SuperTableMatrixService extends Component
             $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
         }
 
-        $id = Craft::$app->getView()->formatInputId($matrixField->handle);
+        $view = Craft::$app->getView();
+        $id = $view->formatInputId($matrixField->handle);
 
         // Let plugins/modules override which block types should be available for this field
         $event = new BlockTypesEvent([
@@ -182,12 +183,12 @@ class SuperTableMatrixService extends Component
             $matrixField->maxBlocks >= count($value)
         );
 
-        Craft::$app->getView()->registerAssetBundle(SuperTableAsset::class);
+        $view->registerAssetBundle(SuperTableAsset::class);
 
         $js = 'var matrixInputAlt = new Craft.SuperTable.MatrixInputAlt(' . 
-            '"' . Craft::$app->getView()->namespaceInputId($id) . '", ' .
+            '"' . $view->namespaceInputId($id) . '", ' .
             Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            '"' . Craft::$app->getView()->namespaceInputName($matrixField->handle) . '", ' .
+            '"' . $view->namespaceInputName($matrixField->handle) . '", ' .
             ($matrixField->maxBlocks ?: 'null') .
             ');';
 
@@ -199,9 +200,9 @@ class SuperTableMatrixService extends Component
             }
         }
 
-        Craft::$app->getView()->registerJs($js);
+        $view->registerJs($js);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
+        return $view->renderTemplate('_components/fieldtypes/Matrix/input',
             [
                 'id' => $id,
                 'name' => $matrixField->handle,
@@ -226,10 +227,12 @@ class SuperTableMatrixService extends Component
     {
         $fieldTypes = [];
 
+        $view = Craft::$app->getView();
+
         // Set a temporary namespace for these
-        $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName('blockTypes[__BLOCK_TYPE_NESTED__][fields][__FIELD_NESTED__][typesettings]', $originalNamespace);
-        Craft::$app->getView()->setNamespace($namespace);
+        $originalNamespace = $view->getNamespace();
+        $namespace = $view->namespaceInputName('blockTypes[__BLOCK_TYPE_NESTED__][fields][__FIELD_NESTED__][typesettings]', $originalNamespace);
+        $view->setNamespace($namespace);
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             /** @var Field|string $class */
@@ -238,11 +241,11 @@ class SuperTableMatrixService extends Component
                 continue;
             }
 
-            Craft::$app->getView()->startJsBuffer();
+            $view->startJsBuffer();
             /** @var FieldInterface $field */
             $field = new $class();
-            $settingsBodyHtml = Craft::$app->getView()->namespaceInputs((string)$field->getSettingsHtml());
-            $settingsFootHtml = Craft::$app->getView()->clearJsBuffer();
+            $settingsBodyHtml = $view->namespaceInputs((string)$field->getSettingsHtml());
+            $settingsFootHtml = $view->clearJsBuffer();
 
             $fieldTypes[] = [
                 'type' => $class,
@@ -255,7 +258,7 @@ class SuperTableMatrixService extends Component
         // Sort them by name
         ArrayHelper::multisort($fieldTypes, 'name');
 
-        Craft::$app->getView()->setNamespace($originalNamespace);
+        $view->setNamespace($originalNamespace);
 
         return $fieldTypes;
     }
@@ -265,10 +268,12 @@ class SuperTableMatrixService extends Component
         /** @var Element $element */
         $blockTypeInfo = [];
 
+        $view = Craft::$app->getView();
+
         // Set a temporary namespace for these
-        $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName($matrixField->handle . '[blocks][__BLOCK2__][fields]', $originalNamespace);
-        Craft::$app->getView()->setNamespace($namespace);
+        $originalNamespace = $view->getNamespace();
+        $namespace = $view->namespaceInputName($matrixField->handle . '[blocks][__BLOCK2__][fields]', $originalNamespace);
+        $view->setNamespace($namespace);
 
         foreach ($blockTypes as $blockType) {
             // Create a fake MatrixBlock so the field types have a way to get at the owner element, if there is one
@@ -287,9 +292,9 @@ class SuperTableMatrixService extends Component
                 $field->setIsFresh(true);
             }
 
-            Craft::$app->getView()->startJsBuffer();
+            $view->startJsBuffer();
 
-            $bodyHtml = Craft::$app->getView()->namespaceInputs(Craft::$app->getView()->renderTemplate('_includes/fields',
+            $bodyHtml = $view->namespaceInputs($view->renderTemplate('_includes/fields',
                 [
                     'namespace' => null,
                     'fields' => $fieldLayoutFields,
@@ -301,7 +306,7 @@ class SuperTableMatrixService extends Component
                 $field->setIsFresh(null);
             }
 
-            $footHtml = Craft::$app->getView()->clearJsBuffer();
+            $footHtml = $view->clearJsBuffer();
 
             $blockTypeInfo[] = [
                 'handle' => $blockType->handle,
@@ -311,7 +316,7 @@ class SuperTableMatrixService extends Component
             ];
         }
 
-        Craft::$app->getView()->setNamespace($originalNamespace);
+        $view->setNamespace($originalNamespace);
 
         return $blockTypeInfo;
     }
