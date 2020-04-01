@@ -9,6 +9,10 @@ use craft\base\Model;
 use NerdsAndCompany\Schematic\Schematic;
 use NerdsAndCompany\Schematic\Converters\Base\Field;
 
+if (!class_exists(Field::class)) {
+    return;
+}
+
 class SuperTableSchematic extends Field
 {
     public function getRecordDefinition(Model $record): array

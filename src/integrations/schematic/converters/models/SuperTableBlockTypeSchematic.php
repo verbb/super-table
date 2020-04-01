@@ -8,6 +8,10 @@ use craft\base\Model;
 
 use NerdsAndCompany\Schematic\Converters\Models\Base;
 
+if (!class_exists(Base::class)) {
+    return;
+}
+
 class SuperTableBlockTypeSchematic extends Base
 {
     public function getRecordDefinition(Model $record): array
