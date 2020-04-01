@@ -298,7 +298,7 @@ Craft.SuperTable.MatrixInputAlt = Garnish.Base.extend({
                 Garnish.scrollContainerToElement($block);
 
                 // Focus on the first text input
-                $block.find('.text:first').trigger('focus');
+                $block.find('.text,[contenteditable]').first().trigger('focus');
             });
         }, this));
     },
