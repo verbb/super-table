@@ -304,21 +304,28 @@ class PluginController extends Controller
                 $contentTable = $superTableField->contentTable;
 
                 if ($contentTable) {
-                    $columns = Craft::$app->getDb()->getTableSchema($contentTable)->columns;
+                    $contentTableSchema = Craft::$app->getDb()->getTableSchema($contentTable);
 
-                    foreach ($columns as $key => $column) {
-                        if (strstr($key, 'field_')) {
-                            $dbFieldColumns[] = $key;
+                    if ($contentTableSchema) {
+                        $columns = $contentTableSchema->columns;
+
+                        foreach ($columns as $key => $column) {
+                            if (strstr($key, 'field_')) {
+                                $dbFieldColumns[] = $key;
+                            }
                         }
-                    }
 
-                    // Sort items the same - just in case they're in a slightly different order, but all there
-                    sort($correctFieldColumns);
-                    sort($dbFieldColumns);
+                        // Sort items the same - just in case they're in a slightly different order, but all there
+                        sort($correctFieldColumns);
+                        sort($dbFieldColumns);
 
-                    if ($correctFieldColumns != $dbFieldColumns) {
+                        if ($correctFieldColumns != $dbFieldColumns) {
+                            $errors = true;
+                            echo "    > ERROR: {$contentTable} has missing field columns ...\n";
+                        }
+                    } else {
                         $errors = true;
-                        echo "    > ERROR: {$contentTable} has missing field columns ...\n";
+                        echo "    > ERROR: {$contentTable} database table does not exist ...\n";
                     }
                 }
             }
