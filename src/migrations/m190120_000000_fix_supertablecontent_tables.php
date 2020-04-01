@@ -193,8 +193,22 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
             $dbFieldColumns = [];
             $missingFields = false;
 
-            $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
-            $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
+            $fieldId = $superTableBlockType['fieldId'] ?? '';
+
+            if (!$fieldId) {
+                echo "    > ERROR: Blocktype field missing `fieldId` ...\n";
+                continue;
+            }
+
+            $fieldLayoutId = $superTableBlockType['fieldLayoutId'] ?? '';
+
+            if (!$fieldLayoutId) {
+                echo "    > ERROR: Blocktype field #{$superTableBlockType['fieldId']} missing `fieldLayoutId` ...\n";
+                continue;
+            }
+
+            $superTableField = $fieldsService->getFieldById($fieldId);
+            $fieldLayout = $fieldsService->getLayoutById($fieldLayoutId);
 
             if (!$superTableField) {
                 echo "    > ERROR: Blocktype field #{$superTableBlockType['fieldId']} not found ...\n";
