@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.4.7 - 2020-04-02
+
+### Changed
+- Refactor row layout with CSS Grid (no style change).
+
+### Fixed
+- Additional checks for Webhooks compatibility. (thanks @johndwells).
+- Fix nested Matrix not focusing on Redactor fields.
+- Fix migration check for missing fieldLayoutId on blocktypes.
+- Fix content table fixer where the content database table doesn’t exist at all.
+- Fix lack of line-breaking for table layout column headings.
+- Fix row layout overflowing the page content in some cases.
+
 ## 2.4.6 - 2020-02-28
 
 ### Fixed
