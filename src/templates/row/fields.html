@@ -16,34 +16,30 @@
             {% endswitch %}
         {% endif %}
 
-        <tr data-id="">
-            <td class="thin rowHeader">
-                <span class="heading-text {% if field.required %}required{% endif %}">
-                    {{ field.name | t('site') }}
+        <div class="thin rowHeader">
+            <span class="heading-text {% if field.required %}required{% endif %}">
+                {{ field.name | t('site') }}
 
-                    {% if field.instructions %}
-                        <span class="info">{{ field.instructions | t('site') | md | raw }}</span>
-                    {% endif %}
+                {% if field.instructions %}
+                    <span class="info">{{ field.instructions | t('site') | md | raw }}</span>
+                {% endif %}
 
-                    {% if translatable %}
-                        <span class="extralight" data-icon="language" title="{{ translationDescription ?? 'This field is translatable.' | t('app') }}"></span>
-                    {% endif %}
-                </span>
-            </td>
+                {% if translatable %}
+                    <span class="extralight" data-icon="language" title="{{ translationDescription ?? 'This field is translatable.' | t('app') }}"></span>
+                {% endif %}
+            </span>
+        </div>
 
-            <td>
-                {% include "super-table/field" with {
-                    field: field,
-                    required: field.required,
-                    element: element,
-                    static: static ?? false,
-                    registerDeltas: registerDeltas ?? false,
-                } only %}
-            </td>
+        <div class="superTable-layout-row-new-field">
+            {% include "super-table/field" with {
+                field: field,
+                required: field.required,
+                element: element,
+                static: static ?? false,
+                registerDeltas: registerDeltas ?? false,
+            } only %}
+        </div>
 
-            {% if not staticField %}
-                <td class="thin placeholder"></td>
-            {% endif %}
-        </tr>
+        <div class="blank-spacer"></div>
     {% endfor %}
 {% endnamespace %}

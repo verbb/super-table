@@ -1,6 +1,6 @@
-/* ==========================================================================
+// ==========================================================================
 // Super Table Styles
-// ========================================================================== */
+// ==========================================================================
 
 .superTableContainer {
     position: relative;
@@ -49,9 +49,9 @@
 }
 
 
-/* ==========================================================================
+// ==========================================================================
 // Column-Layout Styles
-// ========================================================================== */
+// ==========================================================================
 
 .superTable-layout-table {
     table-layout: fixed;
@@ -82,12 +82,12 @@
     width: 29px;
 }
 
-/* Tweak the required asterisks a little */
+// Tweak the required asterisks a little
 .superTable-layout-table .col-header .heading-text.required:after {
     margin: -4px 0 0 1px;
 }
 
-/* Tweak the info icon a little */
+// Tweak the info icon a little
 .superTable-layout-table .col-header .heading-text {
     position: relative;
 }
@@ -110,9 +110,9 @@
 
 
 
-/* ==========================================================================
+// ==========================================================================
 // Row-Layout Styles
-// ========================================================================== */
+// ==========================================================================
 
 .superTableRow {
     margin: 10px 0;
@@ -135,12 +135,12 @@
     display: block;
 }
 
-/* Tweak the required asterisks a little */
+// Tweak the required asterisks a little
 .superTableRow .rowHeader .heading-text.required:after {
     margin: -4px 0 0 1px;
 }
 
-/* Tweak the info icon a little */
+// Tweak the info icon a little
 .superTableRow .rowHeader .heading-text .info:before {
     margin: 1px 0 0 1px;
 }
@@ -184,8 +184,8 @@
     margin: -7px 0 0 3px;
 }
 
-/* Special-case for inner Matrix fields for Row Layout. When collapsed, breaks out of the table container */
-/* so fix that was some positioning fixes */
+// Special-case for inner Matrix fields for Row Layout. When collapsed, breaks out of the table container
+// so fix that was some positioning fixes
 .superTableRow .matrixblock.collapsed .titlebar {
     position: relative;
 }
@@ -209,9 +209,98 @@
     padding: 6px 0;
 }
 
-/* ==========================================================================
+
+
+// ==========================================================================
+// New Row-Layout Styles
+// ==========================================================================
+
+.superTable-layout-row-new {
+    position: relative;
+    border-radius: 5px;
+    border: 1px solid #d5d8dd;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: 0 1px 5px -1px rgba(0,0,0,0.1);
+}
+
+.superTable-layout-row-new-body {
+    display: grid;
+    grid-template-columns: auto 1fr 46px;
+
+    &.static-field {
+        grid-template-columns: auto 1fr 0;
+    }
+}
+
+.superTable-layout-row-new-body .rowHeader {
+    max-width: 180px;
+    white-space: normal;
+    border-radius: 0;
+    border-top: 1px solid rgba(0,0,0,0.07);
+}
+
+.superTable-layout-row-new-field {
+    border-left: 1px solid #e0e4e7;
+    padding: 4px 10px;
+    border-top: 1px solid rgba(0,0,0,0.07);
+    background: #fff;
+
+    & > .field > .heading {
+        display: none;
+    }
+}
+
+.superTable-layout-row-new-body > :nth-child(1),
+.superTable-layout-row-new-body > :nth-child(2),
+.superTable-layout-row-new-body > :nth-child(3) {
+    border-top: none;
+}
+
+.superTable-layout-row-new-body {
+    > :nth-child(1) {
+        border-top-left-radius: 3px;
+    }
+
+    > :nth-last-child(3) {
+        border-bottom-left-radius: 3px;
+    }
+}
+
+.superTable-layout-row-new-body.static-field {
+    > :nth-child(2) {
+        border-top-right-radius: 3px;
+    }
+
+    > :nth-last-child(2) {
+        border-bottom-right-radius: 3px;
+    }
+}
+
+.superTable-layout-row-new-actions {
+    right: 0;
+    width: 45px;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    text-align: center;
+    background: #f1f5f8;
+    opacity: 1;
+    border-left: 1px solid rgba(0,0,0,0.07);
+}
+
+.superTable-layout-row-new-actions .floating .icon.delete:before {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -7px 0 0 3px;
+}
+
+
+
+// ==========================================================================
 // Matrix-Layout Styles
-// ========================================================================== */
+// ==========================================================================
 
 body.ltr .superTableMatrix > .titlebar {
     padding: 5px 70px 5px 5px;
@@ -225,16 +314,16 @@ body.ltr .superTableMatrix > .titlebar {
     padding-top: 14px;
 }
 
-/* ==========================================================================
+// ==========================================================================
 // Provide special formatting for some field types.
-// ========================================================================== */
+// ==========================================================================
 
 
 
 
-/* ==========================================================================
+// ==========================================================================
 // Provide special formatting for some third-party field types. Just to make things clean
-// ========================================================================== */
+// ==========================================================================
 
 .superTableContainer .field .fruitlinkit .fruitlinkit-options,
 .superTableContainer .field .fruitlinkit .fruitlinkit-type,

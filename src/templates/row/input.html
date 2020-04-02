@@ -19,8 +19,8 @@
                 {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
                 {{ hiddenInput("#{baseInputName}[type]", block.getType().id) }}
 
-                <table class="superTable-table superTable-layout-row">
-                    <tbody>
+                <div class="superTable-layout-row-new">
+                    <div class="superTable-layout-row-new-body {% if staticField %}static-field{% endif %}">
                         {% include "super-table/row/fields" with {
                             namespace: "#{baseInputName}[fields]",
                             element: block,
@@ -28,17 +28,15 @@
                             settings: supertableField,
                             registerDeltas: not blockIsNew,
                         } %}
-                    </tbody>
+                    </div>
 
                     {% if not staticField %}
-                        <tfoot>
-                            <tr>
-                                <td class="floating reorder"><a class="move icon" title="{{ 'Reorder' | t('site') }}"></a></td>
-                                <td class="floating delete"><a class="delete icon" title="{{ 'Delete' | t('site') }}"></a></td>
-                            </tr>
-                        </tfoot>
+                        <div class="superTable-layout-row-new-actions tfoot-actions">
+                            <div class="floating reorder"><a class="move icon" title="{{ 'Reorder' | t('site') }}"></a></div>
+                            <div class="floating delete"><a class="delete icon" title="{{ 'Delete' | t('site') }}"></a></div>
+                        </div>
                     {% endif %}
-                </table>
+                </div>
             </div>
         {% endfor %}
     </div>

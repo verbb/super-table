@@ -203,7 +203,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
             this.$rows = this.$divInner.children('.superTableRow');
 
             this.sorter = new Garnish.DragSort(this.$rows, {
-                handle: 'tfoot .reorder .move',
+                handle: '.tfoot-actions .reorder .move',
                 axis: 'y',
                 collapseDraggees: true,
                 magnetStrength: 4,
@@ -248,21 +248,19 @@ if (typeof Craft.SuperTable === typeof undefined) {
             var html = '<div class="superTableRow" data-id="' + id + '" data-type="' + type + '">' +
                 '<input type="hidden" name="' + this.inputNamePrefix + '[sortOrder][]" value="' + id + '">' +
                 '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id  +'][type]" value="' + type + '">' +
-                '<table id="' + id + '" class="superTable-table superTable-layout-row">' +
-                '<tbody>' +
-                '' + bodyHtml + '' +
-                '</tbody>';
+                '<div id="' + id + '" class="superTable-layout-row-new">' +
+                    '<div class="superTable-layout-row-new-body">' +
+                        bodyHtml +
+                    '</div>';
 
             if (!isStatic) {
-                html += '<tfoot>' +
-                    '<tr>' +
-                    '<td class="floating reorder"><a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a></td>' +
-                    '<td class="floating delete"><a class="delete icon" title="' + Craft.t('super-table', 'Delete') + '"></a></td>' + 
-                    '</tr>' +
-                    '</tfoot>';
+                html += '<div class="superTable-layout-row-new-actions tfoot-actions">' +
+                    '<div class="floating reorder"><a class="move icon" title="' + Craft.t('super-table', 'Reorder') + '"></a></div>' +
+                    '<div class="floating delete"><a class="delete icon" title="' + Craft.t('super-table', 'Delete') + '"></a></div>' + 
+                '</div>';
             }
 
-            html += '</table>' +
+            html += '</div>' +
                 '</div>';
 
             var $tr = $(html).appendTo(this.$divInner);
@@ -297,8 +295,8 @@ if (typeof Craft.SuperTable === typeof undefined) {
             // otherwise, we get a nasty overflow of buttons.
 
             // Get the Super Table overall width, with some padding
-            var actionBtnWidth = this.$divInner.find('tfoot tr').width();
-            var rowHeaderWidth = this.$divInner.find('td.rowHeader').width();
+            var actionBtnWidth = this.$divInner.find('.tfoot-actions').width();
+            var rowHeaderWidth = this.$divInner.find('.rowHeader').width();
             var rowWidth = this.$divInner.width() - actionBtnWidth - rowHeaderWidth - 20;
             var $matrixFields = this.$divInner.find('.matrix.matrix-field');
 
@@ -334,7 +332,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
             this.table = table;
             this.$tr = $(tr);
 
-            var $deleteBtn = this.$tr.children().last().find('tfoot .delete');
+            var $deleteBtn = this.$tr.children().last().find('.tfoot-actions .delete');
             this.addListener($deleteBtn, 'click', 'deleteRow');
         },
 
