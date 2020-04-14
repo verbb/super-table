@@ -6,7 +6,6 @@ use verbb\supertable\services\SuperTableService;
 use verbb\supertable\services\SuperTableMatrixService;
 
 use Craft;
-use craft\log\FileTarget;
 
 use yii\log\Logger;
 
@@ -59,10 +58,7 @@ trait PluginTrait
 
     private function _setLogging()
     {
-        Craft::getLogger()->dispatcher->targets[] = new FileTarget([
-            'logFile' => Craft::getAlias('@storage/logs/super-table.log'),
-            'categories' => ['super-table'],
-        ]);
+        BaseHelper::setFileLogging('super-table');
     }
 
 }
