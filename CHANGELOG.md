@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.4.8 - 2020-04-15
+
+### Changed
+- File logging now checks if the overall Craft app uses file logging.
+- Log files now only include `GET` and `POST` additional variables.
+
+### Fixed
+- Fix Table field (and some other fields) not working correctly for Super Table field settings.
+
 ## 2.4.7 - 2020-04-02
 
 ### Changed
