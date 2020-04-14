@@ -236,6 +236,8 @@ Craft.SuperTable.Field = Garnish.Base.extend({
                 this.$nameInput.focus();
             }, this), 100);
         }
+
+        Garnish.$win.trigger('resize');
     },
 
     deselect: function() {
