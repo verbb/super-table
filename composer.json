@@ -26,7 +26,7 @@
     ],
     "require": {
         "craftcms/cms": "^3.4.8",
-        "verbb/base": "^1.0.0"
+        "verbb/base": "^1.0.2"
     },
     "autoload": {
         "psr-4": {
