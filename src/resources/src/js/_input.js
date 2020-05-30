@@ -345,12 +345,22 @@ if (typeof Craft.SuperTable === typeof undefined) {
                 return;
             }
 
+            // Pause the draft editor
+            if (window.draftEditor) {
+                window.draftEditor.pause();
+            }
+
             this.table.sorter.removeItems(this.$tr);
 
             this.contract(function() {
                 this.$tr.remove();
 
                 this.table.updateAddBlockBtn();
+
+                // Resume the draft editor
+                if (window.draftEditor) {
+                    window.draftEditor.resume();
+                }
             });
         },
 
@@ -621,12 +631,22 @@ if (typeof Craft.SuperTable === typeof undefined) {
         deleteRow: function() {
             this.table.sorter.removeItems(this.$tr);
 
+            // Pause the draft editor
+            if (window.draftEditor) {
+                window.draftEditor.pause();
+            }
+
             this.$tr.velocity({
                 opacity: 0,
                 marginBottom: -(this.$tr.outerHeight())
             }, 'fast', $.proxy(function() {
                 this.$tr.remove();
                 this.table.updateAddBlockBtn();
+
+                // Resume the draft editor
+                if (window.draftEditor) {
+                    window.draftEditor.resume();
+                }
             }, this));
         },
 
