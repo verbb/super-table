@@ -462,7 +462,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $view->registerJs('new Craft.SuperTable.Configurator(' .
             Json::encode($tableId, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) .
+            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($view->namespaceInputName('blockTypes[__BLOCK_TYPE_ST__][fields][__FIELD_ST__][typesettings]')) .
         ');');
 
         return $view->renderTemplate('super-table/settings', [
@@ -995,13 +996,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     {
         $fieldTypes = [];
 
-        $view = Craft::$app->getView();
-
-        // Set a temporary namespace for these
-        $originalNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName('blockTypes[__BLOCK_TYPE_ST__][fields][__FIELD_ST__][typesettings]', $originalNamespace);
-        $view->setNamespace($namespace);
-
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             /** @var Field|string $class */
             // No SuperTable-Inception, sorry buddy.
@@ -1009,33 +1003,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                 continue;
             }
 
-            $view->startJsBuffer();
-
-            /** @var FieldInterface $field */
-            $field = new $class();
-
-            // A Matrix field will fetch all available fields, grabbing their Settings HTML. Then Super Table will do the same,
-            // causing an infinite loop - extract some methods from MatrixFieldType
-            if ($class === Matrix::class) {
-                $settingsBodyHtml = $view->namespaceInputs((string)SuperTable::$plugin->matrixService->getMatrixSettingsHtml($field));
-            } else {
-                $settingsBodyHtml = $view->namespaceInputs((string)$field->getSettingsHtml());
-            }
-
-            $settingsFootHtml = $view->clearJsBuffer();
-
             $fieldTypes[] = [
                 'type' => $class,
                 'name' => $class::displayName(),
-                'settingsBodyHtml' => $settingsBodyHtml,
-                'settingsFootHtml' => $settingsFootHtml,
             ];
         }
 
         // Sort them by name
         ArrayHelper::multisort($fieldTypes, 'name');
-
-        $view->setNamespace($originalNamespace);
 
         return $fieldTypes;
     }

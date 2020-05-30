@@ -9,6 +9,7 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
 
     inputNamePrefix: null,
     inputIdPrefix: null,
+    fieldTypeSettingsNamespace: null,
 
     blockTypeId: null,
     blockTypeNamePrefix: null,
@@ -30,7 +31,14 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
     totalNewFields: 0,
     fieldSettings: null,
 
-    init: function(id, fieldTypeInfo, inputNamePrefix) {
+    _fieldTypeSettingsHtml: {},
+    _cancelToken: null,
+    _ignoreFailedRequest: false,
+
+    init: function(id, fieldTypeInfo, inputNamePrefix, fieldTypeSettingsNamespace) {
+        // Garnish.requestAnimationFrame(() => {
+
+        this.fieldTypeSettingsNamespace = fieldTypeSettingsNamespace;
         this.fieldTypeInfo = fieldTypeInfo;
         this.id = id;
 
@@ -100,6 +108,9 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
                 }
             }, this)
         });
+
+
+        // });
     },
 
     getFieldTypeInfo: function(type) {
@@ -128,6 +139,46 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
         this.fields[id].select();
 
         this.fieldSort.addItems($item);
+    },
+
+    getFieldTypeSettingsHtml: function(type) {
+        return new Promise((resolve, reject) => {
+            if (typeof this._fieldTypeSettingsHtml[type] !== 'undefined') {
+                resolve(this._fieldTypeSettingsHtml[type]);
+                return;
+            }
+
+            // Cancel the current request
+            if (this._cancelToken) {
+                this._ignoreFailedRequest = true;
+                this._cancelToken.cancel();
+                Garnish.requestAnimationFrame(() => {
+                    this._ignoreFailedRequest = false;
+                });
+            }
+
+            // Create a cancel token
+            this._cancelToken = axios.CancelToken.source();
+
+            Craft.sendActionRequest('POST', 'fields/render-settings', {
+                cancelToken: this._cancelToken.token,
+                data: {
+                    type: type,
+                    namespace: this.fieldTypeSettingsNamespace,
+                }
+            }).then(response => {
+                this._fieldTypeSettingsHtml[type] = response.data;
+                
+                // Garnish.requestAnimationFrame(() => {
+                    resolve(response.data);
+                // });
+            }).catch(() => {
+                if (!this._ignoreFailedRequest) {
+                    Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+                }
+                reject();
+            });
+        });
     },
 
     // selfDestruct: function() {
@@ -176,6 +227,7 @@ Craft.SuperTable.Field = Garnish.Base.extend({
         this.inputIdPrefix = this.blockType.inputIdPrefix + '-fields-' + this.id;
 
         this.initializedFieldTypeSettings = {};
+        this.fieldTypeSettingsTemplates = {};
 
         this.$nameLabel = this.$item.children('.name');
         this.$handleLabel = this.$item.children('.handle');
@@ -281,32 +333,51 @@ Craft.SuperTable.Field = Garnish.Base.extend({
         this.selectedFieldType = type;
         this.$typeSelect.val(type);
 
-        var firstTime = (typeof this.initializedFieldTypeSettings[type] === 'undefined'),
-            $body,
-            footHtml;
+        // Show a spinner
+        this.$typeSettingsContainer.html('<div class="zilch"><div class="spinner"></div></div>');
 
-        if (firstTime) {
-            var info = this.configurator.getFieldTypeInfo(type),
-                bodyHtml = this.getParsedFieldTypeHtml(info.settingsBodyHtml);
+        this.getFieldTypeSettings(type).then(({fresh, $settings, headHtml, footHtml}) => {
+            this.$typeSettingsContainer.html('').append($settings);
+            
+            if (fresh) {
+                Craft.initUiElements($settings);
+                Craft.appendHeadHtml(headHtml);
+                Craft.appendFootHtml(footHtml);
+            }
 
-            footHtml = this.getParsedFieldTypeHtml(info.settingsFootHtml);
-            $body = $('<div>' + bodyHtml + '</div>');
+            // In case Firefox was sleeping on the job
+            this.$typeSettingsContainer.trigger('resize');
+        }).catch(() => {
+            this.$typeSettingsContainer.html('');
+        });
+    },
 
-            this.initializedFieldTypeSettings[type] = $body;
-        }
-        else {
-            $body = this.initializedFieldTypeSettings[type];
-        }
+    getFieldTypeSettings: function(type) {
+        return new Promise((resolve, reject) => {
+            if (typeof this.initializedFieldTypeSettings[type] !== 'undefined') {
+                resolve({
+                    fresh: false,
+                    $settings: this.initializedFieldTypeSettings[type],
+                });
 
-        $body.appendTo(this.$typeSettingsContainer);
+                return;
+            }
 
-        if (firstTime) {
-            Craft.initUiElements($body);
-            Garnish.$bod.append(footHtml);
-        }
-
-        // Firefox might have been sleeping on the job.
-        this.$typeSettingsContainer.trigger('resize');
+            this.configurator.getFieldTypeSettingsHtml(type).then(({settingsHtml, headHtml, footHtml}) => {
+                settingsHtml = this.getParsedFieldTypeHtml(settingsHtml);
+                headHtml = this.getParsedFieldTypeHtml(headHtml);
+                footHtml = this.getParsedFieldTypeHtml(footHtml);
+                let $settings = $('<div/>').html(settingsHtml);
+                this.initializedFieldTypeSettings[type] = $settings;
+                
+                resolve({
+                    fresh: true,
+                    $settings: $settings,
+                    headHtml: headHtml,
+                    footHtml: footHtml,
+                });
+            }).catch($.noop);
+        });
     },
 
     getParsedFieldTypeHtml: function(html) {

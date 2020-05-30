@@ -55,6 +55,8 @@ class SuperTableMatrixService extends Component
         $view->registerJs('new Craft.SuperTable.MatrixConfiguratorAlt(' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) .
+            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($view->namespaceInputName('blockTypes[__BLOCK_TYPE_NESTED__][fields][__FIELD_NESTED__][typesettings]')) .
         ');');
 
         // Look for any missing fields and convert to Plain Text
@@ -227,13 +229,6 @@ class SuperTableMatrixService extends Component
     {
         $fieldTypes = [];
 
-        $view = Craft::$app->getView();
-
-        // Set a temporary namespace for these
-        $originalNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName('blockTypes[__BLOCK_TYPE_NESTED__][fields][__FIELD_NESTED__][typesettings]', $originalNamespace);
-        $view->setNamespace($namespace);
-
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             /** @var Field|string $class */
             // No Matrix-Inception, sorry buddy.
@@ -241,24 +236,14 @@ class SuperTableMatrixService extends Component
                 continue;
             }
 
-            $view->startJsBuffer();
-            /** @var FieldInterface $field */
-            $field = new $class();
-            $settingsBodyHtml = $view->namespaceInputs((string)$field->getSettingsHtml());
-            $settingsFootHtml = $view->clearJsBuffer();
-
             $fieldTypes[] = [
                 'type' => $class,
                 'name' => $class::displayName(),
-                'settingsBodyHtml' => $settingsBodyHtml,
-                'settingsFootHtml' => $settingsFootHtml,
             ];
         }
 
         // Sort them by name
         ArrayHelper::multisort($fieldTypes, 'name');
-
-        $view->setNamespace($originalNamespace);
 
         return $fieldTypes;
     }
