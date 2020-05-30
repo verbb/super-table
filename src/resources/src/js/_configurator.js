@@ -36,8 +36,6 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
     _ignoreFailedRequest: false,
 
     init: function(id, fieldTypeInfo, inputNamePrefix, fieldTypeSettingsNamespace) {
-        // Garnish.requestAnimationFrame(() => {
-
         this.fieldTypeSettingsNamespace = fieldTypeSettingsNamespace;
         this.fieldTypeInfo = fieldTypeInfo;
         this.id = id;
@@ -108,9 +106,6 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
                 }
             }, this)
         });
-
-
-        // });
     },
 
     getFieldTypeInfo: function(type) {
@@ -160,7 +155,7 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
             // Create a cancel token
             this._cancelToken = axios.CancelToken.source();
 
-            Craft.sendActionRequest('POST', 'fields/render-settings', {
+            Craft.sendActionRequest('POST', 'super-table/fields/render-settings', {
                 cancelToken: this._cancelToken.token,
                 data: {
                     type: type,
@@ -169,9 +164,7 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
             }).then(response => {
                 this._fieldTypeSettingsHtml[type] = response.data;
                 
-                // Garnish.requestAnimationFrame(() => {
-                    resolve(response.data);
-                // });
+                resolve(response.data);
             }).catch(() => {
                 if (!this._ignoreFailedRequest) {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));

@@ -466,14 +466,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             Json::encode($view->namespaceInputName('blockTypes[__BLOCK_TYPE_ST__][fields][__FIELD_ST__][typesettings]')) .
         ');');
 
-        // A Matrix field will fetch all available fields, grabbing their Settings HTML. Then Super Table will do the same,
-        // causing an infinite loop - extract some methods from MatrixFieldType
-        // if ($class === Matrix::class) {
-        //     $settingsBodyHtml = $view->namespaceInputs((string)SuperTable::$plugin->matrixService->getMatrixSettingsHtml($field));
-        // } else {
-        //     $settingsBodyHtml = $view->namespaceInputs((string)$field->getSettingsHtml());
-        // }
-
         return $view->renderTemplate('super-table/settings', [
             'supertableField' => $this,
             'fieldTypes' => $fieldTypeOptions,
