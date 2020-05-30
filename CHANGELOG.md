@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a race condition that could result in lost content under very specific conditions. ([#6154](https://github.com/craftcms/cms/issues/6154))
+
 ## 2.5.0 - 2020-05-30
 
 ### Changed
