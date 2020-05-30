@@ -31,6 +31,7 @@ class FieldsController extends Controller
             $view->setNamespace($namespace);
             $html = SuperTable::$plugin->matrixService->getMatrixSettingsHtml($field);
             $view->setNamespace($oldNamespace);
+            
             if ($html !== null) {
                 $html = $view->namespaceInputs($html, $namespace);
             }

@@ -160,12 +160,25 @@ if (typeof Craft.SuperTable === typeof undefined) {
                 return;
             }
 
+            // Pause the draft editor
+            if (window.draftEditor) {
+                window.draftEditor.pause();
+            }
+
             this.sorter.removeItems(row.$tr);
             row.$tr.remove();
 
-            this.updateAddBlockBtn();
-        },
+            this.contract(function() {
+                this.$tr.remove();
 
+                this.updateAddBlockBtn();
+
+                // Resume the draft editor
+                if (window.draftEditor) {
+                    window.draftEditor.resume();
+                }
+            });
+        },
     });
 
 
