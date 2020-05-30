@@ -24,20 +24,21 @@ class FieldsController extends Controller
 
         $view = Craft::$app->getView();
         $namespace = $request->getBodyParam('namespace');
-        $oldNamespace = $view->getNamespace();
-        $view->setNamespace($namespace);
 
         // A Matrix inside a Super Table field needs special handling to get the right namespace
         if ($type === Matrix::class) {
+            $oldNamespace = $view->getNamespace();
+            $view->setNamespace($namespace);
             $html = SuperTable::$plugin->matrixService->getMatrixSettingsHtml($field);
+            $view->setNamespace($oldNamespace);
+            if ($html !== null) {
+                $html = $view->namespaceInputs($html, $namespace);
+            }
         } else {
-            $html = $field->getSettingsHtml();
-        }
-
-        $view->setNamespace($oldNamespace);
-
-        if ($html !== null) {
-            $html = $view->namespaceInputs($html, $namespace);
+            $html = $view->renderTemplate('settings/fields/_type-settings', [
+                'field' => $field,
+                'namespace' => $namespace,
+            ]);
         }
 
         return $this->asJson([
