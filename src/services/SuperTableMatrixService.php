@@ -54,7 +54,6 @@ class SuperTableMatrixService extends Component
 
         $view->registerJs('new Craft.SuperTable.MatrixConfiguratorAlt(' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) .
             Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->namespaceInputName('blockTypes[__BLOCK_TYPE_NESTED__][fields][__FIELD_NESTED__][typesettings]')) .
         ');');
