@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.0 - 2020-05-30
+
+### Changed
+- Requires Craft 3.4.22+.
+- Field settings are now lazy-loaded when the Field Type selection changes, improving the up-front load time of Edit Field pages.
+
 ## 2.4.9 - 2020-04-16
 
 ### Fixed
