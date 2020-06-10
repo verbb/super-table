@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 2.5.1 - 2020-05-31
+
+### Changed
+- Requires Craft 3.4.23+.
 
 ### Fixed
 - Fixed an error that could occur when rendering field type settings, if the field’s `getSettingsHtml()` method was expecting to be called from a Twig template.
