@@ -168,42 +168,12 @@ if (typeof Craft.SuperTable === typeof undefined) {
             this.sorter.removeItems(row.$tr);
             row.$tr.remove();
 
-            this.contract(row.$tr, function() {
-                row.$tr.remove();
+            this.updateAddBlockBtn();
 
-                this.updateAddBlockBtn();
-
-                // Resume the draft editor
-                if (window.draftEditor) {
-                    window.draftEditor.resume();
-                }
-            });
-        },
-
-        expand: function($tr, callback) {
-            $tr
-                .css(this._getContractedStyles($tr))
-                .velocity(this._getExpandedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
-        },
-
-        contract: function($tr, callback) {
-            $tr
-                .css(this._getExpandedStyles())
-                .velocity(this._getContractedStyles($tr), 'fast', callback ? $.proxy(callback, this) : null);
-        },
-
-        _getExpandedStyles: function() {
-            return {
-                opacity: 1,
-                marginBottom: 10
-            };
-        },
-
-        _getContractedStyles: function($tr) {
-            return {
-                opacity: 0,
-                marginBottom: -($tr.outerHeight())
-            };
+            // Resume the draft editor
+            if (window.draftEditor) {
+                window.draftEditor.resume();
+            }
         },
     });
 
@@ -391,42 +361,14 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
             this.table.sorter.removeItems(this.$tr);
 
-            this.contract(function() {
-                this.$tr.remove();
+            this.$tr.remove();
 
-                this.table.updateAddBlockBtn();
+            this.table.updateAddBlockBtn();
 
-                // Resume the draft editor
-                if (window.draftEditor) {
-                    window.draftEditor.resume();
-                }
-            });
-        },
-
-        expand: function(callback) {
-            this.$tr
-                .css(this._getContractedStyles())
-                .velocity(this._getExpandedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
-        },
-
-        contract: function(callback) {
-            this.$tr
-                .css(this._getExpandedStyles())
-                .velocity(this._getContractedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
-        },
-
-        _getExpandedStyles: function() {
-            return {
-                opacity: 1,
-                marginBottom: 10
-            };
-        },
-
-        _getContractedStyles: function() {
-            return {
-                opacity: 0,
-                marginBottom: -(this.$tr.outerHeight())
-            };
+            // Resume the draft editor
+            if (window.draftEditor) {
+                window.draftEditor.resume();
+            }
         },
 
     });
