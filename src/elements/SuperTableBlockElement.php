@@ -271,7 +271,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         $blockType = SuperTable::$plugin->getService()->getBlockTypeById($this->typeId);
 
         if (!$blockType) {
-            throw new InvalidConfigException('Invalid SuperTable block ID: ' . $this->typeId);
+            throw new InvalidConfigException('Invalid SuperTable block type ID: ' . $this->typeId);
         }
 
         return $blockType;

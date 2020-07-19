@@ -485,8 +485,30 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         /** @var Element|null $element */
         $query = SuperTableBlockElement::find();
+        $this->_populateQuery($query, $element);
 
+        // Set the initially matched elements if $value is already set, which is the case if there was a validation
+        // error or we're loading an entry revision.
+        if ($value === '') {
+            $query->setCachedResult([]);
+        } else if ($element && is_array($value)) {
+            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Populates the field’s [[SuperTableBlockQuery]] value based on the owner element.
+     *
+     * @param SuperTableBlockQuery $query
+     * @param ElementInterface|null $element
+     * @since 3.4.0
+     */
+    private function _populateQuery(SuperTableBlockQuery $query, ElementInterface $element = null)
+    {
         // Existing element?
+        /** @var Element|null $element */
         if ($element && $element->id) {
             $query->ownerId = $element->id;
 
@@ -501,16 +523,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $query
             ->fieldId($this->id)
             ->siteId($element->siteId ?? null);
-
-        // Set the initially matched elements if $value is already set, which is the case if there was a validation
-        // error or we're loading an entry revision.
-        if ($value === '') {
-            $query->setCachedResult([]);
-        } else if ($element && is_array($value)) {
-            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
-        }
-
-        return $query;
     }
 
     /**
@@ -545,13 +557,24 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         }
 
         if ($value === ':notempty:' || $value === ':empty:') {
-            $alias = 'supertableblocks_' . $this->handle;
-            $operator = ($value === ':notempty:' ? '!=' : '=');
+            $ns = $this->handle . '_' . StringHelper::randomString(5);
+            $condition = [
+                'exists', (new Query())
+                    ->from("{{%supertableblocks}} supertableblocks_$ns")
+                    ->innerJoin(TableName::ELEMENTS . " elements_$ns", "[[elements_$ns.id]] = [[supertableblocks_$ns.id]]")
+                    ->where("[[supertableblocks_$ns.ownerId]] = [[elements.id]]")
+                    ->andWhere([
+                        "supertableblocks_$ns.fieldId" => $this->id,
+                        "elements_$ns.enabled" => true,
+                        "elements_$ns.dateDeleted" => null,
+                    ])
+            ];
 
-            $query->subQuery->andWhere(
-                "(select count([[{$alias}.id]]) from {{%supertableblocks}} {{{$alias}}} where [[{$alias}.ownerId]] = [[elements.id]] and [[{$alias}.fieldId]] = :fieldId) {$operator} 0",
-                [':fieldId' => $this->id]
-            );
+            if ($value === ':notempty:') {
+                $query->subQuery->andWhere($condition);
+            } else {
+                $query->subQuery->andWhere(['not', $condition]);
+            }
         } else if ($value !== null) {
             return false;
         }
@@ -565,6 +588,36 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTranslationDescription(ElementInterface $element = null)
+    {
+        /** @var Element|null $element */
+        if (!$element) {
+            return null;
+        }
+
+        switch ($this->propagationMethod) {
+            case self::PROPAGATION_METHOD_NONE:
+                return Craft::t('app', 'Blocks will only be saved in the {site} site.', [
+                    'site' => Craft::t('site', $element->getSite()->name),
+                ]);
+            case self::PROPAGATION_METHOD_SITE_GROUP:
+                return Craft::t('app', 'Blocks will be saved across all sites in the {group} site group.', [
+                    'group' => Craft::t('site', $element->getSite()->getGroup()->name),
+                ]);
+            case self::PROPAGATION_METHOD_LANGUAGE:
+                $language = (new Locale($element->getSite()->language))
+                    ->getDisplayName(Craft::$app->language);
+                return Craft::t('app', 'Blocks will be saved across all {language}-language sites.', [
+                    'language' => $language,
+                ]);
+            default:
+                return null;
+        }
     }
 
     /**
@@ -705,25 +758,15 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $contentService = Craft::$app->getContent();
 
         foreach ($value->all() as $block) {
-            $originalContentTable = $contentService->contentTable;
-            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-            $originalFieldContext = $contentService->fieldContext;
-
-            $contentService->contentTable = $block->getContentTable();
-            $contentService->fieldColumnPrefix = $block->getFieldColumnPrefix();
-            $contentService->fieldContext = $block->getFieldContext();
-
-            foreach (Craft::$app->getFields()->getAllFields() as $field) {
+            $fields = Craft::$app->getFields()->getAllFields($block->getFieldContext());
+            
+            foreach ($fields as $field) {
                 /** @var Field $field */
                 if ($field->searchable) {
                     $fieldValue = $block->getFieldValue($field->handle);
                     $keywords[] = $field->getSearchKeywords($fieldValue, $element);
                 }
             }
-
-            $contentService->contentTable = $originalContentTable;
-            $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-            $contentService->fieldContext = $originalFieldContext;
         }
 
         return parent::getSearchKeywords($keywords, $element);
@@ -884,7 +927,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         // If the propagation method just changed, resave all the SuperTable blocks
         if ($this->oldSettings !== null) {
             $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
-            
+
             if ($this->propagationMethod !== $oldPropagationMethod) {
                 Craft::$app->getQueue()->push(new ApplyNewPropagationMethod([
                     'description' => Craft::t('app', 'Applying new propagation method to Super Table blocks'),
@@ -914,16 +957,21 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public function afterElementPropagate(ElementInterface $element, bool $isNew)
     {
+        $superTableService = SuperTable::$plugin->getService();
+
         /** @var Element $element */
         if ($element->duplicateOf !== null) {
-            SuperTable::$plugin->getService()->duplicateBlocks($this, $element->duplicateOf, $element, true);
+            $superTableService->duplicateBlocks($this, $element->duplicateOf, $element, true);
         } else if ($element->isFieldDirty($this->handle)) {
-            SuperTable::$plugin->getService()->saveField($this, $element);
+            $superTableService->saveField($this, $element);
         }
 
-        // Reset the field value if this is a new element
+        // Repopulate the SuperTable block query if this is a new element
         if ($element->duplicateOf || $isNew) {
-            $element->setFieldValue($this->handle, null);
+            /** @var SuperTableBlockQuery $query */
+            $query = $element->getFieldValue($this->handle);
+            $this->_populateQuery($query, $element);
+            $query->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);
