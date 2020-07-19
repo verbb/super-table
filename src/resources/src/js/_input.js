@@ -168,8 +168,8 @@ if (typeof Craft.SuperTable === typeof undefined) {
             this.sorter.removeItems(row.$tr);
             row.$tr.remove();
 
-            this.contract(function() {
-                this.$tr.remove();
+            this.contract(row.$tr, function() {
+                row.$tr.remove();
 
                 this.updateAddBlockBtn();
 
@@ -178,6 +178,32 @@ if (typeof Craft.SuperTable === typeof undefined) {
                     window.draftEditor.resume();
                 }
             });
+        },
+
+        expand: function($tr, callback) {
+            $tr
+                .css(this._getContractedStyles($tr))
+                .velocity(this._getExpandedStyles(), 'fast', callback ? $.proxy(callback, this) : null);
+        },
+
+        contract: function($tr, callback) {
+            $tr
+                .css(this._getExpandedStyles())
+                .velocity(this._getContractedStyles($tr), 'fast', callback ? $.proxy(callback, this) : null);
+        },
+
+        _getExpandedStyles: function() {
+            return {
+                opacity: 1,
+                marginBottom: 10
+            };
+        },
+
+        _getContractedStyles: function($tr) {
+            return {
+                opacity: 0,
+                marginBottom: -($tr.outerHeight())
+            };
         },
     });
 
