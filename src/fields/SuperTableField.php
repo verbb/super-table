@@ -965,6 +965,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $element->markAsDirty();
         }
 
+        if (get_class($element) === \benf\neo\elements\Block::class) {
+            $element->markAsDirty();
+        }
+
         return true;
     }
 
