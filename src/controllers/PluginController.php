@@ -52,6 +52,7 @@ class PluginController extends Controller
         $superTableService = SuperTable::$plugin->getService();
         $matrixService = Craft::$app->getMatrix();
         $projectConfig = Craft::$app->getProjectConfig();
+        $processedParentFields = [];
 
         $superTableBlockTypes = (new Query())
             ->select(['*'])
@@ -73,13 +74,49 @@ class PluginController extends Controller
                     }
                 }
             } else {
-                echo "    > Super Table field #{$superTableField->id} skipped as it isn't a Super Table field ...\n";
+                echo "    > Super Table field #{$superTableField->id} skipped as it isn't a Super Table field, it's a " . get_class($superTableField) . ". Block type #{$superTableBlockType['id']} ...\n";
 
                 continue;
             }
 
             if ($missingFields) {
                 echo "    > Super Table field #{$superTableField->id} skipped as it contains missing fields ...\n";
+
+                continue;
+            }
+
+            // Check to see what level this is. Non-top levels fields should have their owner saved
+            if ($superTableField->context !== 'global') {
+                $parentFieldContext = explode(':', $superTableField->context);
+
+                if ($parentFieldContext[0] == 'matrixBlockType') {
+                    $parentBlockTypeUid = $parentFieldContext[1];
+                    $parentBlockTypeId = Db::idByUid('{{%matrixblocktypes}}', $parentBlockTypeUid);
+
+                    if (!$parentBlockTypeId) {
+                        echo "    > ERROR: Unable to find owner Matrix block ID for #{$parentBlockTypeUid} ...\n";
+
+                        continue;
+                    }
+
+                    $blockType = Craft::$app->getMatrix()->getBlockTypeById($parentBlockTypeId);
+                    $parentField = $fieldsService->getFieldById($blockType->fieldId);
+
+                    if (in_array($parentField->id, $processedParentFields)) {
+                        // echo "    > Owner matrix field #{$parentField->id} skipped as it's already been re-saved ...\n";
+
+                        continue;
+                    }
+
+                    // Re-save it
+                    $fieldsService->saveField($parentField);
+
+                    $processedParentFields[] = $parentField->id;
+
+                    echo "    > Owner matrix field #{$parentField->id} re-saved ...\n";
+                } else {
+                    echo "    > Unknown parent context {$superTableField->context} ...\n";
+                }
 
                 continue;
             }
