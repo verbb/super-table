@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.5.2 - 2020-07-28
+
+### Fixed
+- Fix Super Table field inside Matrix blocks not getting their content propagated. (thanks @brandonkelly).
+- Fix error when removing a row for Table layout.
+- Fix blocks not updating when nested in Matrix fields.
+- Fix row layout overflow in some field cases.
+- Improve handling of re-save field utility to handle parent Matrix fields.
+
 ## 2.5.1 - 2020-05-31
 
 ### Changed
