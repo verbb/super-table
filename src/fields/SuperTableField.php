@@ -955,26 +955,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
-    {
-        parent::afterElementPropagate($element, $isNew);
-
-        // Temp fix for now, check if we're in a matrix block, and if we're re-saving an element
-        // mark this SuperTable field as dirty so it can propagate its content.
-        if (get_class($element) === \craft\elements\MatrixBlock::class) {
-            $element->markAsDirty();
-        }
-
-        if (get_class($element) === \benf\neo\elements\Block::class) {
-            $element->markAsDirty();
-        }
-
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function afterElementPropagate(ElementInterface $element, bool $isNew)
     {
         $superTableService = SuperTable::$plugin->getService();
