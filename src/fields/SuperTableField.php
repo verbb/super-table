@@ -962,7 +962,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         /** @var Element $element */
         if ($element->duplicateOf !== null) {
             $superTableService->duplicateBlocks($this, $element->duplicateOf, $element, true);
-        } else if ($element->isFieldDirty($this->handle)) {
+        } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
             $superTableService->saveField($this, $element);
         }
 
