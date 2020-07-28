@@ -10,6 +10,7 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
     inputNamePrefix: null,
     inputIdPrefix: null,
     fieldTypeSettingsNamespace: null,
+    placeholderKey: null,
 
     blockTypeId: null,
     blockTypeNamePrefix: null,
@@ -31,14 +32,15 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
     totalNewFields: 0,
     fieldSettings: null,
 
-    _fieldTypeSettingsHtml: {},
+    _fieldTypeSettingsHtml: null,
     _cancelToken: null,
     _ignoreFailedRequest: false,
 
-    init: function(id, fieldTypeInfo, inputNamePrefix, fieldTypeSettingsNamespace) {
+    init: function(id, fieldTypeInfo, inputNamePrefix, fieldTypeSettingsNamespace, placeholderKey) {
         this.fieldTypeSettingsNamespace = fieldTypeSettingsNamespace;
         this.fieldTypeInfo = fieldTypeInfo;
         this.id = id;
+        this.placeholderKey = placeholderKey;
 
         this.inputNamePrefix = inputNamePrefix + '[blockTypes][' + this.id + ']';
         this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
@@ -49,6 +51,8 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
         this.$fieldSettingsColumnContainer = this.$container.children('.stc-settings').children();
         this.$fieldItemsOuterContainer = this.$fieldsColumnContainer.children('.field-items');
         this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.field-items');
+
+        this._fieldTypeSettingsHtml = {};
         
         this.$newFieldBtn = this.$fieldItemsOuterContainer.children('.btn');
 
@@ -155,7 +159,7 @@ Craft.SuperTable.Configurator = Garnish.Base.extend({
             // Create a cancel token
             this._cancelToken = axios.CancelToken.source();
 
-            Craft.sendActionRequest('POST', 'super-table/fields/render-settings', {
+            Craft.sendActionRequest('POST', 'fields/render-settings', {
                 cancelToken: this._cancelToken.token,
                 data: {
                     type: type,
@@ -375,8 +379,9 @@ Craft.SuperTable.Field = Garnish.Base.extend({
 
     getParsedFieldTypeHtml: function(html) {
         if (typeof html === 'string') {
-            html = html.replace(/__BLOCK_TYPE_ST__/g, this.blockType.id);
-            html = html.replace(/__FIELD_ST__/g, this.id);
+            console.log('ST Placeholder: ' + this.configurator.placeholderKey)
+            html = html.replace(new RegExp(`__BLOCK_TYPE_${this.configurator.placeholderKey}__`, 'g'), this.blockType.id);
+            html = html.replace(new RegExp(`__FIELD_${this.configurator.placeholderKey}__`, 'g'), this.id);
         }
         else {
             html = '';

@@ -149,6 +149,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     // settings, but not in this class - we just add them as 'dummy' properties for now...
     public $fieldLayout;
     public $selectionLabel;
+    public $placeholderKey;
 
 
     // Public Methods
@@ -459,11 +460,15 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(SuperTableAsset::class);
+
+        $placeholderKey = StringHelper::randomString(10);
+        
         $view->registerJs('new Craft.SuperTable.Configurator(' .
             Json::encode($tableId, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputName('blockTypes[__BLOCK_TYPE_ST__][fields][__FIELD_ST__][typesettings]')) .
+            Json::encode($view->namespaceInputName("blockTypes[__BLOCK_TYPE_{$placeholderKey}__][fields][__FIELD_{$placeholderKey}__][typesettings]")) . ', ' .
+            Json::encode($placeholderKey) .
         ');');
 
         return $view->renderTemplate('super-table/settings', [
@@ -638,7 +643,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $id = $view->formatInputId($this->handle);
 
         // Get the block types data
-        $blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
+        $placeholderKey = StringHelper::randomString(10);
+        $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $placeholderKey);
 
         $createDefaultBlocks = $this->minRows != 0 && count($blockTypeInfo) === 1;
 
@@ -650,11 +656,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         $view->registerAssetBundle(SuperTableAsset::class);
 
+        $settings = $this;
+        $settings['placeholderKey'] = $placeholderKey;
+
         $js = 'var superTableInput = new Craft.SuperTable.Input(' .
             '"' . $view->namespaceInputId($id) . '", ' .
             Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             '"' . $view->namespaceInputName($this->handle) . '", ' .
-            Json::encode($this, JSON_UNESCAPED_UNICODE) .
+            Json::encode($settings) .
             ');';
 
         // Safe to create the default blocks?
@@ -1067,10 +1076,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      * Returns info about each block type and their field types for the Super Table field input.
      *
      * @param ElementInterface|null $element
+     * @param string $placeholderKey
+     * @return array
      *
      * @return array
      */
-    private function _getBlockTypeInfoForInput(ElementInterface $element = null): array
+    private function _getBlockTypeInfoForInput(ElementInterface $element = null, string $placeholderKey): array
     {
         $settings = $this->getSettings();
 
@@ -1080,7 +1091,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         // Set a temporary namespace for these
         $originalNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName($this->handle . '[blocks][__BLOCK_ST__][fields]', $originalNamespace);
+        $namespace = $view->namespaceInputName($this->handle . "[blocks][__BLOCK_{$placeholderKey}__][fields]", $originalNamespace);
         $view->setNamespace($namespace);
 
         foreach ($this->getBlockTypes() as $blockType) {

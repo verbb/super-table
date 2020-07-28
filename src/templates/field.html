@@ -26,12 +26,7 @@
     {% do view.setIsDeltaRegistrationActive(registerDeltas) %}
     {% do view.registerDeltaName(field.handle) %}
 
-    {# Special-case for Matrix-in-SuperTable #}
-    {% if field.displayName() == 'Matrix' %}
-        {% set input = craft.superTable.getMatrixInputHtml(field, value, element) %}
-    {% else %}
-        {% set input = field.getInputHtml(value, element) %}
-    {% endif %}
+    {% set input = field.getInputHtml(value, element) %}
 
     {% do view.setIsDeltaRegistrationActive(isDeltaRegistrationActive) %}
 

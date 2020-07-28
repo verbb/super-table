@@ -163,14 +163,7 @@
                                 <div class="fieldtype-settings">
                                     <div>
                                         {% namespace 'blockTypes[' ~ blockTypeId ~ '][fields][' ~ fieldId ~ '][typesettings]' %}
-                                            {# Special-case for Matrix at the moment - hopefully will not be needed after core alts #}
-                                            {# This is necessary to load our MatrixConfiguratorAlt.js rather than core Matrix JS #}
-                                            
-                                            {% if field.displayName() == 'Matrix' %}
-                                                {{ craft.superTable.getMatrixSettingsHtml(field) | raw }}
-                                            {% else %}
-                                                {{ field.getSettingsHtml() | raw }}
-                                            {% endif %}
+                                            {{ field.getSettingsHtml() | raw }}
                                         {% endnamespace %}
                                     </div>
                                 </div>

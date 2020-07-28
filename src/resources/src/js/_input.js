@@ -133,7 +133,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
         getParsedBlockHtml: function(html, id) {
             if (typeof html == 'string') {
-                return html.replace(/__BLOCK_ST__/g, id);
+                return html.replace(new RegExp(`__BLOCK_${this.settings.placeholderKey}__`, 'g'), id);
             } else {
                 return '';
             }
@@ -288,7 +288,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
         getParsedBlockHtml: function(html, id) {
             if (typeof html == 'string') {
-                return html.replace(/__BLOCK_ST__/g, id);
+                return html.replace(new RegExp(`__BLOCK_${this.settings.placeholderKey}__`, 'g'), id);
             } else {
                 return '';
             }
@@ -489,7 +489,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
         getParsedBlockHtml: function(html, id) {
             if (typeof html == 'string') {
-                return html.replace(/__BLOCK_ST__/g, id);
+                return html.replace(new RegExp(`__BLOCK_${this.settings.placeholderKey}__`, 'g'), id);
             } else {
                 return '';
             }
