@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.3 - 2020-07-28
+
+### Fixed
+- Refactor nested Matrix handling. Removed bespoke Matrix code, thanks to core Craft changes. Addresses a few upcoming changes in Craft 3.5+ (but backward-compatible).
+- Now requires Craft 3.4.30+.
+
 ## 2.5.2 - 2020-07-28
 
 ### Fixed
