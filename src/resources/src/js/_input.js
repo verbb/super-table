@@ -281,8 +281,6 @@ if (typeof Craft.SuperTable === typeof undefined) {
             var row = new Craft.SuperTable.InputRow.Row(this, $tr);
             this.sorter.addItems($tr);
 
-            row.expand();
-
             this.updateAddBlockBtn();
         },
 
