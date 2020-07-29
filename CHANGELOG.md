@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.4 - 2020-07-30
+
+### Fixed
+- Fix an error when translating the description if the propagation method is set to PROPAGATION_METHOD_LANGUAGE. (thanks @andersaloof).
+- Fix JS error when adding new blocks.
+
 ## 2.5.3 - 2020-07-28
 
 ### Fixed
