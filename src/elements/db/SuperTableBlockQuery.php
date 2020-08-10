@@ -13,10 +13,12 @@ use craft\base\Field;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\helpers\ArrayHelper;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\models\Site;
 
+use yii\base\InvalidConfigException;
 use yii\base\Exception;
 use yii\db\Connection;
 
@@ -139,14 +141,14 @@ class SuperTableBlockQuery extends ElementQuery
     public function field($value)
     {
         if ($value instanceof SuperTableField) {
-            $this->fieldId = $value->id;
+            $this->fieldId = [$value->id];
         } else if (is_string($value) || (is_array($value) && count($value) === 1)) {
             if (!is_string($value)) {
                 $value = reset($value);
             }
             $field = Craft::$app->getFields()->getFieldByHandle($value);
             if ($field && $field instanceof SuperTableField) {
-                $this->fieldId = $field->id;
+                $this->fieldId = [$field->id];
             } else {
                 $this->fieldId = false;
             }
@@ -232,7 +234,7 @@ class SuperTableBlockQuery extends ElementQuery
     public function owner(ElementInterface $owner)
     {
         /** @var Element $owner */
-        $this->ownerId = $owner->id;
+        $this->ownerId = [$owner->id];
         $this->siteId = $owner->siteId;
 
         return $this;
@@ -312,32 +314,17 @@ class SuperTableBlockQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        if ($this->fieldId !== null && empty($this->fieldId)) {
-            throw new QueryAbortedException();
-        }
-
+        $this->_normalizeFieldId();
         $this->joinElementTable('supertableblocks');
 
         // Figure out which content table to use
         $this->contentTable = null;
-
-        if (!$this->fieldId && $this->id) {
-            $fieldIds = (new Query())
-                ->select(['fieldId'])
-                ->distinct()
-                ->from(['{{%supertableblocks}}'])
-                ->where(Db::parseParam('id', $this->id))
-                ->column();
-
-            $this->fieldId = count($fieldIds) === 1 ? $fieldIds[0] : $fieldIds;
-        }
-
-        if ($this->fieldId && is_numeric($this->fieldId)) {
-            /** @var SuperTableField $supertableField */
-            $supertableField = Craft::$app->getFields()->getFieldById($this->fieldId);
-
-            if ($supertableField) {
-                $this->contentTable = $supertableField->contentTable;
+        if ($this->fieldId && count($this->fieldId) === 1) {
+            /** @var SuperTableField $superTableField */
+            $superTableField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
+            
+            if ($superTableField) {
+                $this->contentTable = $superTableField->contentTable;
             }
         }
 
@@ -349,11 +336,12 @@ class SuperTableBlockQuery extends ElementQuery
         ]);
 
         if ($this->fieldId) {
-            $this->subQuery->andWhere(Db::parseParam('supertableblocks.fieldId', $this->fieldId));
+            $this->subQuery->andWhere(['supertableblocks.fieldId' => $this->fieldId]);
         }
 
+        $this->_normalizeOwnerId();
         if ($this->ownerId) {
-            $this->subQuery->andWhere(Db::parseParam('supertableblocks.ownerId', $this->ownerId));
+            $this->subQuery->andWhere(['supertableblocks.ownerId' => $this->ownerId]);
         }
 
         if ($this->typeId !== null) {
@@ -371,7 +359,7 @@ class SuperTableBlockQuery extends ElementQuery
 
         if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
             // todo: we will need to expand on this when Super Table blocks can be nested.
-            $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[supertableblocks.ownerId]]');
+            $this->subQuery->innerJoin(['owners' => Table::ELEMENTS], '[[owners.id]] = [[supertableblocks.ownerId]]');
 
             if (!$allowOwnerDrafts) {
                 $this->subQuery->andWhere(['owners.draftId' => null]);
@@ -386,13 +374,63 @@ class SuperTableBlockQuery extends ElementQuery
     }
 
     /**
+     * Normalizes the fieldId param to an array of IDs or null
+     *
+     * @throws QueryAbortedException
+     */
+    private function _normalizeFieldId()
+    {
+        if ($this->fieldId === null && $this->id) {
+            $this->fieldId = (new Query())
+                ->select(['fieldId'])
+                ->distinct()
+                ->from(['{{%supertableblocks}}'])
+                ->where(Db::parseParam('id', $this->id))
+                ->column() ?: false;
+        }
+
+        if ($this->fieldId === false) {
+            throw new QueryAbortedException();
+        }
+
+        if (empty($this->fieldId)) {
+            $this->fieldId = null;
+        } else if (is_numeric($this->fieldId)) {
+            $this->fieldId = [$this->fieldId];
+        } else if (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
+            $this->fieldId = (new Query())
+                ->select(['id'])
+                ->from([Table::FIELDS])
+                ->where(Db::parseParam('id', $this->fieldId))
+                ->andWhere(['type' => SuperTableField::class])
+                ->column();
+        }
+    }
+
+    /**
+     * Normalizes the ownerId param to an array of IDs or null
+     *
+     * @throws InvalidConfigException
+     */
+    private function _normalizeOwnerId()
+    {
+        if (empty($this->ownerId)) {
+            $this->ownerId = null;
+        } else if (is_numeric($this->ownerId)) {
+            $this->ownerId = [$this->ownerId];
+        } else if (!is_array($this->ownerId) || !ArrayHelper::isNumeric($this->ownerId)) {
+            throw new InvalidConfigException('Invalid ownerId param value');
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     protected function customFields(): array
     {
         // This method won't get called if $this->fieldId isn't set to a single int
         /** @var SuperTableField $supertableField */
-        $supertableField = Craft::$app->getFields()->getFieldById($this->fieldId);
+        $supertableField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
         return $supertableField->getBlockTypeFields();
     }
 
@@ -404,20 +442,26 @@ class SuperTableBlockQuery extends ElementQuery
         $tags = [];
         // If both the field and owner are set, then only tag the combos
         if ($this->fieldId && $this->ownerId) {
+            if (is_array($this->fieldId)) {
             foreach ($this->fieldId as $fieldId) {
                 foreach ($this->ownerId as $ownerId) {
                     $tags[] = "field-owner:$fieldId-$ownerId";
                 }
             }
+            }
         } else {
             if ($this->fieldId) {
-                foreach ($this->fieldId as $fieldId) {
-                    $tags[] = "field:$fieldId";
+                if (is_array($this->fieldId)) {
+                    foreach ($this->fieldId as $fieldId) {
+                        $tags[] = "field:$fieldId";
+                    }
                 }
             }
             if ($this->ownerId) {
-                foreach ($this->ownerId as $ownerId) {
-                    $tags[] = "owner:$ownerId";
+                if (is_array($this->ownerId)) {
+                    foreach ($this->ownerId as $ownerId) {
+                        $tags[] = "owner:$ownerId";
+                    }
                 }
             }
         }
