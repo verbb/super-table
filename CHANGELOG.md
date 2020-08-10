@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.0.2 - 2020-08-10
+
+### Fixed
+- Fix potential error during migration from Craft 2.
+
 ## 2.6.0.1 - 2020-08-10
 
 ### Fixed
