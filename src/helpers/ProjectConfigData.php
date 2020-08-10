@@ -1,6 +1,7 @@
 <?php
 namespace verbb\supertable\helpers;
 
+use verbb\supertable\SuperTable;
 use verbb\supertable\elements\SuperTableBlockElement;
 
 use Craft;

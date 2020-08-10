@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.0.3 - 2020-08-10
+
+### Fixed
+- Fix error when rebuilding project config.
+
 ## 2.6.0.2 - 2020-08-10
 
 ### Fixed
