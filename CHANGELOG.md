@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.0 - 2020-08-10
+
+### Added
+- Add Craft 3.5+ compatibility.
+- Now requires Craft 3.5+;
+
 ## 2.5.4 - 2020-07-30
 
 ### Fixed
