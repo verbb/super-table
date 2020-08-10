@@ -254,6 +254,18 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
+    public function getCacheTags(): array
+    {
+        return [
+            "field-owner:$this->fieldId-$this->ownerId",
+            "field:$this->fieldId",
+            "owner:$this->ownerId",
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout()
     {
         return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();

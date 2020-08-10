@@ -170,6 +170,14 @@
 		"oAP": "/src/gql/types/generators/SuperTableBlockType.php",
 		"oF": 0
 		},
+	"/src/gql/types/input/SuperTableBlock.php": {
+		"cB": 0,
+		"ft": 8192,
+		"hM": 0,
+		"oA": 2,
+		"oAP": "/src/gql/types/input/SuperTableBlock.php",
+		"oF": 0
+		},
 	"/src/helpers": {
 		"ft": 65536,
 		"oA": 1,

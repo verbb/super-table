@@ -11,9 +11,11 @@
             <div class="field-items">
                 {% for blockTypeId, blockType in blockTypes %}
                     <div data-id="{{ blockTypeId }}">
-                        {% for fieldId, field in blockTypeFields[blockTypeId] %}
+                        {% for fieldId, layoutElement in blockTypeFields[blockTypeId] %}
+                            {% set field = layoutElement.getField() %}
+                            
                             <div class="supertableconfigitem stci-field{% if field.hasErrors() %} error{% endif %} {% if loop.first %}sel{% endif %}" data-id="{{ fieldId }}">
-                                <div class="name{% if field.required %} required{% endif %}">
+                                <div class="name{% if layoutElement.required %} required{% endif %}">
                                     {% if field.name %}
                                         {{ field.name }}
                                     {% else %}
@@ -51,7 +53,9 @@
             <div class="field-items">
                 {% for blockTypeId, blockType in blockTypes %}
                     <div data-id="{{ blockTypeId }}">
-                        {% for fieldId, field in blockTypeFields[blockTypeId] %}
+                        {% for fieldId, layoutElement in blockTypeFields[blockTypeId] %}
+                            {% set field = layoutElement.getField() %}
+                            
                             <div data-id="{{ fieldId }}" {% if not loop.first %}class="settings-hidden"{% endif %}>
                                 {% namespace 'blockTypes[' ~ blockTypeId ~ '][fields][' ~ fieldId ~ ']' %}
                                     {{ forms.textField({
@@ -101,11 +105,11 @@
                                         label: "This field is required" | t('app'),
                                         id: 'required',
                                         name: 'required',
-                                        checked: field.required
+                                        checked: layoutElement.required
                                     }) }}
 
                                     {{ forms.checkboxField({
-                                        label: "Use this field’s values as search keywords?" | t('app'),
+                                        label: "Use this field’s values as search keywords" | t('app'),
                                         id: 'searchable',
                                         name: 'searchable',
                                         checked: field.searchable

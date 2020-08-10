@@ -395,4 +395,32 @@ class SuperTableBlockQuery extends ElementQuery
         $supertableField = Craft::$app->getFields()->getFieldById($this->fieldId);
         return $supertableField->getBlockTypeFields();
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+        // If both the field and owner are set, then only tag the combos
+        if ($this->fieldId && $this->ownerId) {
+            foreach ($this->fieldId as $fieldId) {
+                foreach ($this->ownerId as $ownerId) {
+                    $tags[] = "field-owner:$fieldId-$ownerId";
+                }
+            }
+        } else {
+            if ($this->fieldId) {
+                foreach ($this->fieldId as $fieldId) {
+                    $tags[] = "field:$fieldId";
+                }
+            }
+            if ($this->ownerId) {
+                foreach ($this->ownerId as $ownerId) {
+                    $tags[] = "owner:$ownerId";
+                }
+            }
+        }
+        return $tags;
+    }
 }

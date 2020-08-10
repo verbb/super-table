@@ -248,10 +248,9 @@ class SuperTableService extends Component
     /**
      * Saves a block type.
      *
-     * @param SuperTableBlockTypeModel $blockType    The block type to be saved.
-     * @param bool            $validate       Whether the block type should be validated before being saved.
-     *                                        Defaults to `true`.
-     *
+     * @param SuperTableBlockTypeModel $blockType The block type to be saved.
+     * @param bool $runValidation Whether the block type should be validated before being saved.
+     * Defaults to `true`.
      * @return bool
      * @throws Exception if an error occurs when saving the block type
      * @throws \Throwable if reasons
@@ -262,61 +261,12 @@ class SuperTableService extends Component
             return false;
         }
 
-        $fieldsService = Craft::$app->getFields();
-
-        /** @var Field $parentField */
-        $parentField = $fieldsService->getFieldById($blockType->fieldId);
         $isNewBlockType = $blockType->getIsNew();
-
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        $configData = [
-            'field' => $parentField->uid,
-        ];
-
-        // Now, take care of the field layout for this block type
-        // -------------------------------------------------------------
-        $fieldLayoutFields = [];
-        $sortOrder = 0;
-
-        $configData['fields'] = [];
-
-        foreach ($blockType->getFields() as $field) {
-            $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
-
-            $field->sortOrder = ++$sortOrder;
-            $fieldLayoutFields[] = $field;
-        }
-
-        $fieldLayoutTab = new FieldLayoutTab();
-        $fieldLayoutTab->name = 'Content';
-        $fieldLayoutTab->sortOrder = 1;
-        $fieldLayoutTab->setFields($fieldLayoutFields);
-
-        $fieldLayout = $blockType->getFieldLayout();
-
-        if ($fieldLayout->uid) {
-            $layoutUid = $fieldLayout->uid;
-        } else {
-            $layoutUid = StringHelper::UUID();
-            $fieldLayout->uid = $layoutUid;
-        }
-
-        $fieldLayout->setTabs([$fieldLayoutTab]);
-        $fieldLayout->setFields($fieldLayoutFields);
-
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        $configData['fieldLayouts'] = [
-            $layoutUid => $fieldLayoutConfig
-        ];
-
         $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
+        $configData = $blockType->getConfig();
+        $field = $blockType->getField();
 
-        // Ensure any Matrix blocks are processed first, in the case of M-ST-M fields
-        $projectConfig->processConfigChanges('matrixBlockTypes', false);
-
-        $projectConfig->set($configPath, $configData, "Save super table block type for parent field “{$parentField->handle}”");
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save super table block type for parent field “{$field->handle}”");
 
         if ($isNewBlockType) {
             $blockType->id = Db::idByUid('{{%supertableblocktypes}}', $blockType->uid);
@@ -332,7 +282,6 @@ class SuperTableService extends Component
      */
     public function handleChangedBlockType(ConfigEvent $event)
     {
-
         if ($this->ignoreProjectConfigChanges) {
             return;
         }
@@ -347,6 +296,9 @@ class SuperTableService extends Component
             Craft::$app->getProjectConfig()->defer($event, [$this, __FUNCTION__]);
             return;
         }
+
+        // Ensure any Matrix blocks are processed first, in the case of M-ST-M fields
+        Craft::$app->getProjectConfig()->processConfigChanges('matrixBlockTypes', false);
 
         $fieldsService = Craft::$app->getFields();
         $contentService = Craft::$app->getContent();
@@ -397,9 +349,12 @@ class SuperTableService extends Component
                 // Refresh the schema cache
                 Craft::$app->getDb()->getSchema()->refresh();
 
-                if (!empty($data['fieldLayouts'])) {
+                if (
+                    !empty($data['fieldLayouts']) &&
+                    ($layoutConfig = reset($data['fieldLayouts']))
+                ) {
                     // Save the field layout
-                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                    $layout = FieldLayout::createFromConfig($layoutConfig);
                     $layout->id = $blockTypeRecord->fieldLayoutId;
                     $layout->type = SuperTableBlockElement::class;
                     $layout->uid = key($data['fieldLayouts']);
@@ -434,6 +389,9 @@ class SuperTableService extends Component
             $this->_blockTypesByFieldId[$blockTypeRecord->fieldId]
         );
         $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
+
+        // Invalidate Super Table block caches
+        Craft::$app->getElements()->invalidateCachesForElementType(SuperTableBlockElement::class);
     }
 
     /**
@@ -468,8 +426,7 @@ class SuperTableService extends Component
             return;
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             $blockType = $this->getBlockTypeById($blockTypeRecord->id);
@@ -526,9 +483,9 @@ class SuperTableService extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
 
                 // Finally delete the actual block type
-                $db->createCommand()
-                    ->delete('{{%supertableblocktypes}}', ['id' => $blockTypeRecord->id])
-                    ->execute();
+                Db::delete('{{%supertableblocktypes}}', [
+                    'id' => $blockTypeRecord->id,
+                ]);
             }
 
             $transaction->commit();
@@ -544,6 +501,9 @@ class SuperTableService extends Component
             $this->_blockTypeRecordsById[$blockTypeRecord->id]
         );
         $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
+
+        // Invalidate Super Table block caches
+        Craft::$app->getElements()->invalidateCachesForElementType(SuperTableBlockElement::class);
     }
 
     /**
@@ -611,7 +571,6 @@ class SuperTableService extends Component
         if ($validate && !$this->validateFieldSettings($supertableField)) {
             return false;
         }
-
 
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
@@ -803,7 +762,6 @@ class SuperTableService extends Component
         }
         $blockIds = [];
         $sortOrder = 0;
-        $db = Craft::$app->getDb();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -816,10 +774,11 @@ class SuperTableService extends Component
                 } else if ((int)$block->sortOrder !== $sortOrder) {
                     // Just update its sortOrder
                     $block->sortOrder = $sortOrder;
-                    $db->createCommand()->update('{{%supertableblocks}}',
-                        ['sortOrder' => $sortOrder],
-                        ['id' => $block->id], [], false)
-                        ->execute();
+                    Db::update('{{%supertableblocks}}', [
+                        'sortOrder' => $sortOrder,
+                    ], [
+                        'id' => $block->id,
+                    ], [], false);
                 }
 
                 $blockIds[] = $block->id;
@@ -918,8 +877,6 @@ class SuperTableService extends Component
      */
     public function duplicateBlocks(SuperTableField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
     {
-        /** @var Element $source */
-        /** @var Element $target */
         $elementsService = Craft::$app->getElements();
         /** @var SuperTableBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
