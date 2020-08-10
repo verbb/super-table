@@ -60,10 +60,13 @@ class m190227_100000_fix_project_config extends Migration
         foreach ($blockTypeData as &$blockTypes) {
             foreach ($blockTypes as &$blockType) {
                 $blockTypeUid = $blockType['uid'];
-                $layout = $superTableFieldLayouts[$blockType['fieldLayoutId']];
-                unset($blockType['uid'], $blockType['fieldLayoutId']);
-                $blockType['fieldLayouts'] = [$layout['uid'] => ['tabs' => $layout['tabs']]];
-                $data[$blockTypeUid] = $blockType;
+                $layout = $superTableFieldLayouts[$blockType['fieldLayoutId']] ?? null;
+
+                if ($layout) {
+                    unset($blockType['uid'], $blockType['fieldLayoutId']);
+                    $blockType['fieldLayouts'] = [$layout['uid'] => ['tabs' => $layout['tabs']]];
+                    $data[$blockTypeUid] = $blockType;
+                }
             }
         }
 
