@@ -4,7 +4,7 @@
 
 ### Added
 - Add Craft 3.5+ compatibility.
-- Now requires Craft 3.5+;
+- Now requires Craft 3.5+.
 
 ## 2.5.4 - 2020-07-30
 
