@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.0.1 - 2020-08-10
+
+### Fixed
+- Fix GQL error.
+- Fix errors with block query.
+
 ## 2.6.0 - 2020-08-10
 
 ### Added
