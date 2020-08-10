@@ -911,7 +911,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public function getContentGqlMutationArgumentType()
     {
-        return SuperTableInputType::getType($this);
+        return SuperTableBlockInputType::getType($this);
     }
 
     /**
