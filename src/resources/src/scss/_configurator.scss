@@ -9,9 +9,6 @@
 .supertable-configurator > .field > .input {
     min-height: 400px;
     position: relative;
-
-    display: -webkit-box;
-    display: -ms-flexbox;
     display: flex;
 }
 
@@ -23,9 +20,9 @@
 
 .supertable-configurator .stc-sidebar {
     width: 200px;
-    border-radius: 3px 0 0 3px;
-    border: 1px solid #e3e5e8;
-    background: rgba(0, 0, 0, 0.03);
+    border-radius: 4px 0 0 4px;
+    border: 1px solid #ced9e5;
+    background-color: #f3f7fc;
 }
 
 .supertable-configurator .stc-sidebar > .col-inner-container > .field-items {
@@ -36,11 +33,8 @@
 .supertableconfigitem {
     position: relative;
     margin-top: -1px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    border-bottom: 1px solid rgba(51, 64, 77, 0.1);
+    background-color: #e4edf6;
     cursor: default;
 }
 
@@ -53,15 +47,7 @@ body.rtl .supertableconfigitem {
 }
 
 .supertableconfigitem.sel {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.supertableconfigitem.error {
-    background: rgba(255, 0, 0, 0.1);
-}
-
-.supertableconfigitem.sel.error {
-    background: rgba(200, 0, 0, 0.2);
+    background-color: #cdd8e4;
 }
 
 .supertableconfigitem .handle {
@@ -97,14 +83,9 @@ body.rtl .supertableconfigitem .actions {
 }
 
 .supertable-configurator .stc-settings {
-    border: 1px solid #e3e5e8;
-    border-radius: 0 3px 3px 0;
-
-    -webkit-box-flex: 1;
-    -ms-flex-positive: 1;
+    border: 1px solid #ced9e5;
+    border-radius: 0 4px 4px 0;
     flex-grow: 1;
-
-    -ms-flex-negative: 9999;
     flex-shrink: 9999;
 }
 
@@ -123,15 +104,10 @@ body.rtl .supertable-configurator .stc-settings {
 .supertable-configurator .stc-sidebar > .col-inner-container > .heading,
 .supertable-configurator .stc-settings > .col-inner-container > .heading {
     padding: 7px 14px 6px;
-    color: #8f98a3;
     margin: 0;
-    border-bottom: 1px solid #e3e5e8;
-
-    background-image: -webkit-linear-gradient(#f7f7f8, #f4f5f6);
-    background-image: -moz-linear-gradient(#f7f7f8, #f4f5f6);
-    background-image: -ms-linear-gradient(#f7f7f8, #f4f5f6);
-    background-image: -o-linear-gradient(#f7f7f8, #f4f5f6);
-    background-image: linear-gradient(#f7f7f8, #f4f5f6);
+    border-bottom: 1px solid rgba(51, 64, 77, 0.1);
+    background-color: #f3f7fc;
+    background-image: linear-gradient(rgba(51, 64, 77, 0), rgba(51, 64, 77, 0.05));
 }
 
 .supertable-configurator .stc-settings > .col-inner-container > .heading {
@@ -152,17 +128,10 @@ body.rtl .supertable-configurator .stc-settings {
 /* This actually applies to all Matrix fields everywhere, but testing hasn't proved any issues yet... */
 .matrix-configurator > .field > .input {
     overflow-x: auto;
-
-    /* Safari Fix */
-    display: -webkit-box;
-    display: -ms-flexbox;
     display: flex;
 }
 
 .matrix-configurator > .field > .input > .field-settings {
     width: 100%;
 }
-
-
-
 

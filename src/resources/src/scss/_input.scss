@@ -7,12 +7,10 @@
 }
 
 .superTable-table {
-    border-radius: 5px;
-    border: 1px solid darken(#e3e5e8, 5%);
-    // overflow: hidden;
+    border-radius: 4px;
     width: 100%;
     margin-top: 10px;
-    box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid #cdd8e4;
 }
 
 .superTable-table tbody tr td {
@@ -23,11 +21,11 @@
 
 .superTable-table tbody tr td:not(:first-child),
 .superTable-table tbody tr th ~ td:not(.hidden) ~ td {
-    border-left: 1px solid rgba(0, 0, 0, 0.07);
+    border-left: 1px solid rgba(51, 64, 77, 0.1);
 }
 
 .superTable-table tbody tr:not(:first-child) td {
-    border-top: 1px solid rgba(0, 0, 0, 0.07);
+    border-top: 1px solid rgba(51, 64, 77, 0.1);
 }
 
 .superTable-table tbody tr td:not(.textual) {
@@ -39,7 +37,7 @@
 }
 
 .superTable-table tbody tr td.action {
-    background: #f1f5f8;
+    background: #f3f7fc;
     padding: 4px 7px;
 }
 
@@ -58,12 +56,30 @@
 }
 
 .superTable-layout-table thead tr th {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid rgba(51, 64, 77, 0.1);
 }
 
 .superTable-layout-table thead tr th,
 .superTable-layout-table tbody tr th {
     padding: 6px 10px;
+}
+
+.superTable-layout-table {
+    thead tr th:nth-child(2) {
+        border-top-left-radius: 4px;
+    }
+
+    thead tr th:last-child {
+        border-top-right-radius: 4px;
+    }
+
+    tbody tr:last-child td:nth-child(2) {
+        border-bottom-left-radius: 4px;
+    }
+
+    tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 4px;
+    }
 }
 
 .superTable-layout-table tbody tr td:nth-child(2) {
@@ -72,9 +88,9 @@
 
 .superTable-layout-table th,
 .superTable-layout-table td.action {
-    color: #8f98a3;
+    color: #7b8793;
     font-weight: normal;
-    background: #f1f5f8;
+    background-color: #f3f7fc;
 }
 
 .superTable-layout-table th.col-header[colspan="2"] {
@@ -99,10 +115,10 @@
 
 .superTable-layout-table + .btn.add {
     display: block;
-    border-radius: 0 0 2px 2px;
-    border: 1px dashed rgba(0, 0, 20, 0.4);
+    border-radius: 0 0 4px 4px;
+    border: 1px dashed rgba(81, 95, 108, 0.25);
     border-top-width: 0;
-    background: none;
+    background: transparent;
     box-shadow: none;
 }
 
@@ -122,7 +138,7 @@
     line-height: 1.2;
     color: #8f98a3;
     font-weight: normal;
-    border-radius: 3px 3px 0 0;
+    border-radius: 4px 4px 0 0;
     padding: 8px 7px !important;
     text-align: left;
     white-space: nowrap;
@@ -216,11 +232,11 @@
 
 .superTable-layout-row-new {
     position: relative;
-    border-radius: 5px;
-    border: 1px solid #d5d8dd;
+    border-radius: 4px;
+    border: 1px solid #cdd8e4;
     width: 100%;
     margin-top: 10px;
-    box-shadow: 0 1px 5px -1px rgba(0,0,0,0.1);
+    // box-shadow: 0 1px 5px -1px rgba(0,0,0,0.1);
 }
 
 .superTable-layout-row-new-body {
@@ -236,13 +252,17 @@
     max-width: 180px;
     white-space: normal;
     border-radius: 0;
-    border-top: 1px solid rgba(0,0,0,0.07);
+    border-top: 1px solid rgba(51,64,77,0.1);
+
+    color: #7b8793;
+    font-weight: normal;
+    background-color: #f3f7fc;
 }
 
 .superTable-layout-row-new-field {
     border-left: 1px solid #e0e4e7;
     padding: 4px 10px;
-    border-top: 1px solid rgba(0,0,0,0.07);
+    border-top: 1px solid rgba(51,64,77,0.1);
     background: #fff;
     overflow: hidden;
 
@@ -259,21 +279,21 @@
 
 .superTable-layout-row-new-body {
     > :nth-child(1) {
-        border-top-left-radius: 3px;
+        border-top-left-radius: 4px;
     }
 
     > :nth-last-child(3) {
-        border-bottom-left-radius: 3px;
+        border-bottom-left-radius: 4px;
     }
 }
 
 .superTable-layout-row-new-body.static-field {
     > :nth-child(2) {
-        border-top-right-radius: 3px;
+        border-top-right-radius: 4px;
     }
 
     > :nth-last-child(2) {
-        border-bottom-right-radius: 3px;
+        border-bottom-right-radius: 4px;
     }
 }
 
@@ -284,9 +304,11 @@
     top: 0;
     height: 100%;
     text-align: center;
-    background: #f1f5f8;
     opacity: 1;
-    border-left: 1px solid rgba(0,0,0,0.07);
+    border-left: 1px solid rgba(51,64,77,0.1);
+    color: #7b8793;
+    font-weight: normal;
+    background-color: #f3f7fc;
 }
 
 .superTable-layout-row-new-actions .floating .icon.delete:before {
