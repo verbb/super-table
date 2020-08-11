@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.0.4 - 2020-08-11
+
+### Fixed
+- Fix layout issue with row layout fields, where any overflow was hidden.
+
 ## 2.6.0.3 - 2020-08-10
 
 ### Fixed

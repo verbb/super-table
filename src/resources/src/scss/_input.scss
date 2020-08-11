@@ -264,7 +264,10 @@
     padding: 4px 10px;
     border-top: 1px solid rgba(51,64,77,0.1);
     background: #fff;
-    overflow: hidden;
+
+    // Don't even think about uncommenting this. Is particularly messes up Icon Picked dropdowns
+    // but very likely other fields.
+    // overflow: hidden;
 
     & > .field > .heading {
         display: none;
