@@ -62,7 +62,20 @@ class PluginController extends Controller
         foreach ($superTableBlockTypes as $superTableBlockType) {
             $missingFields = false;
 
+            if (!isset($superTableBlockType['fieldId'])) {
+                echo "    > Super Table field skipped as it's missing its `fieldId`. Block type #{$superTableBlockType['id']} ...\n";
+
+                continue;
+            }
+
             $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
+
+            if (!isset($superTableBlockType['fieldLayoutId'])) {
+                echo "    > Super Table field #{$superTableField->id} skipped as it's missing its `fieldLayoutId`. Block type #{$superTableBlockType['id']} ...\n";
+
+                continue;
+            }
+
             $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
 
             // Find what the columns should be according to the block type fields
@@ -300,7 +313,20 @@ class PluginController extends Controller
             $dbFieldColumns = [];
             $missingFields = false;
 
+            if (!isset($superTableBlockType['fieldId'])) {
+                echo "    > Super Table field skipped as it's missing its `fieldId`. Block type #{$superTableBlockType['id']} ...\n";
+
+                continue;
+            }
+
             $superTableField = $fieldsService->getFieldById($superTableBlockType['fieldId']);
+
+            if (!isset($superTableBlockType['fieldLayoutId'])) {
+                echo "    > Super Table field #{$superTableField->id} skipped as it's missing its `fieldLayoutId`. Block type #{$superTableBlockType['id']} ...\n";
+
+                continue;
+            }
+
             $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
 
             if (!$superTableField) {
