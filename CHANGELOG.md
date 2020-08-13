@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.1 - 2020-08-13
+
+### Fixed
+- Fix content table checking to cater for potentially problematic fields.
+
 ## 2.6.0.4 - 2020-08-11
 
 ### Fixed
