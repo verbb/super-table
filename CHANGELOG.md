@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.2 - 2020-08-21
+
+### Fixed
+- Fix duplicate instructions for blocks in Craft 3.5+.
+- Fix checkbox styling in Craft 3.5+.
+
 ## 2.6.1 - 2020-08-13
 
 ### Fixed
