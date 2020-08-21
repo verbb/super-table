@@ -376,4 +376,8 @@ body.ltr .superTableMatrix > .titlebar {
     margin-bottom: 0 !important;
 }
 
+// Checkbox fields in Craft 3.5+
+.superTableContainer .field[data-type="craft\\fields\\Checkboxes"] fieldset {
+    margin: 0;
+}
 
