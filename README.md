@@ -1,10 +1,3 @@
-### Craft 3.1 changes
-If you're updating from Craft 3.0.x, or are experiencing error messages with content tables, please ensure you're on the latest [Super Table version](https://github.com/verbb/super-table/releases) to make use of our "Content Table Checker/Fixer".
-
-Go to your Control Panel's Settings, click on the Super Table settings, and follow the prompts. This will not make any changes on your install, and if any errors are detected, will advise to fix them. In doing so, a backup will be created, and your Super Table fields should be corrected.
-
-If you experience issues, but sure to post an issue here with the output of the checker of fixer tool.
-
 # Super Table Plugin for Craft CMS
 
 <img width="500" src="https://verbb.io/uploads/plugins/super-table/super-table-social-card.png?v=1">
@@ -24,6 +17,19 @@ Super Table is a Craft CMS field type to allow you to create powerful tables. Yo
 ## Documentation
 
 Visit the [Super Table Plugin page](https://verbb.io/craft-plugins/super-table) for all documentation, guides, pricing and developer resources.
+
+## Updating
+### Updating to Craft 3.5+
+Only Matrix > Super Table > Matrix field combinations are supported for 3 levels of nesting. In Craft 3.5+, it's possible for you to create different combinations, and additionally more levels of Super Table/Matrix fields, but they will not work. This was due to a lot of necessary streamlining with Craft 3.5+ changes with Matrix.
+
+We're looking to fix this visual issue when creating your fields, but just note this when creating your fields.
+
+### Updating to Craft 3.1+
+If you're updating from Craft 3.0.x, or are experiencing error messages with content tables, please ensure you're on the latest [Super Table version](https://github.com/verbb/super-table/releases) to make use of our "Content Table Checker/Fixer".
+
+Go to your Control Panel's Settings, click on the Super Table settings, and follow the prompts. This will not make any changes on your install, and if any errors are detected, will advise to fix them. In doing so, a backup will be created, and your Super Table fields should be corrected.
+
+If you experience issues, but sure to post an issue here with the output of the checker of fixer tool.
 
 ## Support
 
