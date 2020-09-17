@@ -1,6 +1,7 @@
 <?php
 namespace verbb\supertable\fields;
 
+use InvalidArgumentException;
 use verbb\supertable\SuperTable;
 use verbb\supertable\assetbundles\SuperTableAsset;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
@@ -332,7 +333,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                         if (!isset($fieldConfig['type'])) {
                             continue;
                         }
-                        
+
                         $fieldConfig = array_merge($defaultFieldConfig, $fieldConfig);
 
                         $field = $fields[] = Craft::$app->getFields()->createField([
@@ -502,7 +503,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $view->registerAssetBundle(SuperTableAsset::class);
 
         $placeholderKey = StringHelper::randomString(10);
-        
+
         $view->registerJs('new Craft.SuperTable.Configurator(' .
             Json::encode($tableId, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
@@ -812,7 +813,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         foreach ($value->all() as $block) {
             $fields = Craft::$app->getFields()->getAllFields($block->getFieldContext());
-            
+
             foreach ($fields as $field) {
                 /** @var Field $field */
                 if ($field->searchable) {
