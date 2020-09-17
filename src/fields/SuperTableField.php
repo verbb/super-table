@@ -1,7 +1,6 @@
 <?php
 namespace verbb\supertable\fields;
 
-use InvalidArgumentException;
 use verbb\supertable\SuperTable;
 use verbb\supertable\assetbundles\SuperTableAsset;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
@@ -46,6 +45,7 @@ use craft\validators\ArrayValidator;
 
 use GraphQL\Type\Definition\Type;
 
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
