@@ -45,6 +45,7 @@ use craft\validators\ArrayValidator;
 
 use GraphQL\Type\Definition\Type;
 
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
