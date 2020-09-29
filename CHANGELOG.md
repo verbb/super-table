@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.3 - 2020-09-28
+
+### Fixed
+- Fix InvalidArgumentException not found error. (thanks @smcyr).
+- Fix static matrix layout visual issue.
+
 ## 2.6.2 - 2020-08-21
 
 ### Fixed
