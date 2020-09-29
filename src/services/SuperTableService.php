@@ -587,7 +587,7 @@ class SuperTableService extends Component
                 }
             }
 
-            if (!Craft::$app->getProjectConfig()->areChangesPending(self::CONFIG_BLOCKTYPE_KEY)) {
+            if (!Craft::$app->getProjectConfig()->getIsApplyingYamlChanges()) {
                 // Delete the old block types first, in case there's a handle conflict with one of the new ones
                 $oldBlockTypes = $this->getBlockTypesByFieldId($supertableField->id);
                 $oldBlockTypesById = [];
