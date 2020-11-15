@@ -10,7 +10,7 @@ The variables below will help you figure out the correct block type to use (even
 
 ```twig
 {% set fieldHandle = 'mySuperTableField' %}
-{% set field = craft.fields.getFieldByHandle(fieldHandle) %}
+{% set field = craft.app.fields.getFieldByHandle(fieldHandle) %}
 {% set blocktype = craft.superTable.getSuperTableBlocks(field.id)[0] %}
 
 <form method="post" accept-charset="UTF-8">
@@ -26,7 +26,7 @@ The variables below will help you figure out the correct block type to use (even
         <input type="hidden" name="fields[{{ fieldHandle }}][{{ block.id }}][type]" value="{{ blocktype }}">
         <input type="hidden" name="fields[{{ fieldHandle }}][{{ block.id }}][enabled]" value="1">
 
-        <input type="text" name="fields[{{ fieldHandle }}][{{ block.id }}][fields][firstName]" value="{{ block.plainText1 }}">
+        <input type="text" name="fields[{{ fieldHandle }}][{{ block.id }}][fields][firstName]" value="{{ block.firstName }}">
     {% endfor %}
 
     {# Add a new row of data - note the `new1` #}
