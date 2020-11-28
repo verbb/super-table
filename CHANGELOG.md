@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.6.4 - 2020-11-28
+
+### Changed
+- Sub-fields of Super Table fields now have “Use this field’s values as search keywords” unchecked for new fields. This is inline with Craft's native Matrix behaviour.
+
+### Fixed
+- Fix block type model `getHandle()` returning values included a hyphen, causing issues with GraphQL.
+- Fix typehint for `getRelatedElementsQuery()`.
+
 ## 2.6.3 - 2020-09-28
 
 ### Fixed
