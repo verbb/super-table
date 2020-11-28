@@ -434,7 +434,7 @@ Craft.SuperTable.Field = Garnish.Base.extend({
             label: Craft.t('app', 'Use this field’s values as search keywords'),
             id: this.inputIdPrefix + '-searchable',
             name: this.inputNamePrefix + '[searchable]',
-            checked: true,
+            checked: false,
         }).appendTo($container);
 
         var fieldTypeOptions = [];
