@@ -1036,9 +1036,8 @@ class SuperTableService extends Component
     * ```
     *
     * @method getRelatedElements
-    * @param  array                $params  Should contain 'relatedTo' but can also optionally
-    *                                       include 'elementType' and 'criteria'
-    * @return ElementCriteriaModel
+    * @param  array $params  Should contain 'relatedTo' but can also optionally include 'elementType' and 'criteria'
+    * @return SuperTableBlockElement
     */
     public function getRelatedElementsQuery($params = null) {
         // Parse out the field handles
