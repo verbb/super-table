@@ -100,7 +100,7 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
             
             foreach ($field->getBlockTypes() as $index => $blockType) {
                 if ($blockType->id == $this->id) {
-                    $this->handle = $field->handle . '-' . $index;
+                    $this->handle = $field->handle . '_' . $index;
                     break;
                 }
             }
