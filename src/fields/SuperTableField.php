@@ -566,6 +566,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $query->id = false;
         }
 
+        if ($this->staticField) {
+            $query->staticField(true);
+        }
+
         $query
             ->fieldId($this->id)
             ->siteId($element->siteId ?? null);

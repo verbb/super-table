@@ -75,6 +75,8 @@ class SuperTableBlockQuery extends ElementQuery
      */
     public $typeId;
 
+    public $staticField;
+
 
     // Public Methods
     // =========================================================================
@@ -106,7 +108,7 @@ class SuperTableBlockQuery extends ElementQuery
     public function __get($name)
     {
         // Handle querying via the direct field handles for a Static Super Table field - `{{ superTable.customField }}`
-        if (is_string($name)) {
+        if ($this->staticField && is_string($name)) {
             return $this->one()->$name ?? null;
         }
 
@@ -119,7 +121,7 @@ class SuperTableBlockQuery extends ElementQuery
     public function __call($name, $params)
     {
         // Handle calling methods via a Static Super Table field - `{{ superTable.getFieldLayout().fields }}`
-        if (is_string($name)) {
+        if ($this->staticField && is_string($name)) {
             $block = $this->one() ?? null;
 
             if ($block && method_exists($block, $name)) {
@@ -306,6 +308,37 @@ class SuperTableBlockQuery extends ElementQuery
         return $this;
     }
 
+    public function staticField($value)
+    {
+        $this->staticField = $value;
+        return $this;
+    }
+
+    public function criteriaAttributes(): array
+    {
+        if (!$this->staticField) {
+            return parent::criteriaAttributes();
+        }
+
+        $class = new \ReflectionClass($this);
+        $names = [];
+
+        // Legacy function for static Super Table, before Craft 3.5.17
+        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $dec = $property->getDeclaringClass();
+                if (
+                    ($dec->getName() === self::class || $dec->isSubclassOf(self::class)) &&
+                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'contentTable', 'customFields', 'asArray'], true)
+                ) {
+                    $names[] = $property->getName();
+                }
+            }
+        }
+
+        return $names;
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -431,6 +464,7 @@ class SuperTableBlockQuery extends ElementQuery
         // This method won't get called if $this->fieldId isn't set to a single int
         /** @var SuperTableField $supertableField */
         $supertableField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
+
         return $supertableField->getBlockTypeFields();
     }
 
