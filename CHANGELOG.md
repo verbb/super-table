@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.5 - 2020-12-16
+
+### Fixed
+- Fix an `Undefined property` fatal error when saving an element containing a Super Table field, on Craft 3.5.17.
+
 ## 2.6.4 - 2020-11-28
 
 ### Changed
