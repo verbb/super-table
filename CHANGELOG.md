@@ -2,6 +2,7 @@
 
 ## 2.6.6 - 2021-01-27
 
+### Fixed
 - Fix being unable to directly access the first block in a Super Table field, which would otherwise return `null`. Please see [this issue](https://github.com/verbb/super-table/issues/399#issuecomment-768015110) in that if you're getting this error, you're likely using incorrect/unsupported template syntax. Using `entry.superTableField.myField` as a means for direct-access is reserved for static fields.
 
 ## 2.6.5 - 2020-12-16
