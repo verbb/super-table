@@ -108,7 +108,7 @@ class SuperTableBlockQuery extends ElementQuery
     public function __get($name)
     {
         // Handle querying via the direct field handles for a Static Super Table field - `{{ superTable.customField }}`
-        if ($this->staticField && is_string($name)) {
+        if (is_string($name)) {
             return $this->one()->$name ?? null;
         }
 
@@ -121,7 +121,7 @@ class SuperTableBlockQuery extends ElementQuery
     public function __call($name, $params)
     {
         // Handle calling methods via a Static Super Table field - `{{ superTable.getFieldLayout().fields }}`
-        if ($this->staticField && is_string($name)) {
+        if (is_string($name)) {
             $block = $this->one() ?? null;
 
             if ($block && method_exists($block, $name)) {
@@ -316,14 +316,18 @@ class SuperTableBlockQuery extends ElementQuery
 
     public function criteriaAttributes(): array
     {
-        if (!$this->staticField) {
-            return parent::criteriaAttributes();
-        }
+        // Would be nice to use this, but due to how people call Super Table blocks directly, it's not possible.
+        // if (!$this->staticField) {
+        //     return parent::criteriaAttributes();
+        // }
 
         $class = new \ReflectionClass($this);
         $names = [];
 
-        // Legacy function for static Super Table, before Craft 3.5.17
+        // Restore legancy-handling for people using `entry.stfield.field` via direct access. They shouldn't be, as it's
+        // considered invalid unless it's a static field, but we better keep this alive for the time-being to keep the peace.
+        // This was a direct issue with changes to `criteriaAttributes()` in Craft 3.5.17 which causes ST fields to error
+        // when being saved, due to incorrect custom fields.
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic()) {
                 $dec = $property->getDeclaringClass();
