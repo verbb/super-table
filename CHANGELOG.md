@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.7 - 2021-02-06
+
+### Fixed
+- Fix an issue with Gatsby Helper plugin and Super Table blocks.
+
 ## 2.6.6 - 2021-01-27
 
 ### Fixed
