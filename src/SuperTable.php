@@ -26,6 +26,9 @@ use NerdsAndCompany\Schematic\Events\ConverterEvent;
 
 use barrelstrength\sproutbase\app\import\services\Importers;
 
+use craft\gatsbyhelper\events\RegisterIgnoredTypesEvent;
+use craft\gatsbyhelper\services\Deltas;
+
 use yii\base\Event;
 
 class SuperTable extends Plugin
@@ -133,6 +136,13 @@ class SuperTable extends Plugin
             Event::on(Importers::class, Importers::EVENT_REGISTER_IMPORTER_TYPES, function (RegisterComponentTypesEvent $event) {
                 $event->types[] = 'verbb\supertable\integrations\sproutimport\importers\fields\SuperTableImporter';
             });
+        }
+
+        // Support for Gatsby Helper
+        if (class_exists(Deltas::class)) {
+            Event::on(Deltas::class, Deltas::EVENT_REGISTER_IGNORED_TYPES, function(RegisterIgnoredTypesEvent $event) {
+              $event->types[] = SuperTableBlockElement::class;
+          });
         }
     }
 
