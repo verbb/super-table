@@ -339,7 +339,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
             this.table = table;
             this.$tr = $(tr);
 
-            var $deleteBtn = this.$tr.children().last().find('.tfoot-actions .delete');
+            var $deleteBtn = this.$tr.children().last().find('> .tfoot-actions .delete');
             this.addListener($deleteBtn, 'click', 'deleteRow');
         },
 
