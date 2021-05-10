@@ -1024,16 +1024,24 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     public function afterElementPropagate(ElementInterface $element, bool $isNew)
     {
         $superTableService = SuperTable::$plugin->getService();
+        $resetValue = false;
 
         /** @var Element $element */
         if ($element->duplicateOf !== null) {
             $superTableService->duplicateBlocks($this, $element->duplicateOf, $element, true);
+            $resetValue = true;
         } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
             $superTableService->saveField($this, $element);
+        } else if (
+            ($status = $element->getFieldStatus($this->handle)) !== null &&
+            $status[0] === Element::ATTR_STATUS_OUTDATED
+        ) {
+            $superTableService->duplicateBlocks($this, ElementHelper::sourceElement($element), $element, true);
+            $resetValue = true;
         }
 
         // Repopulate the SuperTable block query if this is a new element
-        if ($element->duplicateOf || $isNew) {
+        if ($resetValue || $isNew) {
             /** @var SuperTableBlockQuery $query */
             $query = $element->getFieldValue($this->handle);
             $this->_populateQuery($query, $element);
