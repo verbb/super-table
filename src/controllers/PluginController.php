@@ -3,7 +3,7 @@ namespace verbb\supertable\controllers;
 
 use verbb\supertable\SuperTable;
 use verbb\supertable\fields\SuperTableField;
-use verbb\supertable\migrations\m190120_000000_fix_supertablecontent_tables;
+use verbb\supertable\migrations\FixContentTables;
 
 use Craft;
 use craft\db\Migration;
@@ -15,6 +15,7 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Fields;
 use craft\services\Matrix;
@@ -165,7 +166,7 @@ class PluginController extends Controller
         // Backup!
         Craft::$app->getDb()->backup();
 
-        $migration = new m190120_000000_fix_supertablecontent_tables();
+        $migration = new FixContentTables();
 
         ob_start();
 
