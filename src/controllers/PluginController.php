@@ -412,6 +412,7 @@ class PluginController extends Controller
 
             $settings = Json::decode($superTableField['settings']);
             $configSettings = $projectConfig->get($path);
+            $configSettings = ProjectConfigHelper::unpackAssociativeArrays($configSettings);
 
             if ($settings != $configSettings) {
                 $errors = true;
