@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.6.8 - 2021-05-19
+
+### Fixed
+- Fix delete row behaviour when an outer static Super Table field, Matrix and inner Super Table field.
+- Fix inconsistent project config warnings when using the content table fixer.
+- Fix for draft change merging bug. (thanks @brandonkelly).
+
 ## 2.6.7 - 2021-02-06
 
 ### Fixed
