@@ -3,6 +3,7 @@ namespace verbb\supertable\gql\types\input;
 
 use verbb\supertable\fields\SuperTableField;
 
+use Craft;
 use craft\base\Field;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\QueryArgument;
@@ -28,7 +29,12 @@ class SuperTableBlock extends InputObjectType
         // For all the blocktypes
         foreach ($blockTypes as $blockType) {
             $fields = $blockType->getFields();
-            $blockTypeFields = [];
+            $blockTypeFields = [
+                'id' => [
+                    'name' => 'id',
+                    'type' => Type::id(),
+                ]
+            ];
 
             // Get the field input types
             foreach ($fields as $field) {
@@ -62,11 +68,11 @@ class SuperTableBlock extends InputObjectType
                 return [
                     'sortOrder' => [
                         'name' => 'sortOrder',
-                        'type' => Type::nonNull(Type::listOf(QueryArgument::getType()))
+                        'type' => Type::listOf(QueryArgument::getType()),
                     ],
                     'blocks' => [
                         'name' => 'blocks',
-                        'type' => Type::listOf($blockContainerInputType)
+                        'type' => Type::listOf($blockContainerInputType),
                     ]
                 ];
             },
@@ -80,18 +86,27 @@ class SuperTableBlock extends InputObjectType
     {
         $preparedBlocks = [];
         $blockCounter = 1;
+        $missingId = false;
 
         if (!empty($value['blocks'])) {
             foreach ($value['blocks'] as $block) {
                 if (!empty($block)) {
                     $type = array_key_first($block);
                     $block = reset($block);
+                    $missingId = $missingId || empty($block['id']);
                     $blockId = !empty($block['id']) ? $block['id'] : 'new:' . ($blockCounter++);
+
+                    unset($block['id']);
+
                     $preparedBlocks[$blockId] = [
                         'type' => $type,
                         'fields' => $block
                     ];
                 }
+            }
+
+            if ($missingId) {
+                Craft::$app->getDeprecator()->log('SuperTableInput::normalizeValue()', 'The `id` field will be required when mutating Super Table fields as of Craft 4.0.');
             }
 
             $value['blocks'] = $preparedBlocks;
