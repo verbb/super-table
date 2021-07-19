@@ -3,12 +3,15 @@
 
 {% namespace namespace %}
     {% for field in fields %}
-        {% include "super-table/field" with {
-            field: field,
-            required: field.required,
-            element: element,
-            static: static ?? false,
-            registerDeltas: registerDeltas ?? false,
-        } only %}
+        {% set width = settings.columns[field.uid].width ?? '' %}
+        <div class="field" {% if width %} style="width: calc({{ width }} - 48px)"{% endif %}>
+            {% include "super-table/field" with {
+                field: field,
+                required: field.required,
+                element: element,
+                static: static ?? false,
+                registerDeltas: registerDeltas ?? false,
+            } only %}
+        </div>
     {% endfor %}
 {% endnamespace %}
