@@ -51,7 +51,7 @@
                         {% do view.registerDeltaName(baseInputName) %}
                     {% endif %}
 
-                    <tr data-id="{{ blockId }}">
+                    <tr data-id="{{ blockId }}" data-type="{{ id }}">
                         <td class="hidden">
                             {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
                             {{ hiddenInput("#{baseInputName}[type]", block.getType().id) }}

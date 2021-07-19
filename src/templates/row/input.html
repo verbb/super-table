@@ -15,7 +15,7 @@
                 {% do view.registerDeltaName(baseInputName) %}
             {% endif %}
 
-            <div class="superTableRow" data-id="{{ blockId }}">
+            <div class="superTableRow" data-id="{{ blockId }}" data-type="{{ id }}">
                 {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
                 {{ hiddenInput("#{baseInputName}[type]", block.getType().id) }}
 

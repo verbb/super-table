@@ -15,7 +15,7 @@
                 {% do view.registerDeltaName(baseInputName) %}
             {% endif %}
 
-            <div class="superTableMatrix matrixblock {{ staticField ? 'static' }}" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %}>
+            <div class="superTableMatrix matrixblock {{ staticField ? 'static' }}" data-id="{{ blockId }}" data-type="{{ id }}"{% if block.collapsed %} data-collapsed{% endif %}>
                 {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
                 {{ hiddenInput("#{baseInputName}[type]", block.getType().id) }}
 
