@@ -249,7 +249,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
             this.totalNewBlocks++;
 
-            var id = 'new'+this.totalNewBlocks;
+            var id = 'new' + this.totalNewBlocks;
 
             var bodyHtml = this.getParsedBlockHtml(this.blockType.bodyHtml, id),
                 footHtml = this.getParsedBlockHtml(this.blockType.footHtml, id);
@@ -258,7 +258,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
                 '<input type="hidden" name="' + this.inputNamePrefix + '[sortOrder][]" value="' + id + '">' +
                 '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id  +'][type]" value="' + type + '">' +
                 '<div id="' + id + '" class="superTable-layout-row-new">' +
-                    '<div class="superTable-layout-row-new-body">' +
+                    '<div class="superTable-layout-row-new-body ' + (isStatic ? 'static-field' : '') + '">' +
                         bodyHtml +
                     '</div>';
 
