@@ -810,6 +810,7 @@ class SuperTableService extends Component
                     /** @var Element[] $localizedOwners */
                     $localizedOwners = $owner::find()
                         ->drafts($owner->getIsDraft())
+                        ->provisionalDrafts($owner->isProvisionalDraft)
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
                         ->siteId($otherSiteIds)
@@ -839,6 +840,7 @@ class SuperTableService extends Component
                             !empty($sharedPreexistingOtherSiteIds = array_intersect($preexistingOtherSiteIds, $sourceSupportedSiteIds)) &&
                             $preexistingLocalizedOwner = $owner::find()
                                 ->drafts($owner->getIsDraft())
+                                ->provisionalDrafts($owner->isProvisionalDraft)
                                 ->revisions($owner->getIsRevision())
                                 ->id($owner->id)
                                 ->siteId($sharedPreexistingOtherSiteIds)
@@ -921,6 +923,7 @@ class SuperTableService extends Component
                 /** @var Element[] $otherSources */
                 $otherSources = $target::find()
                     ->drafts($source->getIsDraft())
+                    ->provisionalDrafts($source->isProvisionalDraft)
                     ->revisions($source->getIsRevision())
                     ->id($source->id)
                     ->siteId($otherSiteIds)
@@ -930,6 +933,7 @@ class SuperTableService extends Component
                 /** @var Element[] $otherTargets */
                 $otherTargets = $target::find()
                     ->drafts($target->getIsDraft())
+                    ->provisionalDrafts($target->isProvisionalDraft)
                     ->revisions($target->getIsRevision())
                     ->id($target->id)
                     ->siteId($otherSiteIds)
