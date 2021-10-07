@@ -4,7 +4,7 @@ The following are common methods you will want to call in your front end templat
 
 ### `craft.superTable.blocks()`
 
-See [Super Table Block Queries](docs:getting-elements/supertable-block-queries)
+See [Super Table Block Queries](docs:getting-elements/super-table-block-queries)
 
 ### `craft.superTable.getRelatedElements()`
 

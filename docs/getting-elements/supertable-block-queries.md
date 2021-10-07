@@ -13,7 +13,7 @@ $mySuperTableBlockQuery = \verbb\supertable\elements\SuperTableBlockElement::fin
 ```
 :::
 
-Once you’ve created a Super Table block query, you can set [parameters](#parameters) on it to narrow down the results, and then [execute it](README.md#executing-element-queries) by calling `.all()`. An array of [SuperTableBlock]() objects will be returned.
+Once you’ve created a Super Table block query, you can set [parameters](#parameters) on it to narrow down the results, and then execute it by calling `.all()`. An array of Super Table Block objects will be returned.
 
 ::: tip
 See [Introduction to Element Queries](README.md) to learn about how element queries work.
