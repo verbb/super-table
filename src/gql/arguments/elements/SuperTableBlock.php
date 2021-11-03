@@ -27,4 +27,20 @@ class SuperTableBlock extends ElementArguments
             'typeId' => Type::listOf(QueryArgument::getType()),
         ]);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getRevisionArguments(): array
+    {
+        return [];
+    }
 }

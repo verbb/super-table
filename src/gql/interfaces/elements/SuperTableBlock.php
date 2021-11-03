@@ -34,9 +34,7 @@ class SuperTableBlock extends Element
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all Super Table blocks.',
-            'resolveType' => function (SuperTableBlockElement $value) {
-                return $value->getGqlTypeName();
-            }
+            'resolveType' => self::class . '::resolveElementTypeName',
         ]));
 
         SuperTableBlockType::generateTypes();

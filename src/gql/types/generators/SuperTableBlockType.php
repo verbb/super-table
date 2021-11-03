@@ -10,13 +10,14 @@ use verbb\supertable\models\SuperTableBlockTypeModel;
 
 use Craft;
 use craft\base\Field;
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;
 
-class SuperTableBlockType implements GeneratorInterface, SingleGeneratorInterface
+class SuperTableBlockType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
@@ -51,17 +52,10 @@ class SuperTableBlockType implements GeneratorInterface, SingleGeneratorInterfac
         $typeName = SuperTableBlockElement::gqlTypeNameByContext($context);
 
         if (!($entity = GqlEntityRegistry::getEntity($typeName))) {
-            $contentFields = $context->getFields();
-            $contentFieldGqlTypes = [];
-
-            /** @var Field $contentField */
-            foreach ($contentFields as $contentField) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-            }
-
+            $contentFieldGqlTypes = self::getContentFields($context);
             $blockTypeFields = TypeManager::prepareFieldDefinitions(array_merge(SuperTableBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
-            // Generate a type for each entry type
+            // Generate a type for each block type
             $entity = GqlEntityRegistry::getEntity($typeName);
 
             if (!$entity) {
@@ -72,7 +66,7 @@ class SuperTableBlockType implements GeneratorInterface, SingleGeneratorInterfac
                     }
                 ]);
 
-                // It's possible that creating the matrix block triggered creating all matrix block types, so check again.
+                // It's possible that creating the super table block triggered creating all super table block types, so check again.
                 $entity = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, $entity);
             }
         }

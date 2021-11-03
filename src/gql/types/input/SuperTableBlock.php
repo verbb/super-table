@@ -13,6 +13,12 @@ use GraphQL\Type\Definition\Type;
 
 class SuperTableBlock extends InputObjectType
 {
+    /**
+     * Create the type for a super table field.
+     *
+     * @param $context
+     * @return bool|mixed
+     */
     public static function getType(SuperTableField $context)
     {
         /** @var SuperTableField $context */
@@ -42,9 +48,9 @@ class SuperTableBlock extends InputObjectType
                 $blockTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
             }
 
-            $blockTypeGqlName = $context->handle . '_' . $blockType->handle . '_SuperTableBlockInput';
-            $blockInputTypes[$blockType->handle] = [
-                'name' => $blockType->handle,
+            $blockTypeGqlName = $context->handle . '_SuperTableBlockInput';
+            $blockInputTypes[$blockType->id] = [
+                'name' => $blockType->id,
                 'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
                     'name' => $blockTypeGqlName,
                     'fields' => $blockTypeFields
