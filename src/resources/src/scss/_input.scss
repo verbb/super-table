@@ -377,3 +377,14 @@ body.ltr .superTableMatrix > .titlebar {
     margin: 0;
 }
 
+// Fix status indicator for rows/table
+body.ltr .superTableRow .status-badge,
+body.ltr .superTableColumn .status-badge {
+    left: -11px !important;
+}
+
+body.rtl .superTableRow .status-badge,
+body.rtl .superTableColumn .status-badge {
+    right: -11px !important;
+}
+
