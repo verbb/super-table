@@ -15,6 +15,7 @@ use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\models\Section;
 use craft\models\Site;
