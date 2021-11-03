@@ -275,7 +275,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                 // Assemble the fields
                 foreach ($blockTypes as $blockType) {
                     if (isset($fieldIdsByLayoutId[$blockType->fieldLayoutId])) {
-                        $fieldColumnPrefix = 'field_' . $blockType->handle . '_';
+                        $fieldColumnPrefix = 'field_';
 
                         foreach ($fieldIdsByLayoutId[$blockType->fieldLayoutId] as $fieldId) {
                             if (isset($fieldsById[$fieldId])) {
