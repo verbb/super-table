@@ -87,15 +87,20 @@ class SuperTableBlockQuery extends ElementQuery
     public function __set($name, $value)
     {
         switch ($name) {
-            case 'ownerSite':
-                Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSite()', 'The “ownerSite” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
+            case 'field':
+                $this->field($value);
+                break;
+            case 'owner':
+                $this->owner($value);
                 break;
             case 'type':
                 $this->type($value);
                 break;
+            case 'ownerSite':
+                Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSite()', 'The `ownerSite` SuperTable block query param has been deprecated. Use `site` or `siteId` instead.');
+                break;
             case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The “ownerLocale” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
-                $this->ownerSite($value);
+                Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The `ownerLocale` SuperTable block query param has been deprecated. Use `site` or `siteId` instead.');
                 break;
             default:
                 parent::__set($name, $value);
@@ -200,7 +205,7 @@ class SuperTableBlockQuery extends ElementQuery
      */
     public function ownerSiteId()
     {
-        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSiteId()', 'The “ownerSiteId” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
+        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSiteId()', 'The `ownerSiteId” SuperTable block query param has been deprecated. Use `site” or `siteId” instead.');
         return $this;
     }
 
@@ -210,7 +215,7 @@ class SuperTableBlockQuery extends ElementQuery
      */
     public function ownerSite()
     {
-        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSite()', 'The “ownerSite” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
+        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSite()', 'The `ownerSite” SuperTable block query param has been deprecated. Use `site” or `siteId” instead.');
         return $this;
     }
 
@@ -220,9 +225,7 @@ class SuperTableBlockQuery extends ElementQuery
      */
     public function ownerLocale($value)
     {
-        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The “ownerLocale” SuperTable block query param has been deprecated. Use “site” or “siteId” instead.');
-        $this->ownerSite($value);
-
+        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The `ownerLocale” SuperTable block query param has been deprecated. Use `site” or `siteId” instead.');
         return $this;
     }
 
@@ -235,10 +238,8 @@ class SuperTableBlockQuery extends ElementQuery
      */
     public function owner(ElementInterface $owner)
     {
-        /** @var Element $owner */
         $this->ownerId = [$owner->id];
         $this->siteId = $owner->siteId;
-
         return $this;
     }
 
@@ -304,7 +305,6 @@ class SuperTableBlockQuery extends ElementQuery
     public function typeId($value)
     {
         $this->typeId = $value;
-
         return $this;
     }
 
@@ -352,6 +352,8 @@ class SuperTableBlockQuery extends ElementQuery
     protected function beforePrepare(): bool
     {
         $this->_normalizeFieldId();
+        $this->_normalizeOwnerId();
+
         $this->joinElementTable('supertableblocks');
 
         // Figure out which content table to use
@@ -359,7 +361,6 @@ class SuperTableBlockQuery extends ElementQuery
         if ($this->fieldId && count($this->fieldId) === 1) {
             /** @var SuperTableField $superTableField */
             $superTableField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
-            
             if ($superTableField) {
                 $this->contentTable = $superTableField->contentTable;
             }
@@ -376,7 +377,6 @@ class SuperTableBlockQuery extends ElementQuery
             $this->subQuery->andWhere(['supertableblocks.fieldId' => $this->fieldId]);
         }
 
-        $this->_normalizeOwnerId();
         if ($this->ownerId) {
             $this->subQuery->andWhere(['supertableblocks.ownerId' => $this->ownerId]);
         }
@@ -469,6 +469,10 @@ class SuperTableBlockQuery extends ElementQuery
         /** @var SuperTableField $supertableField */
         $supertableField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
 
+        if (!empty($this->typeId) && ArrayHelper::isNumeric($this->typeId)) {
+            return $supertableField->getBlockTypeFields($this->typeId);
+        }
+
         return $supertableField->getBlockTypeFields();
     }
 
@@ -481,11 +485,11 @@ class SuperTableBlockQuery extends ElementQuery
         // If both the field and owner are set, then only tag the combos
         if ($this->fieldId && $this->ownerId) {
             if (is_array($this->fieldId)) {
-            foreach ($this->fieldId as $fieldId) {
-                foreach ($this->ownerId as $ownerId) {
-                    $tags[] = "field-owner:$fieldId-$ownerId";
+                foreach ($this->fieldId as $fieldId) {
+                    foreach ($this->ownerId as $ownerId) {
+                        $tags[] = "field-owner:$fieldId-$ownerId";
+                    }
                 }
-            }
             }
         } else {
             if ($this->fieldId) {

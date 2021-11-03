@@ -71,6 +71,14 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
+    public static function trackChanges(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;
@@ -103,8 +111,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
 
     /**
      * @inheritdoc
-     *
-     * @return SuperTableBlockQuery The newly created [[SuperTableBlockQuery]] instance.
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
@@ -219,7 +225,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         $names = parent::extraFields();
         $names[] = 'owner';
         $names[] = 'type';
-
         return $names;
     }
 
@@ -248,6 +253,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
+        $field = $this->_field();
         return SuperTable::$plugin->getService()->getSupportedSiteIds($this->_field()->propagationMethod, $owner);
     }
 
@@ -272,7 +278,10 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the block type.
+     *
+     * @return SuperTableBlockType
+     * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
     public function getType()
     {
@@ -289,9 +298,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return $blockType;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function getOwner(): ElementInterface
     {
         if ($this->_owner === null) {
@@ -307,7 +314,9 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Sets the owner
+     *
+     * @param ElementInterface|null $owner
      */
     public function setOwner(ElementInterface $owner = null)
     {
@@ -331,7 +340,9 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the field context this element's content uses.
+     *
+     * @return string
      */
     public function getFieldContext(): string
     {
@@ -389,11 +400,11 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         }
 
         // Update the block record
-        Craft::$app->getDb()->createCommand()
-            ->update('{{%supertableblocks}}', [
-                'deletedWithOwner' => $this->deletedWithOwner,
-            ], ['id' => $this->id], [], false)
-            ->execute();
+        Db::update('{{%supertableblocks}}', [
+            'deletedWithOwner' => $this->deletedWithOwner,
+        ], [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }
