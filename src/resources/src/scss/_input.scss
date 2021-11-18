@@ -242,10 +242,10 @@
 
 .superTable-layout-row-new-body {
     display: grid;
-    grid-template-columns: auto 1fr 46px;
+    grid-template-columns: auto minmax(0, 1fr) 46px;
 
     &.static-field {
-        grid-template-columns: auto 1fr 0;
+        grid-template-columns: auto minmax(0, 1fr) 0;
     }
 }
 
