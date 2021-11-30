@@ -749,7 +749,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             '"' . $view->namespaceInputId($id) . '", ' .
             Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             '"' . $view->namespaceInputName($this->handle) . '", ' .
-            Json::encode($settings) .
+            Json::encode($settings, JSON_UNESCAPED_UNICODE) .
             ');';
 
         // Safe to create the default blocks?
