@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.7.0 - 2021-11-30
+
+### Added
+- Add SuperTable Block Type to superTableMatrix, superTableRow, tr.
+- Craft 3.7+ compatibility.
+- Blocks now have an `id` field to allow modifying existing Super Table blocks when using mutations with the GraphQL API.
+- Allow for widths in Matrix styled Super Tables.
+
+### Changed
+- Now requires Craft 3.7+.
+- Update GraphQL classes to Craft 3.7+.
+- Show `.heading-text` of nested SuperTables in SuperTableMatrix. And there is no element with `.heading-text` in SuperTableMatrix related templates.
+
+### Fixed
+- Fix a potential XSS vulnerability.
+- Fix elements overflowing grid column bounds in Row Layout.
+- Fix change status indicator alignment for blocks.
+- Fix a missing class include.
+- Fix new static-field row blocks not getting the `static-field` class.
+- Fix missing css class to fields container of Matrix styled SuperTable.
+
 ## 2.6.8 - 2021-05-19
 
 ### Fixed
