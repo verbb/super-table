@@ -197,7 +197,7 @@ class SuperTableService extends Component
                     // This error *might* not be entirely accurate, but it's such an edge case that it's probably better
                     // for the error to be worded for the common problem (two duplicate handles within the same block
                     // type).
-                    $error = Craft::t('app', '{attribute} "{value}" has already been taken.', [
+                    $error = Craft::t('yii', '{attribute} "{value}" has already been taken.', [
                         'attribute' => Craft::t('app', 'Handle'),
                         'value' => $field->handle
                     ]);
@@ -220,7 +220,7 @@ class SuperTableService extends Component
                 $blockType->hasFieldErrors = true;
                 $validates = false;
 
-                $field->addErrors(['handle' => Craft::t('app', '"{handle}" is a reserved word.', ['handle' => $field->handle])]);
+                $field->addErrors(['handle' => Craft::t('app', '“{handle}” is a reserved word.', ['handle' => $field->handle])]);
             }
 
             // Special-case for validating child Matrix fields

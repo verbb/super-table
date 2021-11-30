@@ -1035,7 +1035,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
             if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
                 Queue::push(new ApplyNewPropagationMethod([
-                    'description' => Craft::t('app', 'Applying new propagation method to Super Table blocks'),
+                    'description' => Craft::t('super-table', 'Applying new propagation method to Super Table blocks'),
                     'elementType' => SuperTableBlockElement::class,
                     'criteria' => [
                         'fieldId' => $this->id,
