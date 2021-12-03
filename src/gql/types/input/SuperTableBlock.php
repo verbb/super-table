@@ -48,9 +48,9 @@ class SuperTableBlock extends InputObjectType
                 $blockTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
             }
 
-            $blockTypeGqlName = $context->handle . '_SuperTableBlockInput';
-            $blockInputTypes[$blockType->id] = [
-                'name' => $blockType->id,
+            $blockTypeGqlName = $context->handle . '_' . $blockType->handle . '_SuperTableBlockInput';
+            $blockInputTypes[$blockType->handle] = [
+                'name' => $blockType->handle,
                 'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
                     'name' => $blockTypeGqlName,
                     'fields' => $blockTypeFields
