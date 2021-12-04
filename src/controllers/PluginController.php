@@ -229,6 +229,16 @@ class PluginController extends Controller
             }
         }
 
+        // Identify tables that are missing the correct index from a missed/failed migration
+        foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
+            if (strstr($tableName, 'stc_')) {
+                $correctIndexExists = MigrationHelper::doesIndexExist($tableName, ['elementId', 'siteId'], true, Craft::$app->db);
+                if (!$correctIndexExists) {
+                    echo "    > {$tableName} is missing the correct unique index on elementId and siteId...\n";
+                }
+            }
+        }
+
         // Find all nested Super Tables - find their parent field and update
         $superTableFields = (new Query())
             ->select(['*'])
