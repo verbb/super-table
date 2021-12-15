@@ -24,7 +24,7 @@
 
                             <th scope="col" class="col-header" {% if width %}style="width: {{ width }}"{% endif %}>
                                 <span class="heading-text {% if field.required %}required{% endif %}">
-                                    {{ field.name | t('site') }} {% if field.instructions %}<span class="info">{{ field.instructions | t('site') | md | raw | e }}</span>{% endif %} {% if translatable %}<span class="extralight" data-icon="language" title="{{ translationDescription ?? 'This field is translatable.' | t('app') }}"></span>{% endif %}
+                                    {{ field.name | t('site') }} {% if field.instructions %}<span class="info">{{ field.instructions | t('site') | e | md }}</span>{% endif %} {% if translatable %}<span class="extralight" data-icon="language" title="{{ translationDescription ?? 'This field is translatable.' | t('app') }}"></span>{% endif %}
                                 </span>
                             </th>
                         {% endfor %}
