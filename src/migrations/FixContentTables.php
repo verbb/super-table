@@ -47,6 +47,44 @@ class FixContentTables extends Migration
                     }
                 }
             }
+
+            // Some migrations may have not happend correctly. with a missing index, etc. This code cleans those up
+            if (strstr($tableName, 'stc_') && !MigrationHelper::doesIndexExist($tableName, ['elementId', 'siteId'], true, $this->db)) {
+                // Check to see if Craft hasn't renamed the locale column to locale__siteId
+                if ($this->db->columnExists($tableName, 'locale') && !$this->db->columnExists($tableName, 'locale__siteId')) {
+                    echo "    > {$tableName} is missing new fields introduced in previous migrations...\n";
+                    $this->addSiteColumn($tableName, 'locale__siteId', true, 'locale');
+                    $this->addForeignKey(null, $tableName, ['locale__siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
+                }
+                if ($this->db->columnExists($tableName, 'locale__siteId')) {
+                    $this->renameColumn($tableName, 'locale__siteId', 'siteId');
+                }
+
+                // This is the old way of doing things, so create the correct one
+                if (MigrationHelper::doesIndexExist($tableName, ['elementId'], true, $this->db)) {
+                    echo "    > {$tableName} is missing the correct index on elementId and siteId...\n";
+                    $this->createIndex(null, $tableName, ['elementId', 'siteId'], true);
+                }
+                // Find and drop the old index, and add the siteId index if it's not there
+                $siteIdIndex = false;
+                foreach (Craft::$app->db->getSchema()->findIndexes($tableName) as $name => $index) {
+                    if ($index['columns'] === ['elementId'] && $index['unique'] === true) {
+                        echo "    > {$tableName}  dropping extra index that is just `elementId` {$name}...\n";
+                        $this->dropIndex($name, $tableName);
+                    }
+                    if ($index['columns'] === ['siteId'] && $index['unique'] === false) {
+                        $siteIdIndex = true;
+                    }
+                }
+                if (!$siteIdIndex) {
+                    $this->createIndex(null, $tableName, 'siteId', false);
+                    echo "    > {$tableName} creating a missing `siteId` index {$name}...\n";
+                }
+                if ($this->db->columnExists($tableName, 'locale')) {
+                    $this->dropColumn($tableName, 'locale');
+                }
+                echo "\n";
+            }
         }
 
         // Find all top-level Super Table fields and make sure their content table exists
