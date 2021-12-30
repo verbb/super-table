@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.7.1 - 2021-12-31
+
+### Fixed
+- Fixed a bug where fields weren’t getting reverted properly when reverting an entry’s content to a prior revision, if they were nested within a Neo or Matrix field.
+- Fixed a bug where blocks within drafts could lose track of their canonical blocks when they were updated upstream, resulting in duplicated blocks.
+- Fixed an error with GQL mutations.
+- Find and fix tables with missing indexes. (thanks @gbowne-quickbase).
+- Fixed field instructions showing raw HTML. (thanks @mmikkel).
+
 ## 2.7.0 - 2021-11-30
 
 ### Added
