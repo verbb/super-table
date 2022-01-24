@@ -48,9 +48,10 @@ class SuperTableBlock extends InputObjectType
                 $blockTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
             }
 
-            $blockTypeGqlName = $context->handle . '_' . $blockType->handle . '_SuperTableBlockInput';
-            $blockInputTypes[$blockType->handle] = [
-                'name' => $blockType->handle,
+            $blockTypeGqlName = $context->handle . '_' . $blockType->id . '_SuperTableBlockInput';
+            
+            $blockInputTypes['type_' . $blockType->id] = [
+                'name' => 'type_' . $blockType->id,
                 'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
                     'name' => $blockTypeGqlName,
                     'fields' => $blockTypeFields
@@ -97,7 +98,7 @@ class SuperTableBlock extends InputObjectType
         if (!empty($value['blocks'])) {
             foreach ($value['blocks'] as $block) {
                 if (!empty($block)) {
-                    $type = array_key_first($block);
+                    $type = str_replace('type_', '', array_key_first($block));
                     $block = reset($block);
                     $missingId = $missingId || empty($block['id']);
                     $blockId = !empty($block['id']) ? $block['id'] : 'new:' . ($blockCounter++);
