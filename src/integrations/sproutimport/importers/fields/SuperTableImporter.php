@@ -13,9 +13,6 @@ if (!class_exists(FieldImporter::class)) {
 
 class SuperTableImporter extends FieldImporter
 {
-    /**
-     * @return string
-     */
     public function getModelName(): string
     {
         return SuperTableField::class;
@@ -24,7 +21,7 @@ class SuperTableImporter extends FieldImporter
     /**
      * @return mixed
      */
-    public function getMockData()
+    public function getMockData(): array
     {
         $fieldId = $this->model->id;
         $blocks = SuperTable::$plugin->getService()->getBlockTypesByFieldId($fieldId);

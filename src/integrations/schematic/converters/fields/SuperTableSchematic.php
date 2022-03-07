@@ -24,7 +24,7 @@ class SuperTableSchematic extends Field
         return $definition;
     }
 
-    public function setRecordAttributes(Model &$record, array $definition, array $defaultAttributes)
+    public function setRecordAttributes(Model &$record, array $definition, array $defaultAttributes): void
     {
         parent::setRecordAttributes($record, $definition, $defaultAttributes);
         if (array_key_exists('blockTypes', $definition)) {
@@ -38,7 +38,7 @@ class SuperTableSchematic extends Field
         }
     }
 
-    private function resetSuperTableServiceBlockTypesCache()
+    private function resetSuperTableServiceBlockTypesCache(): void
     {
         $obj = SuperTable::$plugin->getService();
         $refObject = new \ReflectionObject($obj);
@@ -50,7 +50,7 @@ class SuperTableSchematic extends Field
         }
     }
 
-    private function resetSuperTableFieldBlockTypesCache(Model $record)
+    private function resetSuperTableFieldBlockTypesCache(Model $record): void
     {
         $obj = $record;
         $refObject = new \ReflectionObject($obj);
@@ -66,7 +66,7 @@ class SuperTableSchematic extends Field
     {
         $result = [];
         foreach ($records as $record) {
-            $modelClass = get_class($record);
+            $modelClass = $record::class;
             $converter = Craft::$app->controller->module->getConverter($modelClass);
             if ($converter) {
                 $result[$record->handle] = $converter->getRecordDefinition($record);

@@ -33,11 +33,11 @@ use yii\base\Event;
 
 class SuperTable extends Plugin
 {
-    // Public Properties
+    // Properties
     // =========================================================================
 
-    public $schemaVersion = '2.2.1';
-    public $hasCpSettings = true;
+    public string $schemaVersion = '2.2.1';
+    public bool $hasCpSettings = true;
 
     // Traits
     // =========================================================================
@@ -48,7 +48,7 @@ class SuperTable extends Plugin
     // Public Methods
     // =========================================================================
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -64,16 +64,16 @@ class SuperTable extends Plugin
         $this->_registerProjectConfigEventListeners();
     }
 
-    public function getSettingsResponse()
+    public function getSettingsResponse(): mixed
     {
-        Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('super-table/settings'));
+        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('super-table/settings'));
     }
 
 
     // Private Methods
     // =========================================================================
 
-    private function _registerCpRoutes()
+    private function _registerCpRoutes(): void
     {
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
             $event->rules = array_merge($event->rules, [
@@ -83,28 +83,28 @@ class SuperTable extends Plugin
     }
 
 
-    private function _registerVariables()
+    private function _registerVariables(): void
     {
-        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event): {
             $event->sender->set('superTable', SuperTableVariable::class);
         });
     }
 
-    private function _registerFieldTypes()
+    private function _registerFieldTypes(): void
     {
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = SuperTableField::class;
         });
     }
 
-    private function _registerElementTypes()
+    private function _registerElementTypes(): void
     {
         Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = SuperTableBlockElement::class;
         });
     }
 
-    private function _registerProjectConfigEventListeners()
+    private function _registerProjectConfigEventListeners(): void
     {
         Craft::$app->projectConfig
             ->onAdd(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
@@ -116,7 +116,7 @@ class SuperTable extends Plugin
         });
     }
 
-    private function _registerIntegrations()
+    private function _registerIntegrations(): void
     {
         // Support for Schematic - https://github.com/nerds-and-company/schematic
         if (class_exists(Schematic::class)) {

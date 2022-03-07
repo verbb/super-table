@@ -8,7 +8,7 @@ class Install extends Migration
     // Public Methods
     // =========================================================================
 
-    public function safeUp()
+    public function safeUp(): bool
     {
         if (!$this->db->tableExists('{{%supertableblocks}}')) {
             $this->createTables();
@@ -19,7 +19,7 @@ class Install extends Migration
         return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         return true;
     }
@@ -27,7 +27,7 @@ class Install extends Migration
     // Protected Methods
     // =========================================================================
 
-    protected function createTables()
+    protected function createTables(): void
     {
         $this->createTable('{{%supertableblocks}}', [
             'id' => $this->integer()->notNull(),
@@ -52,7 +52,7 @@ class Install extends Migration
         ]);
     }
 
-    protected function createIndexes()
+    protected function createIndexes(): void
     {
         $this->createIndex(null, '{{%supertableblocks}}', ['ownerId'], false);
         $this->createIndex(null, '{{%supertableblocks}}', ['fieldId'], false);
@@ -62,7 +62,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%supertableblocktypes}}', ['fieldLayoutId'], false);
     }
 
-    protected function addForeignKeys()
+    protected function addForeignKeys(): void
     {
         $this->addForeignKey(null, '{{%supertableblocks}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%supertableblocks}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);

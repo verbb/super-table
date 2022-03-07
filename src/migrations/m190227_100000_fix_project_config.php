@@ -19,7 +19,7 @@ use craft\services\Matrix;
 
 class m190227_100000_fix_project_config extends Migration
 {
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Don't make the same config changes twice
         $projectConfig = Craft::$app->getProjectConfig();
@@ -75,7 +75,7 @@ class m190227_100000_fix_project_config extends Migration
         foreach ($fieldConfigs as $fieldUid => $fieldConfig) {
             $context = ArrayHelper::remove($fieldConfig, 'context');
 
-            if (strpos($context, 'superTableBlockType:') === 0) {
+            if (str_starts_with($context, 'superTableBlockType:')) {
                 $blockTypeUid = substr($context, 20);
 
                 if (isset($data[$blockTypeUid])) {
@@ -118,13 +118,15 @@ class m190227_100000_fix_project_config extends Migration
                 }
             }
 
-            $projectConfig->set(Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $matrixBlockTypeUid, $matrixBlockType);
+            $projectConfig->set(\craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $matrixBlockTypeUid, $matrixBlockType);
         }
 
         $projectConfig->muteEvents = false;
+
+        return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m190227_100000_fix_project_config cannot be reverted.\n";
         return false;

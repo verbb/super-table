@@ -339,7 +339,7 @@ Craft.SuperTable.Field = Garnish.Base.extend({
             if (fresh) {
                 Craft.initUiElements($settings);
                 Craft.appendHeadHtml(headHtml);
-                Craft.appendFootHtml(footHtml);
+                Craft.appendBodyHtml(footHtml);
             }
 
             // In case Firefox was sleeping on the job

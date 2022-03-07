@@ -55,17 +55,17 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     // Constants
     // =========================================================================
 
-    const PROPAGATION_METHOD_NONE = 'none';
-    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
-    const PROPAGATION_METHOD_LANGUAGE = 'language';
+    public const PROPAGATION_METHOD_NONE = 'none';
+    public const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    public const PROPAGATION_METHOD_LANGUAGE = 'language';
     /**
      * @since 2.7.0
      */
-    const PROPAGATION_METHOD_CUSTOM = 'custom';
-    const PROPAGATION_METHOD_ALL = 'all';
+    public const PROPAGATION_METHOD_CUSTOM = 'custom';
+    public const PROPAGATION_METHOD_ALL = 'all';
 
 
-    // Static
+    // Static Methods
     // =========================================================================
 
     /**
@@ -150,12 +150,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @var SuperTableBlockType[]|null The field’s block types
      */
-    private $_blockTypes;
+    private ?array $_blockTypes = null;
 
     /**
      * @var SuperTableBlockType[]|null The block types' fields
      */
-    private $_blockTypeFields;
+    private ?array $_blockTypeFields = null;
 
     /**
      * @var bool Whether this field is a Static type layout
@@ -187,7 +187,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         parent::__construct($config);
     }
 
-    public function init()
+    public function init(): void
     {
         if ($this->propagationKeyFormat === '') {
             $this->propagationKeyFormat = null;
@@ -304,7 +304,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      *
      * @param SuperTableBlockType|array $blockTypes The block type settings or actual SuperTableBlockType model instances
      */
-    public function setBlockTypes($blockTypes)
+    public function setBlockTypes(array|\SuperTableBlockType $blockTypes): void
     {
         $this->_blockTypes = [];
         $defaultFieldConfig = [
@@ -416,7 +416,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         // Get the available field types data
         $fieldTypeInfo = $this->_getFieldOptionsForConfigurator();
@@ -504,7 +504,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                         $compatibleFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
                         foreach ($allFieldTypes as $class) {
                             // No SuperTable-Inception, sorry buddy.
-                            if ($class !== self::class && ($class === get_class($field) || $class::isSelectable())) {
+                            if ($class !== self::class && ($class === $field::class || $class::isSelectable())) {
                                 $compatible = in_array($class, $compatibleFieldTypes, true);
                                 $fieldTypeOptions[$field->id][] = [
                                     'value' => $class,
@@ -546,7 +546,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?\craft\base\ElementInterface $element = null): mixed
     {
         if ($value instanceof ElementQueryInterface) {
             return $value;
@@ -569,11 +569,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * Populates the field’s [[SuperTableBlockQuery]] value based on the owner element.
      *
-     * @param SuperTableBlockQuery $query
      * @param ElementInterface|null $element
      * @since 3.4.0
      */
-    private function _populateQuery(SuperTableBlockQuery $query, ElementInterface $element = null)
+    private function _populateQuery(SuperTableBlockQuery $query, ElementInterface $element = null): void
     {
         // Existing element?
         if ($element && $element->id) {
@@ -599,7 +598,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?\craft\base\ElementInterface $element = null): array
     {
         /** @var SuperTableBlockQuery $value */
         $serialized = [];
@@ -627,13 +626,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
-        /** @var ElementQuery $query */
-        if ($value === null) {
-            return null;
-        }
-
         $ns = $this->handle . '_' . StringHelper::randomString(5);
         $existsQuery = (new Query())
             ->from(["supertableblocks_$ns" => "{{%supertableblocks}}"])
@@ -667,14 +661,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
             $query->subQuery->andWhere(['exists', $existsQuery]);
         }
-
-        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(ElementInterface $element = null): bool
+    public function getIsTranslatable(?\craft\base\ElementInterface $element = null): bool
     {
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
     }
@@ -682,7 +674,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(ElementInterface $element = null)
+    public function getTranslationDescription(?\craft\base\ElementInterface $element = null): ?string
     {
         if (!$element) {
             return null;
@@ -711,7 +703,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ?\craft\base\ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
@@ -726,7 +718,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         // Get the block types data
         $placeholderKey = StringHelper::randomString(10);
-        $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $this->getBlockTypes(), $placeholderKey);
+        $blockTypeInfo = $this->_getBlockTypeInfoForInput($this->getBlockTypes(), $placeholderKey, $element);
 
         $createDefaultBlocks = (
             $this->minRows != 0 &&
@@ -737,7 +729,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $staticBlocks = (
             $createDefaultBlocks &&
             $this->minRows == $this->maxRows &&
-            $this->maxRows >= count($value)
+            $this->maxRows >= (is_countable($value) ? count($value) : 0)
         );
 
         $view->registerAssetBundle(SuperTableAsset::class);
@@ -758,7 +750,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
             $minRows = ($this->staticField) ? 1 : $this->minRows;
 
-            for ($i = count($value); $i < $minRows; $i++) {
+            for ($i = is_countable($value) ? count($value) : 0; $i < $minRows; $i++) {
                 $js .= "\nsuperTableInput.addRow({$blockTypeJs});";
             }
         }
@@ -802,7 +794,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function isValueEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var SuperTableBlockQuery $value */
         return $value->count() === 0;
@@ -810,10 +802,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
     /**
      * Validates an owner element’s Super Table blocks.
-     *
-     * @param ElementInterface $element
      */
-    public function validateBlocks(ElementInterface $element)
+    public function validateBlocks(ElementInterface $element): void
     {
         /** @var SuperTableBlockQuery $value */
         $value = $element->getFieldValue($this->handle);
@@ -851,7 +841,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var SuperTableBlockQuery $value */
         /** @var SuperTableBlockElement $block */
@@ -873,7 +863,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var SuperTableBlockQuery $value */
         $value = $value->all();
@@ -903,7 +893,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function getEagerLoadingMap(array $sourceElements)
+    public function getEagerLoadingMap(array $sourceElements): array|false|null
     {
         // Get the source element IDs
         $sourceElementIds = [];
@@ -937,7 +927,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      /**
      * @inheritdoc
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): array|\GraphQL\Type\Definition\Type
     {
         $typeArray = SuperTableBlockTypeGenerator::generateTypes($this);
         $typeName = $this->handle . '_SuperTableField';
@@ -957,7 +947,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): array|\GraphQL\Type\Definition\Type
     {
         return SuperTableBlockInputType::getType($this);
     }
@@ -1025,7 +1015,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         SuperTable::$plugin->getService()->saveSettings($this, false);
 
@@ -1050,7 +1040,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function beforeApplyDelete()
+    public function beforeApplyDelete(): void
     {
         SuperTable::$plugin->getService()->deleteSuperTableField($this);
         parent::beforeApplyDelete();
@@ -1059,7 +1049,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function afterElementPropagate(ElementInterface $element, bool $isNew)
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $superTableService = SuperTable::$plugin->getService();
         $resetValue = false;
@@ -1117,7 +1107,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function afterElementRestore(ElementInterface $element)
+    public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any Super Table blocks for this element
         $elementsService = Craft::$app->getElements();
@@ -1141,11 +1131,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
     // Private Methods
     // =========================================================================
-
     /**
      * Returns info about each field type for the configurator.
-     *
-     * @return array
      */
     private function _getFieldOptionsForConfigurator(): array
     {
@@ -1175,10 +1162,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      *
      * @param ElementInterface|null $element
      * @param SuperTableBlockType[] $blockTypes
-     * @param string $placeholderKey
-     * @return array
      */
-    private function _getBlockTypeInfoForInput(ElementInterface $element = null, array $blockTypes, string $placeholderKey): array
+    private function _getBlockTypeInfoForInput(array $blockTypes, string $placeholderKey, ElementInterface $element = null): array
     {
         $settings = $this->getSettings();
         $blockTypeInfo = [];
@@ -1298,7 +1283,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             // If this is a preexisting block but we don't have a record of it,
             // check to see if it was recently duplicated.
             if (
-                strpos($blockId, 'new') !== 0 &&
+                !str_starts_with($blockId, 'new') &&
                 !isset($oldBlocksById[$blockId]) &&
                 isset(Elements::$duplicatedElementIds[$blockId]) &&
                 isset($oldBlocksById[Elements::$duplicatedElementIds[$blockId]])

@@ -15,7 +15,7 @@ class m190117_000001_context_to_uids extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Map Super Table block type IDs to UUIDs
         $blockTypeUids = (new Query())
@@ -32,7 +32,7 @@ class m190117_000001_context_to_uids extends Migration
 
         // Switch out IDs for UUIDs
         foreach ($fields as $field) {
-            list(, $blockTypeId) = explode(':', $field['context'], 2);
+            [, $blockTypeId] = explode(':', $field['context'], 2);
 
             // Make sure the block type still exists
             if (!isset($blockTypeUids[$blockTypeId])) {
@@ -43,12 +43,14 @@ class m190117_000001_context_to_uids extends Migration
                 'context' => 'superTableBlockType:' . $blockTypeUids[$blockTypeId]
             ], ['id' => $field['id']], [], false);
         }
+
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m190117_000001_context_to_uids cannot be reverted.\n";
 

@@ -13,7 +13,7 @@ class m180211_000000_type_columns extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $componentTypes = [
             [
@@ -24,14 +24,14 @@ class m180211_000000_type_columns extends Migration
                     '{{%templatecachecriteria}}',
                 ],
                 'oldClass' => 'SuperTable_Block',
-                'newClass' => 'verbb\supertable\elements\SuperTableBlockElement',
+                'newClass' => \verbb\supertable\elements\SuperTableBlockElement::class,
             ],
             [
                 'tables' => [
                     '{{%fields}}',
                 ],
                 'oldClass' => 'SuperTable',
-                'newClass' => 'verbb\supertable\fields\SuperTableField',
+                'newClass' => \verbb\supertable\fields\SuperTableField::class,
             ],
         ];
 
@@ -46,12 +46,14 @@ class m180211_000000_type_columns extends Migration
                 }
             }
         }
+
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m180211_000000_type_columns cannot be reverted.\n";
 

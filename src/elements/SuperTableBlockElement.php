@@ -26,7 +26,7 @@ use yii\base\InvalidConfigException;
 
 class SuperTableBlockElement extends Element implements BlockElementInterface
 {
-    // Static
+    // Static Methods
     // =========================================================================
 
     /**
@@ -64,7 +64,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'supertableblock';
     }
@@ -105,7 +105,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
      * @inheritdoc
      * @return SuperTableBlockQuery The newly created [[SuperTableBlockQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): SuperTableBlockQuery
     {
         return new SuperTableBlockQuery(static::class);
     }
@@ -113,7 +113,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         // Get the block type
         $supertableFieldId = ArrayHelper::firstValue($sourceElements)->fieldId;
@@ -141,7 +141,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         return $context->getField()->handle . '_BlockType';
     }
@@ -197,12 +197,12 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
      */
-    private $_owner;
+    private \craft\base\ElementInterface|false|null $_owner = null;
 
     /**
      * @var ElementInterface[]|null
      */
-    private $_eagerLoadedBlockTypeElements;
+    private ?array $_eagerLoadedBlockTypeElements = null;
 
 
     // Public Methods
@@ -211,7 +211,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $names = parent::attributes();
         $names[] = 'owner';
@@ -221,7 +221,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'owner';
@@ -246,7 +246,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     {
         try {
             $owner = $this->getOwner();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             $owner = $this->duplicateOf;
         }
 
@@ -273,7 +273,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?\craft\models\FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
     }
@@ -281,10 +281,9 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * Returns the block type.
      *
-     * @return SuperTableBlockType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
-    public function getType()
+    public function getType(): \SuperTableBlockType
     {
         if ($this->typeId === null) {
             throw new InvalidConfigException('SuperTable block is missing its type ID');
@@ -300,7 +299,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     }
 
     /** @inheritdoc */
-    public function getOwner(): ElementInterface
+    public function getOwner(): ?\craft\base\ElementInterface
     {
         if ($this->_owner === null) {
             if ($this->ownerId === null) {
@@ -319,7 +318,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
      *
      * @param ElementInterface|null $owner
      */
-    public function setOwner(ElementInterface $owner = null)
+    public function setOwner(ElementInterface $owner = null): void
     {
         $this->_owner = $owner;
     }
@@ -342,8 +341,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
 
     /**
      * Returns the field context this element's content uses.
-     *
-     * @return string
      */
     public function getFieldContext(): string
     {
@@ -366,7 +363,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             // Get the block record
@@ -413,13 +410,10 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
 
     // Private Methods
     // =========================================================================
-
     /**
      * Returns the SuperTable field.
-     *
-     * @return SuperTable
      */
-    private function _field(): SuperTableField
+    private function _field(): \verbb\supertable\SuperTable
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);

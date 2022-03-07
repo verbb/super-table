@@ -5,7 +5,7 @@ use yii\base\Exception;
 
 class SuperTableBlockTypeNotFoundException extends Exception
 {
-    public function getName()
+    public function getName(): string
     {
         return 'Super Table block type not found';
     }

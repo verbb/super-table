@@ -33,7 +33,7 @@ class SuperTableBlockTypeSchematic extends Base
         return SuperTable::$plugin->getService()->saveBlockType($record, false);
     }
 
-    public function setRecordAttributes(Model &$record, array $definition, array $defaultAttributes)
+    public function setRecordAttributes(Model &$record, array $definition, array $defaultAttributes): void
     {
         // Set the content table for this super table block
         $originalContentTable = Craft::$app->content->contentTable;

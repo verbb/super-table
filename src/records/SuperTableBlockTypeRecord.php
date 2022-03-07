@@ -8,11 +8,8 @@ class SuperTableBlockTypeRecord extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-
     /**
      * @inheritdoc
-     *
-     * @return string
      */
     public static function tableName(): string
     {
@@ -24,7 +21,7 @@ class SuperTableBlockTypeRecord extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getField(): ActiveQueryInterface
+    public function getField(): \craft\db\ActiveQuery
     {
         return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
@@ -34,7 +31,7 @@ class SuperTableBlockTypeRecord extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFieldLayout(): ActiveQueryInterface
+    public function getFieldLayout(): \craft\db\ActiveQuery
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }

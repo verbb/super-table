@@ -26,7 +26,7 @@ class PluginController extends Controller
     // Public Methods
     // =========================================================================
 
-    public function actionSettings()
+    public function actionSettings(): \yii\web\Response
     {
         $view = $this->getView();
         $view->setTemplateMode($view::TEMPLATE_MODE_CP);
@@ -38,7 +38,7 @@ class PluginController extends Controller
         ]);
     }
 
-    public function actionResaveFields()
+    public function actionResaveFields(): \yii\web\Response
     {
         // This might take a while
         App::maxPowerCaptain();
@@ -80,15 +80,15 @@ class PluginController extends Controller
             $fieldLayout = $fieldsService->getLayoutById($superTableBlockType['fieldLayoutId']);
 
             // Find what the columns should be according to the block type fields
-            if ($fieldLayout && $superTableField && get_class($superTableField) == SuperTableField::class) {
+            if ($fieldLayout && $superTableField && $superTableField::class == SuperTableField::class) {
                 foreach ($fieldLayout->getFields() as $field) {
-                    if (get_class($field) == MissingField::class) {
+                    if ($field::class == MissingField::class) {
                         $missingFields = true;
                         break;
                     }
                 }
             } else {
-                echo "    > Super Table field #{$superTableField->id} skipped as it isn't a Super Table field, it's a " . get_class($superTableField) . ". Block type #{$superTableBlockType['id']} ...\n";
+                echo "    > Super Table field #{$superTableField->id} skipped as it isn't a Super Table field, it's a " . $superTableField::class . ". Block type #{$superTableBlockType['id']} ...\n";
 
                 continue;
             }
@@ -158,7 +158,7 @@ class PluginController extends Controller
         ]);
     }
 
-    public function actionFixContentTables()
+    public function actionFixContentTables(): \yii\web\Response
     {
         // This might take a while
         App::maxPowerCaptain();
@@ -191,7 +191,7 @@ class PluginController extends Controller
         ]);
     }
 
-    public function actionCheckContentTables()
+    public function actionCheckContentTables(): \yii\web\Response
     {
         ob_start();
 
@@ -346,7 +346,7 @@ class PluginController extends Controller
                 continue;
             }
 
-            if (get_class($superTableField) !== SuperTableField::class) {
+            if ($superTableField::class !== SuperTableField::class) {
                 $errors = true;
                 echo "    > ERROR: Blocktype field #{$superTableBlockType['fieldId']} is not a Super Table field ...\n";
                 continue;
@@ -359,7 +359,7 @@ class PluginController extends Controller
                         $correctFieldColumns[] = 'field_' . $field->handle;
                     }
 
-                    if (get_class($field) == MissingField::class) {
+                    if ($field::class == MissingField::class) {
                         $missingFields = true;
                         echo "    > ERROR: Unable to update {$superTableField->contentTable} as it contains missing fields. Manually fix field #{$superTableField->id} and its missing fields ...\n";
                         break;
@@ -416,9 +416,9 @@ class PluginController extends Controller
             $parentFieldContext = explode(':', $superTableField['context']);
 
             if ($superTableField['context'] === 'global') {
-                $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+                $path = \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
             } else if ($parentFieldContext[0] == 'matrixBlockType') {
-                $path = Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $parentFieldContext[1] . '.' . Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+                $path = \craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $parentFieldContext[1] . '.' . \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
             }
 
             $settings = Json::decode($superTableField['settings']);

@@ -14,7 +14,7 @@ use craft\helpers\StringHelper;
 
 class m180210_000000_migrate_content_tables extends Migration
 {
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Migrate our Craft 2 content tables from `supertablecontent_matrixId_superTableHandle` to `stc_matrixId_superTableHandle`
         // this will help to alleviate issues with long field handles, and in particular for nested fields. Otherwise, errors
@@ -22,7 +22,7 @@ class m180210_000000_migrate_content_tables extends Migration
         $fields = (new Query())
             ->select(['id'])
             ->from(['{{%fields}}'])
-            ->where(['type' => ['verbb\supertable\fields\SuperTableField', 'SuperTable']])
+            ->where(['type' => [\verbb\supertable\fields\SuperTableField::class, 'SuperTable']])
             ->column();
 
         if (!empty($fields)) {
@@ -43,15 +43,17 @@ class m180210_000000_migrate_content_tables extends Migration
                 }
             }
         }
+
+        return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m180210_000000_migrate_content_tables cannot be reverted.\n";
         return false;
     }
 
-    public function getContentTableName($supertableField)
+    public function getContentTableName($supertableField): string
     {
         $name = '';
         $parentFieldId = '';

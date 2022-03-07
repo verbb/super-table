@@ -24,7 +24,7 @@ class m180219_000000_sites extends Migration
     // Public Methods
     // =========================================================================
 
-    public function safeUp()
+    public function safeUp(): bool
     {
         $sites = (new Query())
             ->select(['*'])
@@ -145,16 +145,18 @@ class m180219_000000_sites extends Migration
                 [],
                 false);
         }
+
+        return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m180219_000000_sites cannot be reverted.\n";
 
         return false;
     }
 
-    public function dropAllForeignKeysOnTable(string $tableName)
+    public function dropAllForeignKeysOnTable(string $tableName): void
     {
         $rawTableName = $this->db->getSchema()->getRawTableName($tableName);
         $table = $this->db->getSchema()->getTableSchema($rawTableName);
@@ -164,7 +166,7 @@ class m180219_000000_sites extends Migration
         }
     }
 
-    public function dropAllIndexesOnTable(string $tableName)
+    public function dropAllIndexesOnTable(string $tableName): void
     {
         $rawTableName = $this->db->getSchema()->getRawTableName($tableName);
         $allIndexes = $this->db->getSchema()->findIndexes($tableName);
@@ -177,7 +179,7 @@ class m180219_000000_sites extends Migration
     // Protected Methods
     // =========================================================================
 
-    protected function addSiteColumn(string $table, string $column, bool $isNotNull, string $localeColumn)
+    protected function addSiteColumn(string $table, string $column, bool $isNotNull, string $localeColumn): void
     {
         // Ignore NOT NULL for now
         $type = $this->integer()->after($localeColumn);

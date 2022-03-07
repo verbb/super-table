@@ -19,7 +19,7 @@ use craft\services\Matrix;
 
 class m190520_000000_fix_project_config extends Migration
 {
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Don't make the same config changes twice
         $projectConfig = Craft::$app->getProjectConfig();
@@ -41,7 +41,7 @@ class m190520_000000_fix_project_config extends Migration
 
         foreach ($superTableFields as $superTableField) {
             // This should always be null - these non-global ST fields belong to Matrix blocks, not global fields
-            $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'];
+            $path = \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'];
             $settings = $projectConfig->get($path);
 
             if ($settings) {
@@ -54,7 +54,7 @@ class m190520_000000_fix_project_config extends Migration
         return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m190520_000000_fix_project_config cannot be reverted.\n";
         return false;

@@ -35,7 +35,7 @@ class SuperTableBlockQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['supertableblocks.sortOrder' => SORT_ASC];
+    protected array $defaultOrderBy = ['supertableblocks.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -145,7 +145,7 @@ class SuperTableBlockQuery extends ElementQuery
      * @uses $fieldId
      * @since 2.4.1
      */
-    public function field($value)
+    public function field($value): static
     {
         if ($value instanceof SuperTableField) {
             $this->fieldId = [$value->id];
@@ -180,7 +180,7 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function fieldId($value)
+    public function fieldId($value): static
     {
         $this->fieldId = $value;
         return $this;
@@ -193,7 +193,7 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function ownerId($value)
+    public function ownerId($value): static
     {
         $this->ownerId = $value;
         return $this;
@@ -203,7 +203,7 @@ class SuperTableBlockQuery extends ElementQuery
      * @return static self reference
      * @deprecated in 2.2.0.
      */
-    public function ownerSiteId()
+    public function ownerSiteId(): static
     {
         Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSiteId()', 'The `ownerSiteId” SuperTable block query param has been deprecated. Use `site” or `siteId” instead.');
         return $this;
@@ -213,7 +213,7 @@ class SuperTableBlockQuery extends ElementQuery
      * @return static self reference
      * @deprecated in 2.2.0.
      */
-    public function ownerSite()
+    public function ownerSite(): static
     {
         Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSite()', 'The `ownerSite” SuperTable block query param has been deprecated. Use `site” or `siteId” instead.');
         return $this;
@@ -223,7 +223,7 @@ class SuperTableBlockQuery extends ElementQuery
      * @return static self reference
      * @deprecated in 2.0.
      */
-    public function ownerLocale($value)
+    public function ownerLocale($value): static
     {
         Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The `ownerLocale” SuperTable block query param has been deprecated. Use `site” or `siteId” instead.');
         return $this;
@@ -236,7 +236,7 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function owner(ElementInterface $owner)
+    public function owner(ElementInterface $owner): static
     {
         $this->ownerId = [$owner->id];
         $this->siteId = $owner->siteId;
@@ -251,7 +251,7 @@ class SuperTableBlockQuery extends ElementQuery
      * @uses $allowOwnerDrafts
      * @since 2.4.1
      */
-    public function allowOwnerDrafts($value = true)
+    public function allowOwnerDrafts($value = true): static
     {
         $this->allowOwnerDrafts = $value;
         return $this;
@@ -265,7 +265,7 @@ class SuperTableBlockQuery extends ElementQuery
      * @uses $allowOwnerDrafts
      * @since 2.4.1
      */
-    public function allowOwnerRevisions($value = true)
+    public function allowOwnerRevisions($value = true): static
     {
         $this->allowOwnerRevisions = $value;
         return $this;
@@ -278,7 +278,7 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function type($value)
+    public function type($value): static
     {
         if ($value instanceof SuperTableBlockType) {
             $this->typeId = $value->id;
@@ -302,13 +302,13 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function typeId($value)
+    public function typeId($value): static
     {
         $this->typeId = $value;
         return $this;
     }
 
-    public function staticField($value)
+    public function staticField($value): static
     {
         $this->staticField = $value;
         return $this;
@@ -358,7 +358,7 @@ class SuperTableBlockQuery extends ElementQuery
 
         // Figure out which content table to use
         $this->contentTable = null;
-        if ($this->fieldId && count($this->fieldId) === 1) {
+        if ($this->fieldId && (is_countable($this->fieldId) ? count($this->fieldId) : 0) === 1) {
             /** @var SuperTableField $superTableField */
             $superTableField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
             if ($superTableField) {
@@ -415,7 +415,7 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _normalizeFieldId()
+    private function _normalizeFieldId(): void
     {
         if ($this->fieldId === null && $this->id) {
             $this->fieldId = (new Query())
@@ -449,7 +449,7 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @throws InvalidConfigException
      */
-    private function _normalizeOwnerId()
+    private function _normalizeOwnerId(): void
     {
         if (empty($this->ownerId)) {
             $this->ownerId = null;

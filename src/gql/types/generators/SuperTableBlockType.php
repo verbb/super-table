@@ -22,7 +22,7 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         // If we need superTable block types for a specific SuperTable field, fetch those.
         if ($context) {
@@ -46,7 +46,7 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): mixed
     {
         /** @var SuperTableBlockTypeModel $superTableBlockType */
         $typeName = SuperTableBlockElement::gqlTypeNameByContext($context);

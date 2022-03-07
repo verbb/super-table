@@ -19,7 +19,7 @@ class CreateSuperTableContentTable extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->createTable($this->tableName, [
             'id' => $this->primaryKey(),
@@ -32,12 +32,14 @@ class CreateSuperTableContentTable extends Migration
 
         $this->createIndex(null, $this->tableName, ['elementId', 'siteId'], true);
         $this->addForeignKeys();
+
+        return true;
     }
 
     /**
      * Adds the foreign keys.
      */
-    public function addForeignKeys()
+    public function addForeignKeys(): void
     {        
         $this->addForeignKey(null, $this->tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, $this->tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
@@ -46,7 +48,7 @@ class CreateSuperTableContentTable extends Migration
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         return false;
     }

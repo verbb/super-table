@@ -27,7 +27,7 @@ class SuperTableBlock extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         /** @var SuperTableBlockElement $source */
         $fieldName = $resolveInfo->fieldName;

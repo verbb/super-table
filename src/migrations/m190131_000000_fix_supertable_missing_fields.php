@@ -16,7 +16,7 @@ use craft\helpers\MigrationHelper;
 
 class m190131_000000_fix_supertable_missing_fields extends Migration
 {
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Fix any fields that have turned to a missing field in the previous migration
         $fields = (new Query())
@@ -41,9 +41,11 @@ class m190131_000000_fix_supertable_missing_fields extends Migration
                 ]);
             }
         }
+
+        return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m190131_000000_fix_supertable_missing_fields cannot be reverted.\n";
         return false;

@@ -12,7 +12,7 @@ class SuperTableAsset extends AssetBundle
     // Public Methods
     // =========================================================================
 
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = "@verbb/supertable/resources/dist";
 

@@ -20,7 +20,7 @@ class m180220_000000_fix_context extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $fields = (new Query())
             ->select(['id', 'type', 'context'])
@@ -34,12 +34,14 @@ class m180220_000000_fix_context extends Migration
                 $this->update('{{%fields}}', ['context' => $context], ['id' => $field['id']], [], false);
             }
         }
+
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m180220_000000_fix_context cannot be reverted.\n";
 

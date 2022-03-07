@@ -21,7 +21,7 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
     /**
      * @var int|string|null ID The block ID. If unsaved, it will be in the format "newX".
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Field ID
@@ -41,12 +41,9 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
     /**
      * @var string|mixed
      */
-    public $uid;
+    public ?string $uid = null;
 
-    /**
-     * @var string
-     */
-    private $handle;
+    private ?string $handle = null;
 
 
     // Public Methods
@@ -55,7 +52,7 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
 
@@ -83,17 +80,15 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
      *
      * @param string
      */
-    public function setHandle($handle)
+    public function setHandle($handle): void
     {
         $this->handle = $handle;
     }
 
     /**
      * Fake handle for easier integrations.
-     *
-     * @return string
      */
-    public function getHandle()
+    public function getHandle(): string
     {
         if (!isset($this->handle) && $this->fieldId) {
             $field = Craft::$app->fields->getFieldById($this->fieldId);
@@ -111,8 +106,6 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
 
     /**
      * Use the block type handle as the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
@@ -121,18 +114,15 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
 
     /**
      * Returns whether this is a new block type.
-     *
-     * @return bool
      */
     public function getIsNew(): bool
     {
-        return (!$this->id || strpos($this->id, 'new') === 0);
+        return (!$this->id || str_starts_with($this->id, 'new'));
     }
 
     /**
      * Returns the block type's field.
      *
-     * @return SuperTableField
      * @throws InvalidConfigException if [[fieldId]] is missing or invalid
      */
     public function getField(): SuperTableField
@@ -167,8 +157,6 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
 
     /**
      * Returns the field layout config for this block type.
-     *
-     * @return array
      */
     public function getConfig(): array
     {

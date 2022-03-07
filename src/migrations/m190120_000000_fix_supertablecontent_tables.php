@@ -20,7 +20,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
 {
     public $manual = false;
 
-    public function safeUp()
+    public function safeUp(): bool
     {
         $fieldsService = Craft::$app->getFields();
         $superTableService = SuperTable::$plugin->getService();
@@ -215,7 +215,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                 continue;
             }
 
-            if (get_class($superTableField) !== SuperTableField::class) {
+            if ($superTableField::class !== SuperTableField::class) {
                 echo "    > ERROR: Blocktype field #{$superTableBlockType['fieldId']} is not a Super Table field ...\n";
                 continue;
             }
@@ -227,7 +227,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                         $correctFieldColumns[] = 'field_' . $field->handle;
                     }
 
-                    if (get_class($field) == MissingField::class) {
+                    if ($field::class == MissingField::class) {
                         $missingFields = true;
                         echo "    > ERROR: Unable to update {$superTableField->contentTable} as it contains missing fields. Manually fix field #{$superTableBlockType['fieldId']} and its missing fields ...\n";
                         break;
@@ -300,9 +300,9 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                 $parentFieldContext = explode(':', $superTableField['context']);
 
                 if ($superTableField['context'] === 'global') {
-                    $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+                    $path = \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
                 } else if ($parentFieldContext[0] == 'matrixBlockType') {
-                    $path = Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $parentFieldContext[1] . '.' . Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings';
+                    $path = \craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $parentFieldContext[1] . '.' . \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
                 }
 
                 $settings = Json::decode($superTableField['settings']);
@@ -311,15 +311,17 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
 
             $projectConfig->muteEvents = false;
         }
+
+        return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m190120_000000_fix_supertablecontent_tables cannot be reverted.\n";
         return false;
     }
 
-    private function _createContentTable($settings, $field)
+    private function _createContentTable($settings, $field): void
     {
         $fieldsService = Craft::$app->getFields();
         $superTableService = SuperTable::$plugin->getService();
@@ -334,8 +336,8 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
             return;
         }
 
-        if (get_class($newField) !== SuperTableField::class) {
-            echo "    > Field mismatch " . get_class($newField) . " is not a Super Table field ...\n";
+        if ($newField::class !== SuperTableField::class) {
+            echo "    > Field mismatch " . $newField::class . " is not a Super Table field ...\n";
 
             return;
         }
@@ -391,7 +393,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         return $name;
     }
 
-    private function _updateMatrixOrSuperTableSettings($field)
+    private function _updateMatrixOrSuperTableSettings($field): void
     {
         $superTableService = SuperTable::$plugin->getService();
         $matrixService = Craft::$app->getMatrix();
@@ -400,13 +402,13 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
             return;
         }
 
-        if (get_class($field) === SuperTableField::class) {
+        if ($field::class === SuperTableField::class) {
             echo "    > Re-saving Super Table field #{$field->id} with content table {$field->contentTable} ...\n";
 
             $superTableService->saveSettings($field);
         }
 
-        if (get_class($field) === MatrixField::class) {
+        if ($field::class === MatrixField::class) {
             echo "    > Re-saving Matrix field #{$field->id} with content table {$field->contentTable} ...\n";
 
             $matrixService->saveSettings($field);

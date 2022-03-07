@@ -10,11 +10,8 @@ class SuperTableBlockRecord extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-    
     /**
      * @inheritdoc
-     *
-     * @return string
      */
     public static function tableName(): string
     {
@@ -26,7 +23,7 @@ class SuperTableBlockRecord extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement(): ActiveQueryInterface
+    public function getElement(): \craft\db\ActiveQuery
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -36,7 +33,7 @@ class SuperTableBlockRecord extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwner(): ActiveQueryInterface
+    public function getOwner(): \craft\db\ActiveQuery
     {
         return $this->hasOne(Element::class, ['id' => 'ownerId']);
     }
@@ -46,7 +43,7 @@ class SuperTableBlockRecord extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getField(): ActiveQueryInterface
+    public function getField(): \craft\db\ActiveQuery
     {
         return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
@@ -56,7 +53,7 @@ class SuperTableBlockRecord extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getType(): ActiveQueryInterface
+    public function getType(): \craft\db\ActiveQuery
     {
         return $this->hasOne(SuperTableBlockType::class, ['id' => 'typeId']);
     }

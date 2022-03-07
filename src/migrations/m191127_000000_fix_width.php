@@ -14,7 +14,7 @@ use craft\services\Fields;
 
 class m191127_000000_fix_width extends Migration
 {
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Don't make the same config changes twice
         $projectConfig = Craft::$app->getProjectConfig();
@@ -41,7 +41,7 @@ class m191127_000000_fix_width extends Migration
             ->all();
 
         foreach ($superTableFields as $superTableField) {
-            $path = Fields::CONFIG_FIELDS_KEY . '.' . $superTableField['uid'] . '.settings.columns';
+            $path = \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings.columns';
             $columns = $projectConfig->get($path);
 
             // We need to update from using the field's ID to the field's UID for settings like width
@@ -67,7 +67,7 @@ class m191127_000000_fix_width extends Migration
         return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m191127_000000_fix_width cannot be reverted.\n";
         return false;

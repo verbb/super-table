@@ -67,14 +67,14 @@ class SuperTableService extends Component
     /**
      * @var string[]
      */
-    private $_uniqueFieldHandles = [];
+    private array $_uniqueFieldHandles = [];
 
     /**
      * @var
      */
     private $_parentSuperTableFields;
 
-    const CONFIG_BLOCKTYPE_KEY = 'superTableBlockTypes';
+    public const CONFIG_BLOCKTYPE_KEY = 'superTableBlockTypes';
 
 
     // Public Methods
@@ -136,7 +136,7 @@ class SuperTableService extends Component
      *
      * @return SuperTableBlockTypeModel|null The block type, or `null` if it didn’t exist.
      */
-    public function getBlockTypeById(int $blockTypeId)
+    public function getBlockTypeById(int $blockTypeId): ?SuperTableBlockTypeModel
     {
         if ($this->_blockTypesById !== null && array_key_exists($blockTypeId, $this->_blockTypesById)) {
             return $this->_blockTypesById[$blockTypeId];
@@ -224,7 +224,7 @@ class SuperTableService extends Component
             }
 
             // Special-case for validating child Matrix fields
-            if (get_class($field) == 'craft\fields\Matrix') {
+            if ($field::class == \craft\fields\Matrix::class) {
                 $matrixBlockTypes = $field->getBlockTypes();
 
                 foreach ($matrixBlockTypes as $matrixBlockType) {
@@ -251,7 +251,6 @@ class SuperTableService extends Component
      * @param SuperTableBlockTypeModel $blockType The block type to be saved.
      * @param bool $runValidation Whether the block type should be validated before being saved.
      * Defaults to `true`.
-     * @return bool
      * @throws Exception if an error occurs when saving the block type
      * @throws \Throwable if reasons
      */
@@ -277,10 +276,8 @@ class SuperTableService extends Component
 
     /**
      * Handle block type change
-     *
-     * @param ConfigEvent $event
      */
-    public function handleChangedBlockType(ConfigEvent $event)
+    public function handleChangedBlockType(ConfigEvent $event): void
     {
         if ($this->ignoreProjectConfigChanges) {
             return;
@@ -410,10 +407,9 @@ class SuperTableService extends Component
     /**
      * Handle block type change
      *
-     * @param ConfigEvent $event
      * @throws \Throwable if reasons
      */
-    public function handleDeletedBlockType(ConfigEvent $event)
+    public function handleDeletedBlockType(ConfigEvent $event): void
     {
         if ($this->ignoreProjectConfigChanges) {
             return;
@@ -685,16 +681,13 @@ class SuperTableService extends Component
      * @param SuperTableField $supertableField  The Super Table field.
      * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
      */
-    public function getContentTableName(SuperTableField $supertableField)
+    public function getContentTableName(SuperTableField $supertableField): string
     {
         return $supertableField->contentTable;
     }
 
     /**
      * Defines a new Super Table content table name.
-     *
-     * @param SuperTableField $field
-     * @return string
      */
     public function defineContentTableName(SuperTableField $field): string
     {
@@ -736,7 +729,7 @@ class SuperTableService extends Component
      *
      * @return SuperTableBlockElement|null The Super Table block, or `null` if it didn’t exist.
      */
-    public function getBlockById(int $blockId, int $siteId = null)
+    public function getBlockById(int $blockId, int $siteId = null): ?\verbb\supertable\elements\SuperTableBlockElement
     {
         /** @var SuperTableBlockElement|null $block */
         return Craft::$app->getElements()->getElementById($blockId, SuperTableBlockElement::class, $siteId);
@@ -750,7 +743,7 @@ class SuperTableService extends Component
      *
      * @throws \Throwable if reasons
      */
-    public function saveField(SuperTableField $field, ElementInterface $owner)
+    public function saveField(SuperTableField $field, ElementInterface $owner): void
     {
         $elementsService = Craft::$app->getElements();
         /** @var SuperTableBlockQuery $query */
@@ -797,7 +790,7 @@ class SuperTableService extends Component
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's SuperTable blocks
                 $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-                $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
+                $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
@@ -834,7 +827,7 @@ class SuperTableService extends Component
                         }
 
                         // Find all of the field’s supported sites shared with this target
-                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner, $field->propagationKeyFormat);
+                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner);
 
                         // Do blocks in this target happen to share supported sites with a preexisting site?
                         if (
@@ -856,7 +849,7 @@ class SuperTableService extends Component
                         }
 
                         // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                        $handledSiteIds = [...$handledSiteIds, ...array_flip($sourceSupportedSiteIds)];
                     }
 
                     $owner->setFieldValue($field->handle, $query);
@@ -879,7 +872,7 @@ class SuperTableService extends Component
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
      * @throws \Throwable if reasons
      */
-    public function duplicateBlocks(SuperTableField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
+    public function duplicateBlocks(SuperTableField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false): void
     {
         $elementsService = Craft::$app->getElements();
         /** @var SuperTableBlockQuery $query */
@@ -940,7 +933,7 @@ class SuperTableService extends Component
         if ($checkOtherSites && $field->propagationMethod !== SuperTableField::PROPAGATION_METHOD_ALL) {
             // Find the target's site IDs that *aren't* supported by this site's SuperTable blocks
             $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
-            $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $target, $field->propagationKeyFormat);
+            $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $target);
             $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
 
             if (!empty($otherSiteIds)) {
@@ -981,7 +974,7 @@ class SuperTableService extends Component
                     $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
 
                     // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                    $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherSource, $field->propagationKeyFormat);
+                    $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherSource);
                     $handledSiteIds = array_merge($handledSiteIds, $sourceSupportedSiteIds);
                 }
             }
@@ -993,7 +986,6 @@ class SuperTableService extends Component
      *
      * @param SuperTableField $field The Super Table field
      * @param ElementInterface $owner The element the field is associated with
-     * @return void
      */
     public function mergeCanonicalChanges(SuperTableField $field, ElementInterface $owner): void
     {
@@ -1074,7 +1066,7 @@ class SuperTableService extends Component
             }
 
             // Keep track of the sites we've already covered
-            $siteIds = $this->getSupportedSiteIds($field->propagationMethod, $canonicalOwner, $field->propagationKeyFormat);
+            $siteIds = $this->getSupportedSiteIds($field->propagationMethod, $canonicalOwner);
             foreach ($siteIds as $siteId) {
                 $handledSiteIds[$siteId] = true;
             }
@@ -1084,26 +1076,23 @@ class SuperTableService extends Component
     /**
      * Returns the site IDs that are supported by SuperTable blocks for the given SuperTable field and owner element.
      *
-     * @param SuperTableField $field
-     * @param ElementInterface $owner
      * @return int[]
      * @deprecated in 2.3.2. Use [[getSupportedSiteIds()]] instead.
      */
     public function getSupportedSiteIdsForField(SuperTableField $field, ElementInterface $owner): array
     {
-        return $this->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
+        return $this->getSupportedSiteIds($field->propagationMethod, $owner);
     }
 
     /**
      * Returns the site IDs that are supported by SuperTable blocks for the given propagation method and owner element.
      *
-     * @param string $propagationMethod
-     * @param ElementInterface $owner
      * @return int[]
      * @since 2.3.2
      */
     public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner): array    
     {
+        $propagationKeyFormat = null;
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
@@ -1131,7 +1120,7 @@ class SuperTableService extends Component
                     if (!isset($propagationKey)) {
                         $include = true;
                     } else {
-                        $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                        $siteOwner = $elementsService->getElementById($owner->id, $owner::class, $siteId);
                         $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($propagationKeyFormat, $siteOwner);
                     }
                     break;
@@ -1246,11 +1235,8 @@ class SuperTableService extends Component
 
     // Private Methods
     // =========================================================================
-
     /**
      * Returns a Query object prepped for retrieving block types.
-     *
-     * @return Query
      */
     private function _createBlockTypeQuery(): Query
     {
@@ -1269,7 +1255,6 @@ class SuperTableService extends Component
      *
      * @param SuperTableBlockTypeModel $blockType
      *
-     * @return SuperTableBlockTypeRecord
      * @throws SuperTableBlockTypeNotFoundException if $blockType->id is invalid
      */
     private function _getBlockTypeRecord($blockType): SuperTableBlockTypeRecord
@@ -1303,10 +1288,8 @@ class SuperTableService extends Component
 
     /**
      * Creates the content table for a Super Table field.
-     *
-     * @param string $tableName
      */
-    private function _createContentTable(string $tableName)
+    private function _createContentTable(string $tableName): void
     {
         $migration = new CreateSuperTableContentTable([
             'tableName' => $tableName
@@ -1324,7 +1307,7 @@ class SuperTableService extends Component
      * @param ElementInterface The owner element
      * @param int[] $except Block IDs that should be left alone
      */
-    private function _deleteOtherBlocks(SuperTableField $field, ElementInterface $owner, array $except)
+    private function _deleteOtherBlocks(SuperTableField $field, ElementInterface $owner, array $except): void
     {
         $deleteBlocks = SuperTableBlockElement::find()
             ->anyStatus()

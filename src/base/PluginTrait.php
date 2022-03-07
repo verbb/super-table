@@ -13,40 +13,44 @@ use verbb\base\BaseHelper;
 
 trait PluginTrait
 {
-    // Static Properties
+    // Properties
     // =========================================================================
 
-    public static $plugin;
+    public static SuperTable $plugin;
+
+
+    // Static Methods
+    // =========================================================================
+    
+    public static function log($message): void
+    {
+        Craft::getLogger()->log($message, Logger::LEVEL_INFO, 'super-table');
+    }
+
+    public static function error($message): void
+    {
+        Craft::getLogger()->log($message, Logger::LEVEL_ERROR, 'super-table');
+    }
 
 
     // Public Methods
     // =========================================================================
 
-    public function getService()
+    public function getService(): SuperTableService
     {
         return $this->get('service');
     }
 
-    public function getMatrixService()
+    public function getMatrixService(): SuperTableMatrixService
     {
         return $this->get('matrixService');
-    }
-
-    public static function log($message)
-    {
-        Craft::getLogger()->log($message, Logger::LEVEL_INFO, 'super-table');
-    }
-
-    public static function error($message)
-    {
-        Craft::getLogger()->log($message, Logger::LEVEL_ERROR, 'super-table');
     }
 
 
     // Private Methods
     // =========================================================================
 
-    private function _setPluginComponents()
+    private function _setPluginComponents(): void
     {
         $this->setComponents([
             'service' => SuperTableService::class,
@@ -56,7 +60,7 @@ trait PluginTrait
         BaseHelper::registerModule();
     }
 
-    private function _setLogging()
+    private function _setLogging(): void
     {
         BaseHelper::setFileLogging('super-table');
     }
