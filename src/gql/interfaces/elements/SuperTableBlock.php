@@ -52,12 +52,13 @@ class SuperTableBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function getFieldDefinitions(): array {
+    public static function getFieldDefinitions(): array
+    {
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::nonNull(Type::int()),
-                'description' => 'The ID of the field that owns the Super Table block.'
+                'description' => 'The ID of the field that owns the Super Table block.',
             ],
             'primaryOwnerId' => [
                 'name' => 'primaryOwnerId',
@@ -67,12 +68,12 @@ class SuperTableBlock extends Element
             'typeId' => [
                 'name' => 'typeId',
                 'type' => Type::nonNull(Type::int()),
-                'description' => 'The ID of the Super Table block\'s type.'
+                'description' => 'The ID of the Super Table block\'s type.',
             ],
             'sortOrder' => [
                 'name' => 'sortOrder',
                 'type' => Type::int(),
-                'description' => 'The sort order of the Super Table block within the owner element field.'
+                'description' => 'The sort order of the Super Table block within the owner element field.',
             ],
         ]), self::getName());
     }

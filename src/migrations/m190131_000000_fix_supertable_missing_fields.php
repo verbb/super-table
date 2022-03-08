@@ -30,7 +30,7 @@ class m190131_000000_fix_supertable_missing_fields extends Migration
                     'type' => $expectedType,
                     'settings' => $newSettings,
                 ], [
-                    'id' => $field['id']
+                    'id' => $field['id'],
                 ]);
             }
         }

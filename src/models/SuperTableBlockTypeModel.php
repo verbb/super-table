@@ -41,6 +41,7 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
      */
     public bool $hasFieldErrors = false;
 
+    public string|int|null $id = null;
     /**
      * @var string|null
      */
@@ -51,27 +52,22 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Fake handle for easier integrations.
      */
-    protected function defineBehaviors(): array
+    public function getHandle(): string
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => SuperTableBlockElement::class,
-            ],
-        ];
-    }
+        if (!isset($this->handle) && $this->fieldId) {
+            $field = Craft::$app->fields->getFieldById($this->fieldId);
 
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [['id', 'fieldId'], 'number', 'integerOnly' => true];
+            foreach ($field->getBlockTypes() as $index => $blockType) {
+                if ($blockType->id == $this->id) {
+                    $this->handle = $field->handle . '_' . $index;
+                    break;
+                }
+            }
+        }
 
-        return $rules;
+        return $this->handle;
     }
 
     /**
@@ -82,25 +78,6 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
     public function setHandle($handle): void
     {
         $this->handle = $handle;
-    }
-
-    /**
-     * Fake handle for easier integrations.
-     */
-    public function getHandle(): string
-    {
-        if (!isset($this->handle) && $this->fieldId) {
-            $field = Craft::$app->fields->getFieldById($this->fieldId);
-            
-            foreach ($field->getBlockTypes() as $index => $blockType) {
-                if ($blockType->id == $this->id) {
-                    $this->handle = $field->handle . '_' . $index;
-                    break;
-                }
-            }
-        }
-
-        return $this->handle;
     }
 
     /**
@@ -179,5 +156,29 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
         }
 
         return $config;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineBehaviors(): array
+    {
+        return [
+            'fieldLayout' => [
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => SuperTableBlockElement::class,
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
+        $rules[] = [['id', 'fieldId'], 'number', 'integerOnly' => true];
+
+        return $rules;
     }
 }

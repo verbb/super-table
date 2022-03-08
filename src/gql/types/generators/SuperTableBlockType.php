@@ -37,7 +37,6 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
         }
 
         return $gqlTypes;
-
     }
 
     /**

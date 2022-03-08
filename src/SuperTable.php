@@ -30,8 +30,8 @@ class SuperTable extends Plugin
     // Properties
     // =========================================================================
 
-    public string $schemaVersion = '3.0.0';
     public bool $hasCpSettings = true;
+    public string $schemaVersion = '3.0.0';
 
     // Traits
     // =========================================================================
@@ -105,7 +105,7 @@ class SuperTable extends Plugin
             ->onUpdate(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
             ->onRemove(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleDeletedBlockType']);
 
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function (RebuildConfigEvent $event) {
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function(RebuildConfigEvent $event) {
             $event->config['superTableBlockTypes'] = ProjectConfigData::rebuildProjectConfig();
         });
     }
@@ -115,8 +115,8 @@ class SuperTable extends Plugin
         // Support for Gatsby Helper
         if (class_exists(Deltas::class)) {
             Event::on(Deltas::class, Deltas::EVENT_REGISTER_IGNORED_TYPES, function(RegisterIgnoredTypesEvent $event) {
-              $event->types[] = SuperTableBlockElement::class;
-          });
+                $event->types[] = SuperTableBlockElement::class;
+            });
         }
     }
 

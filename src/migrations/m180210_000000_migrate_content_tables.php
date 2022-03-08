@@ -24,7 +24,7 @@ class m180210_000000_migrate_content_tables extends Migration
 
         if (!empty($fields)) {
             foreach ($fields as $key => $fieldId) {
-                $fieldQuery =  (new Query())
+                $fieldQuery = (new Query())
                     ->select(['*'])
                     ->from(['{{%fields}} fields'])
                     ->where(['id' => $fieldId])

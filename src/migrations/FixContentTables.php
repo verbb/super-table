@@ -309,7 +309,7 @@ class FixContentTables extends Migration
                         ]);
 
                         $migration->up();
-                        
+
                         echo "    > Content table {$contentTable} has been re-created ...\n";
                     }
                 }
@@ -319,7 +319,7 @@ class FixContentTables extends Migration
         // Update Super Table settings in the project config to match the DB. This is because Craft 3.0 > 3.1 migration
         // has already fired, dumping potentially incorrect values into the project config. Because we've fixed above, 
         // we should be good to update it again with correct values.
-        
+
         // Don't make the same config changes twice
         $schemaVersion = $projectConfig->get('plugins.super-table.schemaVersion', true);
         $allowAdminChanges = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
@@ -418,7 +418,7 @@ class FixContentTables extends Migration
                 $parentFieldId = Db::idByUid('{{%matrixblocktypes}}', $parentFieldUid);
             }
         }
-    
+
         if ($parentFieldId) {
             $baseName = 'stc_' . $parentFieldId . '_' . strtolower($field->handle);
         }
@@ -430,7 +430,7 @@ class FixContentTables extends Migration
     {
         $superTableService = SuperTable::$plugin->getService();
         $matrixService = Craft::$app->getMatrix();
-        
+
         if (!$field) {
             return;
         }

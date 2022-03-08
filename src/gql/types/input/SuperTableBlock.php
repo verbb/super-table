@@ -38,7 +38,7 @@ class SuperTableBlock extends InputObjectType
                 'id' => [
                     'name' => 'id',
                     'type' => Type::id(),
-                ]
+                ],
             ];
 
             // Get the field input types
@@ -48,13 +48,13 @@ class SuperTableBlock extends InputObjectType
             }
 
             $blockTypeGqlName = $context->handle . '_' . $blockType->id . '_SuperTableBlockInput';
-            
+
             $blockInputTypes['type_' . $blockType->id] = [
                 'name' => 'type_' . $blockType->id,
                 'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
                     'name' => $blockTypeGqlName,
-                    'fields' => $blockTypeFields
-                ]))
+                    'fields' => $blockTypeFields,
+                ])),
             ];
         }
 
@@ -65,7 +65,7 @@ class SuperTableBlock extends InputObjectType
             'name' => $blockTypeContainerName,
             'fields' => function() use ($blockInputTypes) {
                 return $blockInputTypes;
-            }
+            },
         ]));
 
         return GqlEntityRegistry::createEntity($typeName, new InputObjectType([
@@ -79,10 +79,10 @@ class SuperTableBlock extends InputObjectType
                     'blocks' => [
                         'name' => 'blocks',
                         'type' => Type::listOf($blockContainerInputType),
-                    ]
+                    ],
                 ];
             },
-            'normalizeValue' => [self::class, 'normalizeValue']
+            'normalizeValue' => [self::class, 'normalizeValue'],
         ]));
     }
 
@@ -104,7 +104,7 @@ class SuperTableBlock extends InputObjectType
 
                     $preparedBlocks[$blockId] = [
                         'type' => $type,
-                        'fields' => $block
+                        'fields' => $block,
                     ];
                 }
             }

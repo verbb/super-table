@@ -163,7 +163,7 @@ class m190227_100000_fix_project_config extends Migration
             if ($fieldRow['settings']) {
                 $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
             }
-            
+
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
             $fields[$fieldRow['uid']] = $fieldRow;

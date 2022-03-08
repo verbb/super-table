@@ -135,8 +135,8 @@ class SuperTableService extends Component
      *
      * If the block type doesn’t validate, any validation errors will be stored on the block type.
      *
-     * @param SuperTableBlockTypeModel $blockType        The block type.
-     * @param bool            $validateUniques      Whether the Name and Handle attributes should be validated to
+     * @param SuperTableBlockTypeModel $blockType The block type.
+     * @param bool $validateUniques Whether the Name and Handle attributes should be validated to
      *                                              ensure they’re unique. Defaults to `true`.
      *
      * @return bool Whether the block type validated.
@@ -180,7 +180,7 @@ class SuperTableService extends Component
                     // type).
                     $error = Craft::t('yii', '{attribute} "{value}" has already been taken.', [
                         'attribute' => Craft::t('app', 'Handle'),
-                        'value' => $field->handle
+                        'value' => $field->handle,
                     ]);
 
                     $field->addError('handle', $error);
@@ -423,7 +423,7 @@ class SuperTableService extends Component
 
             /** @var SuperTableField $superTableField */
             $superTableField = $fieldsService->getFieldById($blockType->fieldId);
-            
+
             // Ignore it, if the parent field is not a Super Table field.
             if ($superTableField instanceof SuperTableField) {
                 $contentService->contentTable = $superTableField->contentTable;
@@ -513,7 +513,7 @@ class SuperTableService extends Component
                 // Make sure to add any errors to the actual Super Table field. Really important when its
                 // being nested in a Matrix field, because Matrix checks for the presence of errors - not the result
                 // of this function (which correctly returns false).
-                $supertableField->addErrors([ $blockType->id => $blockTypeErrors ]);
+                $supertableField->addErrors([$blockType->id => $blockTypeErrors]);
             }
         }
 
@@ -524,7 +524,7 @@ class SuperTableService extends Component
      * Saves a Super Table field's settings.
      *
      * @param SuperTableField $supertableField The Super Table field
-     * @param bool        $validate    Whether the settings should be validated before being saved.
+     * @param bool $validate Whether the settings should be validated before being saved.
      *
      * @return bool Whether the settings saved successfully.
      * @throws Throwable if reasons
@@ -670,7 +670,6 @@ class SuperTableService extends Component
             }
 
             $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
-
         } while ($name !== $field->contentTable && $db->tableExists($name));
 
         return $name;
@@ -679,8 +678,8 @@ class SuperTableService extends Component
     /**
      * Returns a block by its ID.
      *
-     * @param int      $blockId The Super Table block’s ID.
-     * @param int|null $siteId  The site ID to return. Defaults to the current site.
+     * @param int $blockId The Super Table block’s ID.
+     * @param int|null $siteId The site ID to return. Defaults to the current site.
      *
      * @return SuperTableBlockElement|null The Super Table block, or `null` if it didn’t exist.
      */
@@ -693,7 +692,7 @@ class SuperTableService extends Component
     /**
      * Saves a Super Table field.
      *
-     * @param SuperTableField  $field The Super Table field
+     * @param SuperTableField $field The Super Table field
      * @param ElementInterface $owner The element the field is associated with
      *
      * @throws Throwable if reasons
@@ -1077,7 +1076,7 @@ SQL
                         if ($derivativeBlock->dateUpdated == $derivativeBlock->dateCreated) {
                             $elementsService->deleteElement($derivativeBlock);
                         }
-                    } elseif (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
+                    } else if (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
                         // Merge the upstream changes into the derivative block
                         $elementsService->mergeCanonicalChanges($derivativeBlock);
                     }
@@ -1154,35 +1153,35 @@ SQL
     }
 
     /**
-    * Expands the default relationship behaviour to include Super Table
-    * fields so that the user can filter by those too.
-    *
-    * For example:
-    *
-    * ```twig
-    * {% set reverseRelatedElements = craft.superTable.getRelatedElements({
-    *   relatedTo: {
-    *       targetElement: entry,
-    *       field: 'superTableFieldHandle.columnHandle',
-    *   },
-    *   site: 'siteHandle',
-    *   elementType: 'craft\\elements\\Entry',
-    *   criteria: {
-    *       id: 'not 123',
-    *       section: 'someSection',
-    *   }
-    * })->all() %}
-    * ```
-    *
-    * @method getRelatedElements
-    * @param array|null $params  Should contain 'relatedTo' but can also optionally include 'elementType' and 'criteria'
-    * @return SuperTableBlockElement
-    */
+     * Expands the default relationship behaviour to include Super Table
+     * fields so that the user can filter by those too.
+     *
+     * For example:
+     *
+     * ```twig
+     * {% set reverseRelatedElements = craft.superTable.getRelatedElements({
+     *   relatedTo: {
+     *       targetElement: entry,
+     *       field: 'superTableFieldHandle.columnHandle',
+     *   },
+     *   site: 'siteHandle',
+     *   elementType: 'craft\\elements\\Entry',
+     *   criteria: {
+     *       id: 'not 123',
+     *       section: 'someSection',
+     *   }
+     * })->all() %}
+     * ```
+     *
+     * @method getRelatedElements
+     * @param array|null $params Should contain 'relatedTo' but can also optionally include 'elementType' and 'criteria'
+     * @return SuperTableBlockElement
+     */
     public function getRelatedElementsQuery(array $params = null): ?SuperTableBlockQuery
     {
         // Parse out the field handles
         $fieldParams = explode('.', $params['relatedTo']['field']);
-        
+
         // For safety fail early if that didn't work
         if (!isset($fieldParams[0]) || !isset($fieldParams[1])) {
             return null;
@@ -1216,7 +1215,7 @@ SQL
         $blockQuery = SuperTableBlockElement::find();
 
         $blockCriteria = [
-            'relatedTo' => $params['relatedTo']
+            'relatedTo' => $params['relatedTo'],
         ];
 
         // Check for site param add to blockCriteria
@@ -1236,7 +1235,7 @@ SQL
         $finalCriteria = [
             'id' => $elementIds,
         ];
-        
+
         // Check if the user gave us another criteria model and merge that in
         if (isset($params['criteria'])) {
             $finalCriteria = array_merge($finalCriteria, $params['criteria']);
@@ -1264,7 +1263,7 @@ SQL
                 'bt.id',
                 'bt.fieldId',
                 'bt.fieldLayoutId',
-                'bt.uid'
+                'bt.uid',
             ])
             ->from(['bt' => '{{%supertableblocktypes}}']);
     }
@@ -1313,7 +1312,7 @@ SQL
     private function _createContentTable(string $tableName): void
     {
         $migration = new CreateSuperTableContentTable([
-            'tableName' => $tableName
+            'tableName' => $tableName,
         ]);
 
         ob_start();

@@ -17,7 +17,7 @@ class SuperTableBlock extends ElementArguments
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the field the Super Table blocks belong to, per the fields’ IDs.'
+                'description' => 'Narrows the query results based on the field the Super Table blocks belong to, per the fields’ IDs.',
             ],
             'primaryOwnerId' => [
                 'name' => 'primaryOwnerId',
