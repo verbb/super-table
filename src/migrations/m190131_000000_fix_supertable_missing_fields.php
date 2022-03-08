@@ -1,18 +1,11 @@
 <?php
 namespace verbb\supertable\migrations;
 
-use verbb\supertable\SuperTable;
-use verbb\supertable\fields\SuperTableField;
-
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\fields\MatrixField;
 use craft\fields\MissingField;
-use craft\helpers\Db;
 use craft\helpers\Json;
-use craft\helpers\MigrationHelper;
 
 class m190131_000000_fix_supertable_missing_fields extends Migration
 {

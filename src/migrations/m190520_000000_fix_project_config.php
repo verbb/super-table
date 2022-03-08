@@ -1,21 +1,13 @@
 <?php
 namespace verbb\supertable\migrations;
 
-use verbb\supertable\SuperTable;
 use verbb\supertable\fields\SuperTableField;
 
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\fields\MatrixField;
-use craft\fields\MissingField;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
-use craft\helpers\Json;
-use craft\helpers\MigrationHelper;
-use craft\services\Fields;
-use craft\services\Matrix;
+use craft\services\ProjectConfig;
 
 class m190520_000000_fix_project_config extends Migration
 {
@@ -26,7 +18,7 @@ class m190520_000000_fix_project_config extends Migration
         $schemaVersion = $projectConfig->get('plugins.super-table.schemaVersion', true);
 
         if (version_compare($schemaVersion, '2.0.12', '>=')) {
-            return;
+            return true;
         }
 
         $projectConfig->muteEvents = true;
@@ -41,7 +33,7 @@ class m190520_000000_fix_project_config extends Migration
 
         foreach ($superTableFields as $superTableField) {
             // This should always be null - these non-global ST fields belong to Matrix blocks, not global fields
-            $path = \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'];
+            $path = ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'];
             $settings = $projectConfig->get($path);
 
             if ($settings) {

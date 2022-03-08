@@ -1,11 +1,8 @@
 <?php
 namespace verbb\supertable\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
-
-use yii\db\Expression;
 
 class m190117_000001_context_to_uids extends Migration
 {
@@ -23,7 +20,7 @@ class m190117_000001_context_to_uids extends Migration
             ->from(['{{%supertableblocktypes}}'])
             ->pairs();
         
-        // Get all the Super Table sub-fields
+        // Get all the Super Table subfields
         $fields = (new Query())
             ->select(['id', 'context'])
             ->from(['{{%fields}}'])

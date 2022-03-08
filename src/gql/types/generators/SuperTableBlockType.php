@@ -3,16 +3,13 @@ namespace verbb\supertable\gql\types\generators;
 
 use verbb\supertable\SuperTable;
 use verbb\supertable\elements\SuperTableBlockElement;
-use verbb\supertable\fields\SuperTable as SuperTableField;
+use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\gql\interfaces\elements\SuperTableBlock as SuperTableBlockInterface;
 use verbb\supertable\gql\types\elements\SuperTableBlock;
 use verbb\supertable\models\SuperTableBlockTypeModel;
 
-use Craft;
-use craft\base\Field;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;

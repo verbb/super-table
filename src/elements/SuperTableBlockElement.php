@@ -6,20 +6,14 @@ use verbb\supertable\elements\db\SuperTableBlockQuery;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\models\SuperTableBlockTypeModel;
 use verbb\supertable\records\SuperTableBlockRecord;
-use verbb\supertable\assetbundles\SuperTableAsset;
 
 use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\db\Table;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
-use craft\models\Section;
-use craft\models\Site;
-use craft\validators\SiteIdValidator;
+use craft\models\FieldLayout;
 
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -201,7 +195,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     public bool $saveOwnership = true;
 
     /**
-     * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
+     * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
      */
     private ?ElementInterface $_owner = null;
 
@@ -279,7 +273,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldLayout(): ?\craft\models\FieldLayout
+    public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
     }
@@ -305,7 +299,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     }
 
     /** @inheritdoc */
-    public function getOwner(): ?\craft\base\ElementInterface
+    public function getOwner(): ?ElementInterface
     {
         if (!isset($this->_owner)) {
             if (!isset($this->ownerId)) {
@@ -452,7 +446,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * Returns the SuperTable field.
      */
-    private function _field(): \verbb\supertable\fields\SuperTableField
+    private function _field(): SuperTableField
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);

@@ -1,26 +1,25 @@
 <?php
 namespace verbb\supertable\elements\db;
 
-use verbb\supertable\SuperTable;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\models\SuperTableBlockTypeModel;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
-use craft\models\Site;
 
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\Exception;
 use yii\db\Connection;
+
+use ReflectionProperty;
+use ReflectionClass;
 
 /**
  * @method SuperTableBlockElement[]|array all($db = null)
@@ -140,10 +139,10 @@ class SuperTableBlockQuery extends ElementQuery
     {
         // Handle calling methods via a Static Super Table field - `{{ superTable.getFieldLayout().fields }}`
         if (is_string($name)) {
-            $block = $this->one() ?? null;
+            $block = $this->one();
 
             if ($block && method_exists($block, $name)) {
-                return $block->$name($params) ?? null;
+                return $block->$name($params);
             }
         }
 
@@ -235,7 +234,7 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function ownerId($value): static
+    public function ownerId(array|int|null $value): static
     {
         $this->ownerId = $value;
         return $this;
@@ -332,14 +331,14 @@ class SuperTableBlockQuery extends ElementQuery
         //     return parent::criteriaAttributes();
         // }
 
-        $class = new \ReflectionClass($this);
+        $class = new ReflectionClass($this);
         $names = [];
 
         // Restore legacy-handling for people using `entry.stfield.field` via direct access. They shouldn't be, as it's
         // considered invalid unless it's a static field, but we better keep this alive for the time-being to keep the peace.
         // This was a direct issue with changes to `criteriaAttributes()` in Craft 3.5.17 which causes ST fields to error
         // when being saved, due to incorrect custom fields.
-        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic()) {
                 $dec = $property->getDeclaringClass();
                 if (

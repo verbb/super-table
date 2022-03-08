@@ -1,7 +1,6 @@
 <?php
 namespace verbb\supertable\migrations;
 
-use verbb\supertable\SuperTable;
 use verbb\supertable\fields\SuperTableField;
 
 use Craft;
@@ -18,7 +17,7 @@ class m180219_000000_sites extends Migration
     // Properties
     // =========================================================================
 
-    protected $caseSql;
+    protected ?string $caseSql = null;
 
 
     // Public Methods

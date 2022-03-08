@@ -3,7 +3,6 @@ namespace verbb\supertable\base;
 
 use verbb\supertable\SuperTable;
 use verbb\supertable\services\SuperTableService;
-use verbb\supertable\services\SuperTableMatrixService;
 
 use Craft;
 
@@ -41,11 +40,6 @@ trait PluginTrait
         return $this->get('service');
     }
 
-    public function getMatrixService(): SuperTableMatrixService
-    {
-        return $this->get('matrixService');
-    }
-
 
     // Private Methods
     // =========================================================================
@@ -54,7 +48,6 @@ trait PluginTrait
     {
         $this->setComponents([
             'service' => SuperTableService::class,
-            'matrixService' => SuperTableMatrixService::class,
         ]);
 
         BaseHelper::registerModule();

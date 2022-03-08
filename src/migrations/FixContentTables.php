@@ -8,17 +8,16 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\fields\MatrixField;
+use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
-use craft\services\Fields;
-use craft\services\Matrix;
+use craft\services\ProjectConfig;
 
 class FixContentTables extends Migration
 {
-    public $manual = false;
+    public bool $manual = false;
 
     public function safeUp(): bool
     {
@@ -29,8 +28,8 @@ class FixContentTables extends Migration
 
         // Find any `supertablecontents_*` tables, these should be `stc_*`. But we should check if these tables are completely empty
         foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
-            if (strstr($tableName, 'supertablecontent_')) {
-                // Does a shortned (correct) table name exist? It really should at this point...
+            if (str_contains($tableName, 'supertablecontent_')) {
+                // Does a shortened (correct) table name exist? It really should at this point...
                 $newTableName = str_replace('supertablecontent_', 'stc_', $tableName);
 
                 if ($this->db->tableExists($newTableName)) {
@@ -48,8 +47,8 @@ class FixContentTables extends Migration
                 }
             }
 
-            // Some migrations may have not happend correctly. with a missing index, etc. This code cleans those up
-            if (strstr($tableName, 'stc_') && !MigrationHelper::doesIndexExist($tableName, ['elementId', 'siteId'], true, $this->db)) {
+            // Some migrations may have not happened correctly. with a missing index, etc. This code cleans those up
+            if (str_contains($tableName, 'stc_') && !MigrationHelper::doesIndexExist($tableName, ['elementId', 'siteId'], true, $this->db)) {
                 // Check to see if Craft hasn't renamed the locale column to locale__siteId
                 if ($this->db->columnExists($tableName, 'locale') && !$this->db->columnExists($tableName, 'locale__siteId')) {
                     echo "    > {$tableName} is missing new fields introduced in previous migrations...\n";
@@ -290,7 +289,7 @@ class FixContentTables extends Migration
                         $columns = $contentTableSchema->columns;
 
                         foreach ($columns as $key => $column) {
-                            if (strstr($key, 'field_')) {
+                            if (str_contains($key, 'field_')) {
                                 $dbFieldColumns[] = $key;
                             }
                         }
@@ -338,9 +337,9 @@ class FixContentTables extends Migration
                 $parentFieldContext = explode(':', $superTableField['context']);
 
                 if ($superTableField['context'] === 'global') {
-                    $path = \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
+                    $path = ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
                 } else if ($parentFieldContext[0] == 'matrixBlockType') {
-                    $path = \craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $parentFieldContext[1] . '.' . \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
+                    $path = ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $parentFieldContext[1] . '.' . ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
                 }
 
                 $settings = Json::decode($superTableField['settings']);
@@ -400,8 +399,6 @@ class FixContentTables extends Migration
             echo "    > Created table {$contentTable} ...\n\n";
         } else {
             echo "    > Content table {$contentTable} already exists, skipping ...\n\n";
-
-            return;
         }
     }
 
@@ -426,9 +423,7 @@ class FixContentTables extends Migration
             $baseName = 'stc_' . $parentFieldId . '_' . strtolower($field->handle);
         }
 
-        $name = '{{%' . $baseName . '}}';
-
-        return $name;
+        return '{{%' . $baseName . '}}';
     }
 
     private function _updateMatrixOrSuperTableSettings($field): void

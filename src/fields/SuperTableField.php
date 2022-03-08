@@ -23,9 +23,7 @@ use craft\db\Query;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\fields\Matrix;
 use craft\fieldlayoutelements\CustomField;
-use craft\gql\GqlEntityRegistry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -37,18 +35,15 @@ use craft\helpers\StringHelper;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\i18n\Locale;
+use craft\i18n\Translation;
 use craft\models\FieldLayoutTab;
 use craft\queue\jobs\ApplyNewPropagationMethod;
-use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
-use craft\services\Fields;
 use craft\validators\ArrayValidator;
 
 use GraphQL\Type\Definition\Type;
 
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
-use yii\base\UnknownPropertyException;
 
 class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
@@ -222,7 +217,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * Returns the block types.
      *
-     * @return SuperTableBlockType[]
+     * @return SuperTableBlockTypeModel[]
      */
     public function getBlockTypes(): array
     {
@@ -238,7 +233,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     }
 
     /**
-     * Returns all of the block types' fields.
+     * Returns all the block types' fields.
      *
      * @param int[]|null $typeIds The Super Table block type IDs to return fields for.
      * If null, all block type fields will be returned.
@@ -296,7 +291,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      *
      * @param SuperTableBlockTypeModel|array $blockTypes The block type settings or actual SuperTableBlockType model instances
      */
-    public function setBlockTypes(array|\SuperTableBlockTypeModel $blockTypes): void
+    public function setBlockTypes(array|SuperTableBlockTypeModel $blockTypes): void
     {
         $this->_blockTypes = [];
         $defaultFieldConfig = [
@@ -521,7 +516,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?\craft\base\ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): ElementQueryInterface
     {
         if ($value instanceof ElementQueryInterface) {
             return $value;
@@ -531,7 +526,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $this->_populateQuery($query, $element);
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
-        // error or we're loading an entry revision.
+        // error, or we're loading an entry revision.
         if ($value === '') {
             $query->setCachedResult([]);
         } else if ($element && is_array($value)) {
@@ -580,7 +575,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?\craft\base\ElementInterface $element = null): array
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): array
     {
         /** @var SuperTableBlockQuery $value */
         $serialized = [];
@@ -657,7 +652,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(?\craft\base\ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element = null): bool
     {
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
     }
@@ -665,7 +660,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(?\craft\base\ElementInterface $element = null): ?string
+    public function getTranslationDescription(?ElementInterface $element = null): ?string
     {
         if (!$element) {
             return null;
@@ -694,7 +689,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function getInputHtml(mixed $value, ?\craft\base\ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
@@ -939,7 +934,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      /**
      * @inheritdoc
      */
-    public function getContentGqlType(): array|\GraphQL\Type\Definition\Type
+    public function getContentGqlType(): array|Type
     {
         $typeArray = SuperTableBlockTypeGenerator::generateTypes($this);
         $typeName = $this->handle . '_SuperTableField';
@@ -1296,7 +1291,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                 $blockData = [];
             }
 
-            // If this is a preexisting block but we don't have a record of it,
+            // If this is a preexisting block, but we don't have a record of it,
             // check to see if it was recently duplicated.
             if (
                 !str_starts_with($blockId, 'new') &&

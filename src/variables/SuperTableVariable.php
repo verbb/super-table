@@ -20,12 +20,12 @@ class SuperTableVariable
         return $query;
     }
 
-    public function getRelatedElements($params = null)
+    public function getRelatedElements($params = null): SuperTableBlockElement|SuperTableBlockQuery|null
     {
         return SuperTable::$plugin->getService()->getRelatedElementsQuery($params);
     }
 
-    public function getSuperTableBlocks($fieldId)
+    public function getSuperTableBlocks($fieldId): array
     {
         return SuperTable::$plugin->getService()->getBlockTypesByFieldId($fieldId);
     }

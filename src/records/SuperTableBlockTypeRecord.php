@@ -1,8 +1,10 @@
 <?php
 namespace verbb\supertable\records;
 
+use craft\base\Field;
+use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
-use yii\db\ActiveQueryInterface;
+use craft\models\FieldLayout;
 
 class SuperTableBlockTypeRecord extends ActiveRecord
 {
@@ -19,9 +21,9 @@ class SuperTableBlockTypeRecord extends ActiveRecord
     /**
      * Returns the SuperTable block type’s field.
      *
-     * @return ActiveQueryInterface The relational query object.
+     * @return ActiveQuery The relational query object.
      */
-    public function getField(): \craft\db\ActiveQuery
+    public function getField(): ActiveQuery
     {
         return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
@@ -29,9 +31,9 @@ class SuperTableBlockTypeRecord extends ActiveRecord
     /**
      * Returns the SuperTable block type’s fieldLayout.
      *
-     * @return ActiveQueryInterface The relational query object.
+     * @return ActiveQuery The relational query object.
      */
-    public function getFieldLayout(): \craft\db\ActiveQuery
+    public function getFieldLayout(): ActiveQuery
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }

@@ -3,6 +3,7 @@ namespace verbb\supertable\gql\resolvers\elements;
 
 use verbb\supertable\elements\SuperTableBlockElement;
 
+use craft\elements\db\ElementQuery;
 use craft\gql\base\ElementResolver;
 
 class SuperTableBlock extends ElementResolver
@@ -10,7 +11,7 @@ class SuperTableBlock extends ElementResolver
     /**
      * @inheritdoc
      */
-    public static function prepareQuery(mixed $source, array $arguments, $fieldName = null): mixed
+    public static function prepareQuery(mixed $source, array $arguments, $fieldName = null): ElementQuery
     {
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {

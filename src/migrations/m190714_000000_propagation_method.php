@@ -1,9 +1,7 @@
 <?php
 namespace verbb\supertable\migrations;
 
-use Craft;
 use craft\db\Migration;
-use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 class m190714_000000_propagation_method extends Migration

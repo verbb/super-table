@@ -1,16 +1,13 @@
 <?php
 namespace verbb\supertable\migrations;
 
-use verbb\supertable\SuperTable;
 use verbb\supertable\fields\SuperTableField;
 
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\Db;
-use craft\helpers\MigrationHelper;
-use craft\services\Fields;
+use craft\services\ProjectConfig;
 
 class m191127_000000_fix_width extends Migration
 {
@@ -21,7 +18,7 @@ class m191127_000000_fix_width extends Migration
         $schemaVersion = $projectConfig->get('plugins.super-table.schemaVersion', true);
 
         if (version_compare($schemaVersion, '2.2.1', '>=')) {
-            return;
+            return true;
         }
 
         $projectConfig->muteEvents = true;
@@ -41,7 +38,7 @@ class m191127_000000_fix_width extends Migration
             ->all();
 
         foreach ($superTableFields as $superTableField) {
-            $path = \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings.columns';
+            $path = ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings.columns';
             $columns = $projectConfig->get($path);
 
             // We need to update from using the field's ID to the field's UID for settings like width

@@ -5,7 +5,6 @@ use verbb\supertable\base\PluginTrait;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\helpers\ProjectConfigData;
-use verbb\supertable\models\SuperTableBlockTypeModel;
 use verbb\supertable\services\SuperTableService;
 use verbb\supertable\variables\SuperTableVariable;
 

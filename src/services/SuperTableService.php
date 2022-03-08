@@ -8,30 +8,27 @@ use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\migrations\CreateSuperTableContentTable;
 use verbb\supertable\models\SuperTableBlockTypeModel;
 use verbb\supertable\records\SuperTableBlockTypeRecord;
-use verbb\supertable\assetbundles\SuperTableAsset;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\events\ConfigEvent;
+use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
 use craft\models\Site;
-use craft\services\Fields;
-use craft\web\View;
 
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
+
+use Throwable;
 
 class SuperTableService extends Component
 {
@@ -57,16 +54,6 @@ class SuperTableService extends Component
      * @var SuperTableBlockTypeRecord[]
      */
     private array $_blockTypeRecordsById = [];
-
-    /**
-     * @var string[]
-     */
-    private array $_uniqueFieldHandles = [];
-
-    /**
-     * @var
-     */
-    private $_parentSuperTableFields;
 
     public const CONFIG_BLOCKTYPE_KEY = 'superTableBlockTypes';
 
@@ -169,9 +156,9 @@ class SuperTableService extends Component
         }
 
         // Reset this each time - normal Super Table fields won't be an issue, but when validation is called multiple times
-        // its because its being embedded in another field (Matrix). Thus, we need to reset unique field handles, because they
+        // it's because its being embedded in another field (Matrix). Thus, we need to reset unique field handles, because they
         // can be different across multiple parent fields.
-        $this->_uniqueFieldHandles = [];
+        $_uniqueFieldHandles = [];
 
         // Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
         // handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
@@ -187,7 +174,7 @@ class SuperTableService extends Component
             $field->validate();
 
             if ($field->handle) {
-                if (in_array($field->handle, $this->_uniqueFieldHandles, true)) {
+                if (in_array($field->handle, $_uniqueFieldHandles, true)) {
                     // This error *might* not be entirely accurate, but it's such an edge case that it's probably better
                     // for the error to be worded for the common problem (two duplicate handles within the same block
                     // type).
@@ -198,7 +185,7 @@ class SuperTableService extends Component
 
                     $field->addError('handle', $error);
                 } else {
-                    $this->_uniqueFieldHandles[] = $field->handle;
+                    $_uniqueFieldHandles[] = $field->handle;
                 }
             }
 
@@ -218,7 +205,7 @@ class SuperTableService extends Component
             }
 
             // Special-case for validating child Matrix fields
-            if ($field::class == \craft\fields\Matrix::class) {
+            if ($field::class == Matrix::class) {
                 $matrixBlockTypes = $field->getBlockTypes();
 
                 foreach ($matrixBlockTypes as $matrixBlockType) {
@@ -246,7 +233,7 @@ class SuperTableService extends Component
      * @param bool $runValidation Whether the block type should be validated before being saved.
      * Defaults to `true`.
      * @throws Exception if an error occurs when saving the block type
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveBlockType(SuperTableBlockTypeModel $blockType, bool $runValidation = true): bool
     {
@@ -359,7 +346,7 @@ class SuperTableService extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -397,7 +384,7 @@ class SuperTableService extends Component
     /**
      * Handle block type change
      *
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function handleDeletedBlockType(ConfigEvent $event): void
     {
@@ -469,14 +456,14 @@ class SuperTableService extends Component
                 // Delete the field layout
                 $fieldsService->deleteLayoutById($fieldLayoutId);
 
-                // Finally delete the actual block type
+                // Delete the actual block type
                 Db::delete('{{%supertableblocktypes}}', [
                     'id' => $blockTypeRecord->id,
                 ]);
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -540,7 +527,7 @@ class SuperTableService extends Component
      * @param bool        $validate    Whether the settings should be validated before being saved.
      *
      * @return bool Whether the settings saved successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveSettings(SuperTableField $supertableField, bool $validate = true): bool
     {
@@ -597,7 +584,7 @@ class SuperTableService extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -617,7 +604,7 @@ class SuperTableService extends Component
      * @param SuperTableField $supertableField The Super Table field.
      *
      * @return bool Whether the field was deleted successfully.
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteSuperTableField(SuperTableField $supertableField): bool
     {
@@ -647,7 +634,7 @@ class SuperTableService extends Component
             $transaction->commit();
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -697,9 +684,9 @@ class SuperTableService extends Component
      *
      * @return SuperTableBlockElement|null The Super Table block, or `null` if it didn’t exist.
      */
-    public function getBlockById(int $blockId, int $siteId = null): ?\verbb\supertable\elements\SuperTableBlockElement
+    public function getBlockById(int $blockId, int $siteId = null): ?SuperTableBlockElement
     {
-        /** @var SuperTableBlockElement|null $block */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($blockId, SuperTableBlockElement::class, $siteId);
     }
 
@@ -709,7 +696,7 @@ class SuperTableService extends Component
      * @param SuperTableField  $field The Super Table field
      * @param ElementInterface $owner The element the field is associated with
      *
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveField(SuperTableField $field, ElementInterface $owner): void
     {
@@ -803,7 +790,7 @@ class SuperTableService extends Component
                             continue;
                         }
 
-                        // Find all of the field’s supported sites shared with this target
+                        // Find all the field’s supported sites shared with this target
                         $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner, $field->propagationKeyFormat);
 
                         // Do blocks in this target happen to share supported sites with a preexisting site?
@@ -834,7 +821,7 @@ class SuperTableService extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -847,7 +834,7 @@ class SuperTableService extends Component
      * @param ElementInterface $source The source element blocks should be duplicated from
      * @param ElementInterface $target The target element blocks should be duplicated to
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function duplicateBlocks(SuperTableField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false, bool $deleteOtherBlocks = true): void
     {
@@ -901,7 +888,7 @@ class SuperTableService extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1167,7 +1154,7 @@ SQL
     }
 
     /**
-    * Expands the defualt relationship behaviour to include Super Table
+    * Expands the default relationship behaviour to include Super Table
     * fields so that the user can filter by those too.
     *
     * For example:
@@ -1188,16 +1175,17 @@ SQL
     * ```
     *
     * @method getRelatedElements
-    * @param  array $params  Should contain 'relatedTo' but can also optionally include 'elementType' and 'criteria'
+    * @param array|null $params  Should contain 'relatedTo' but can also optionally include 'elementType' and 'criteria'
     * @return SuperTableBlockElement
     */
-    public function getRelatedElementsQuery($params = null) {
+    public function getRelatedElementsQuery(array $params = null): ?SuperTableBlockQuery
+    {
         // Parse out the field handles
         $fieldParams = explode('.', $params['relatedTo']['field']);
         
         // For safety fail early if that didn't work
         if (!isset($fieldParams[0]) || !isset($fieldParams[1])) {
-            return false;
+            return null;
         }
 
         $superTableFieldHandle = $fieldParams[0];
@@ -1221,7 +1209,7 @@ SQL
         if ($fieldId) {
             $params['relatedTo']['field'] = $fieldId;
         } else {
-            return false;
+            return null;
         }
 
         // Create an element query to find Super Table Blocks
@@ -1286,7 +1274,7 @@ SQL
      *
      * @throws SuperTableBlockTypeNotFoundException if $blockType->id is invalid
      */
-    private function _getBlockTypeRecord($blockType): SuperTableBlockTypeRecord
+    private function _getBlockTypeRecord(SuperTableBlockTypeModel $blockType): SuperTableBlockTypeRecord
     {
         if (is_string($blockType)) {
             $blockTypeRecord = SuperTableBlockTypeRecord::findOne(['uid' => $blockType]) ?? new SuperTableBlockTypeRecord();

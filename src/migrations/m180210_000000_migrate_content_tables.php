@@ -1,14 +1,11 @@
 <?php
 namespace verbb\supertable\migrations;
 
-use verbb\supertable\SuperTable;
 use verbb\supertable\fields\SuperTableField;
 
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
-use craft\helpers\MigrationHelper;
-use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 
@@ -22,7 +19,7 @@ class m180210_000000_migrate_content_tables extends Migration
         $fields = (new Query())
             ->select(['id'])
             ->from(['{{%fields}}'])
-            ->where(['type' => [\verbb\supertable\fields\SuperTableField::class, 'SuperTable']])
+            ->where(['type' => [SuperTableField::class, 'SuperTable']])
             ->column();
 
         if (!empty($fields)) {

@@ -16,12 +16,11 @@ class SuperTableBlock extends InputObjectType
     /**
      * Create the type for a super table field.
      *
-     * @param $context
-     * @return bool|mixed
+     * @param SuperTableField $context
+     * @return mixed
      */
-    public static function getType(SuperTableField $context)
+    public static function getType(SuperTableField $context): mixed
     {
-        /** @var SuperTableField $context */
         $typeName = $context->handle . '_SuperTableInput';
 
         if ($inputType = GqlEntityRegistry::getEntity($typeName)) {

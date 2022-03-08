@@ -11,7 +11,7 @@ class CreateSuperTableContentTable extends Migration
     /**
      * @var string|null The table name
      */
-    public $tableName;
+    public ?string $tableName = null;
 
     // Public Methods
     // =========================================================================

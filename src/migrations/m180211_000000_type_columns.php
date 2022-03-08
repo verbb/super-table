@@ -1,9 +1,11 @@
 <?php
 namespace verbb\supertable\migrations;
 
+use verbb\supertable\fields\SuperTableField;
+use verbb\supertable\elements\SuperTableBlockElement;
+
 use Craft;
 use craft\db\Migration;
-use yii\db\Expression;
 
 class m180211_000000_type_columns extends Migration
 {
@@ -24,14 +26,14 @@ class m180211_000000_type_columns extends Migration
                     '{{%templatecachecriteria}}',
                 ],
                 'oldClass' => 'SuperTable_Block',
-                'newClass' => \verbb\supertable\elements\SuperTableBlockElement::class,
+                'newClass' => SuperTableBlockElement::class,
             ],
             [
                 'tables' => [
                     '{{%fields}}',
                 ],
                 'oldClass' => 'SuperTable',
-                'newClass' => \verbb\supertable\fields\SuperTableField::class,
+                'newClass' => SuperTableField::class,
             ],
         ];
 

@@ -1,7 +1,6 @@
 <?php
 namespace verbb\supertable\gql\interfaces\elements;
 
-use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\gql\types\generators\SuperTableBlockType;
 
 use craft\gql\GqlEntityRegistry;

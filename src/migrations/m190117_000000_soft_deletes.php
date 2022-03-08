@@ -1,11 +1,7 @@
 <?php
 namespace verbb\supertable\migrations;
 
-use Craft;
 use craft\db\Migration;
-use craft\db\Query;
-
-use yii\db\Expression;
 
 class m190117_000000_soft_deletes extends Migration
 {

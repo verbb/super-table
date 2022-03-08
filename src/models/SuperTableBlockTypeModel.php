@@ -5,11 +5,9 @@ use Craft;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
 
-use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\helpers\StringHelper;
 
 use yii\base\InvalidConfigException;
 

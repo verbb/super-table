@@ -2,7 +2,6 @@
 namespace verbb\supertable\migrations;
 
 use craft\db\Migration;
-use craft\db\Table;
 
 class m220308_000000_remove_superfluous_uids extends Migration
 {

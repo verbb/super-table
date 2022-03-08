@@ -1,16 +1,9 @@
 <?php
 namespace verbb\supertable\migrations;
 
-use verbb\supertable\SuperTable;
-use verbb\supertable\fields\SuperTableField;
-
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
-use craft\helpers\Json;
-use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
-use yii\db\Expression;
 
 class m180220_000000_fix_context extends Migration
 {

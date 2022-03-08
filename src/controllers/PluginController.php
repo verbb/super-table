@@ -6,27 +6,25 @@ use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\migrations\FixContentTables;
 
 use Craft;
-use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\fields\MatrixField;
 use craft\fields\MissingField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\UrlHelper;
-use craft\services\Fields;
-use craft\services\Matrix;
 use craft\web\Controller;
+use craft\services\ProjectConfig;
+
+use yii\web\Response;
 
 class PluginController extends Controller
 {
     // Public Methods
     // =========================================================================
 
-    public function actionSettings(): \yii\web\Response
+    public function actionSettings(): Response
     {
         $view = $this->getView();
         $view->setTemplateMode($view::TEMPLATE_MODE_CP);
@@ -38,7 +36,7 @@ class PluginController extends Controller
         ]);
     }
 
-    public function actionResaveFields(): \yii\web\Response
+    public function actionResaveFields(): Response
     {
         // This might take a while
         App::maxPowerCaptain();
@@ -141,9 +139,7 @@ class PluginController extends Controller
             echo "    > Super Table field #{$superTableField->id} re-saved ...\n";
         }
 
-        $output = ob_get_contents();
-
-        ob_end_clean();
+        $output = ob_get_clean();
 
         $output = nl2br($output);
 
@@ -158,7 +154,7 @@ class PluginController extends Controller
         ]);
     }
 
-    public function actionFixContentTables(): \yii\web\Response
+    public function actionFixContentTables(): Response
     {
         // This might take a while
         App::maxPowerCaptain();
@@ -173,9 +169,7 @@ class PluginController extends Controller
         // Run the main migration
         $migration->manual = true;
         $migration->up();
-        $output = ob_get_contents();
-
-        ob_end_clean();
+        $output = ob_get_clean();
 
         $output = nl2br($output);
 
@@ -191,7 +185,7 @@ class PluginController extends Controller
         ]);
     }
 
-    public function actionCheckContentTables(): \yii\web\Response
+    public function actionCheckContentTables(): Response
     {
         ob_start();
 
@@ -231,7 +225,7 @@ class PluginController extends Controller
 
         // Identify tables that are missing the correct index from a missed/failed migration
         foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
-            if (strstr($tableName, 'stc_')) {
+            if (str_contains($tableName, 'stc_')) {
                 $correctIndexExists = MigrationHelper::doesIndexExist($tableName, ['elementId', 'siteId'], true, Craft::$app->db);
                 if (!$correctIndexExists) {
                     echo "    > {$tableName} is missing the correct unique index on elementId and siteId...\n";
@@ -286,8 +280,8 @@ class PluginController extends Controller
 
         // Find any `supertablecontents_*` tables, these should be `stc_*`. But we should check if these tables are completely empty
         foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
-            if (strstr($tableName, 'supertablecontent_')) {
-                // Does a shortned (correct) table name exist? It really should at this point...
+            if (str_contains($tableName, 'supertablecontent_')) {
+                // Does a shortened (correct) table name exist? It really should at this point...
                 $newTableName = str_replace('supertablecontent_', 'stc_', $tableName);
 
                 if (!$db->tableExists($newTableName)) {
@@ -384,7 +378,7 @@ class PluginController extends Controller
                         $columns = $contentTableSchema->columns;
 
                         foreach ($columns as $key => $column) {
-                            if (strstr($key, 'field_')) {
+                            if (str_contains($key, 'field_')) {
                                 $dbFieldColumns[] = $key;
                             }
                         }
@@ -416,9 +410,9 @@ class PluginController extends Controller
             $parentFieldContext = explode(':', $superTableField['context']);
 
             if ($superTableField['context'] === 'global') {
-                $path = \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
+                $path = ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
             } else if ($parentFieldContext[0] == 'matrixBlockType') {
-                $path = \craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $parentFieldContext[1] . '.' . \craft\services\ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
+                $path = ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $parentFieldContext[1] . '.' . ProjectConfig::PATH_FIELDS . '.' . $superTableField['uid'] . '.settings';
             }
 
             $settings = Json::decode($superTableField['settings']);
@@ -431,8 +425,7 @@ class PluginController extends Controller
             }
         }
 
-        $output = ob_get_contents();
-        ob_end_clean();
+        $output = ob_get_clean();
 
         $output = nl2br($output);
 
