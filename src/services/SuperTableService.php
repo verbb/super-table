@@ -1254,6 +1254,8 @@ SQL
     // =========================================================================
     /**
      * Returns a Query object prepped for retrieving block types.
+     *
+     * @return Query
      */
     private function _createBlockTypeQuery(): Query
     {
@@ -1270,11 +1272,11 @@ SQL
     /**
      * Returns a block type record by its ID or creates a new one.
      *
-     * @param SuperTableBlockTypeModel $blockType
-     *
+     * @param string|SuperTableBlockTypeModel $blockType
+     * @return SuperTableBlockTypeRecord
      * @throws SuperTableBlockTypeNotFoundException if $blockType->id is invalid
      */
-    private function _getBlockTypeRecord(SuperTableBlockTypeModel $blockType): SuperTableBlockTypeRecord
+    private function _getBlockTypeRecord(string|SuperTableBlockTypeModel $blockType): SuperTableBlockTypeRecord
     {
         if (is_string($blockType)) {
             $blockTypeRecord = SuperTableBlockTypeRecord::findOne(['uid' => $blockType]) ?? new SuperTableBlockTypeRecord();
@@ -1305,6 +1307,8 @@ SQL
 
     /**
      * Creates the content table for a Super Table field.
+     *
+     * @param string $tableName
      */
     private function _createContentTable(string $tableName): void
     {
