@@ -31,15 +31,21 @@ class Install extends Migration
     {
         $this->createTable('{{%supertableblocks}}', [
             'id' => $this->integer()->notNull(),
-            'ownerId' => $this->integer()->notNull(),
+            'primaryOwnerId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
             'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
+        ]);
+
+
+        $this->createTable('{{%supertableblocks_owners}}', [
+            'blockId' => $this->integer()->notNull(),
+            'ownerId' => $this->integer()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
+            'PRIMARY KEY([[blockId]], [[ownerId]])',
         ]);
 
         $this->createTable('{{%supertableblocktypes}}', [

@@ -21,29 +21,32 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
     /**
      * @var int|string|null ID The block ID. If unsaved, it will be in the format "newX".
      */
-    public ?int $id = null;
+    public string|int|null $id = null;
 
     /**
      * @var int|null Field ID
      */
-    public $fieldId;
+    public ?int $fieldId = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
+
+    /**
+     * @var string|null Handle
+     */
+    public ?string $handle = null;
 
     /**
      * @var bool
      */
-    public $hasFieldErrors = false;
+    public bool $hasFieldErrors = false;
 
     /**
-     * @var string|mixed
+     * @var string|null
      */
     public ?string $uid = null;
-
-    private ?string $handle = null;
 
 
     // Public Methods
@@ -52,16 +55,14 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-
-        $behaviors['fieldLayout'] = [
-            'class' => FieldLayoutBehavior::class,
-            'elementType' => SuperTableBlockElement::class,
+        return [
+            'fieldLayout' => [
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => SuperTableBlockElement::class,
+            ],
         ];
-
-        return $behaviors;
     }
 
     /**
@@ -127,7 +128,7 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
      */
     public function getField(): SuperTableField
     {
-        if ($this->fieldId === null) {
+        if (!isset($this->fieldId)) {
             throw new InvalidConfigException('Block type missing its field ID');
         }
 
@@ -171,14 +172,11 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
             ($fieldLayout = $this->getFieldLayout()) &&
             ($fieldLayoutConfig = $fieldLayout->getConfig())
         ) {
-            if (!$fieldLayout->uid) {
-                $fieldLayout->uid = StringHelper::UUID();
-            }
             $config['fieldLayouts'][$fieldLayout->uid] = $fieldLayoutConfig;
         }
 
         $fieldsService = Craft::$app->getFields();
-        foreach ($this->getFields() as $field) {
+        foreach ($this->getCustomFields() as $field) {
             $config['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
         }
 

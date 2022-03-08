@@ -53,7 +53,7 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
 
         if (!($entity = GqlEntityRegistry::getEntity($typeName))) {
             $contentFieldGqlTypes = self::getContentFields($context);
-            $blockTypeFields = TypeManager::prepareFieldDefinitions(array_merge(SuperTableBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
+            $blockTypeFields = array_merge(SuperTableBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
             // Generate a type for each block type
             $entity = GqlEntityRegistry::getEntity($typeName);
@@ -61,9 +61,9 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
             if (!$entity) {
                 $entity = new SuperTableBlock([
                     'name' => $typeName,
-                    'fields' => function() use ($blockTypeFields) {
-                        return $blockTypeFields;
-                    }
+                    'fields' => function() use ($blockTypeFields, $typeName) {
+                        return TypeManager::prepareFieldDefinitions($blockTypeFields, $typeName);
+                    },
                 ]);
 
                 // It's possible that creating the super table block triggered creating all super table block types, so check again.

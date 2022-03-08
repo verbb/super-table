@@ -24,7 +24,7 @@
                         {% include "super-table/row/fields" with {
                             namespace: "#{baseInputName}[fields]",
                             element: block,
-                            fields: block.getType().getFieldLayout().getFields(),
+                            fields: block.getType().getFieldLayout().getCustomFields(),
                             settings: supertableField,
                             registerDeltas: not blockIsNew,
                         } %}

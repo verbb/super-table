@@ -81,7 +81,7 @@ class PluginController extends Controller
 
             // Find what the columns should be according to the block type fields
             if ($fieldLayout && $superTableField && $superTableField::class == SuperTableField::class) {
-                foreach ($fieldLayout->getFields() as $field) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
                     if ($field::class == MissingField::class) {
                         $missingFields = true;
                         break;
@@ -354,7 +354,7 @@ class PluginController extends Controller
 
             // Find what the columns should be according to the block type fields
             if ($fieldLayout) {
-                foreach ($fieldLayout->getFields() as $field) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
                     if ($field::hasContentColumn()) {
                         $correctFieldColumns[] = 'field_' . $field->handle;
                     }

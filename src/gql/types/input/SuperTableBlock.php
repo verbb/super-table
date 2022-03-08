@@ -34,7 +34,7 @@ class SuperTableBlock extends InputObjectType
 
         // For all the blocktypes
         foreach ($blockTypes as $blockType) {
-            $fields = $blockType->getFields();
+            $fields = $blockType->getCustomFields();
             $blockTypeFields = [
                 'id' => [
                     'name' => 'id',
@@ -69,7 +69,7 @@ class SuperTableBlock extends InputObjectType
             }
         ]));
 
-        $inputType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,
             'fields' => function() use ($blockContainerInputType) {
                 return [
@@ -85,8 +85,6 @@ class SuperTableBlock extends InputObjectType
             },
             'normalizeValue' => [self::class, 'normalizeValue']
         ]));
-
-        return $inputType;
     }
 
     public static function normalizeValue($value)

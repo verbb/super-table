@@ -6,7 +6,7 @@
                     <th class="hidden"></th>
 
                     {% for blockType in blockTypes %}
-                        {% for field in blockType.getFieldLayout().getFields() %}
+                        {% for field in blockType.getFieldLayout().getCustomFields() %}
                             {% set width = supertableField.columns[field.uid].width ?? '' %}
 
                             {% set translatable = field.getIsTranslatable() %}
@@ -60,7 +60,7 @@
                         {% include "super-table/table/fields" with {
                             namespace: "#{baseInputName}[fields]",
                             element: block,
-                            fields: block.getType().getFieldLayout().getFields(),
+                            fields: block.getType().getFieldLayout().getCustomFields(),
                             settings: supertableField,
                             registerDeltas: not blockIsNew,
                         } %}

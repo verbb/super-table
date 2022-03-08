@@ -222,7 +222,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
 
             // Find what the columns should be according to the block type fields
             if ($fieldLayout) {
-                foreach ($fieldLayout->getFields() as $field) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
                     if ($field::hasContentColumn()) {
                         $correctFieldColumns[] = 'field_' . $field->handle;
                     }

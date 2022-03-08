@@ -57,17 +57,17 @@ class SuperTableBlock extends Element
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the field that owns the Super Table block.'
             ],
-            'ownerId' => [
-                'name' => 'ownerId',
-                'type' => Type::int(),
-                'description' => 'The ID of the element that owns the Super Table block.'
+            'primaryOwnerId' => [
+                'name' => 'primaryOwnerId',
+                'type' => Type::nonNull(Type::int()),
+                'description' => 'The ID of the primary owner of the Super Table block.',
             ],
             'typeId' => [
                 'name' => 'typeId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the Super Table block\'s type.'
             ],
             'sortOrder' => [

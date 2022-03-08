@@ -33,9 +33,9 @@ class SuperTableBlockRecord extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwner(): \craft\db\ActiveQuery
+    public function getPrimaryOwner(): ActiveQueryInterface
     {
-        return $this->hasOne(Element::class, ['id' => 'ownerId']);
+        return $this->hasOne(Element::class, ['id' => 'primaryOwnerId']);
     }
 
     /**
@@ -55,6 +55,6 @@ class SuperTableBlockRecord extends ActiveRecord
      */
     public function getType(): \craft\db\ActiveQuery
     {
-        return $this->hasOne(SuperTableBlockType::class, ['id' => 'typeId']);
+        return $this->hasOne(SuperTableBlockTypeRecord::class, ['id' => 'typeId']);
     }
 }

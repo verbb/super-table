@@ -21,11 +21,6 @@ use craft\services\ProjectConfig;
 use craft\web\UrlManager;
 use craft\web\twig\variables\CraftVariable;
 
-use NerdsAndCompany\Schematic\Schematic;
-use NerdsAndCompany\Schematic\Events\ConverterEvent;
-
-use barrelstrength\sproutbase\app\import\services\Importers;
-
 use craft\gatsbyhelper\events\RegisterIgnoredTypesEvent;
 use craft\gatsbyhelper\services\Deltas;
 
@@ -36,7 +31,7 @@ class SuperTable extends Plugin
     // Properties
     // =========================================================================
 
-    public string $schemaVersion = '2.2.1';
+    public string $schemaVersion = '3.0.0';
     public bool $hasCpSettings = true;
 
     // Traits
@@ -85,7 +80,7 @@ class SuperTable extends Plugin
 
     private function _registerVariables(): void
     {
-        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event): {
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {
             $event->sender->set('superTable', SuperTableVariable::class);
         });
     }
@@ -118,26 +113,6 @@ class SuperTable extends Plugin
 
     private function _registerIntegrations(): void
     {
-        // Support for Schematic - https://github.com/nerds-and-company/schematic
-        if (class_exists(Schematic::class)) {
-            Event::on(Schematic::class, Schematic::EVENT_RESOLVE_CONVERTER, function (ConverterEvent $event) {
-                if ($event->modelClass == SuperTableField::class) {
-                    $event->converterClass = 'verbb\supertable\integrations\schematic\converters\fields\SuperTableSchematic';
-                }
-
-                if ($event->modelClass == SuperTableBlockTypeModel::class) {
-                    $event->converterClass = 'verbb\supertable\integrations\schematic\converters\models\SuperTableBlockTypeSchematic';
-                }
-            });
-        }
-
-        // Support for Sprout Import - https://github.com/barrelstrength/craft-sprout-import
-        if (class_exists(Importers::class)) {
-            Event::on(Importers::class, Importers::EVENT_REGISTER_IMPORTER_TYPES, function (RegisterComponentTypesEvent $event) {
-                $event->types[] = 'verbb\supertable\integrations\sproutimport\importers\fields\SuperTableImporter';
-            });
-        }
-
         // Support for Gatsby Helper
         if (class_exists(Deltas::class)) {
             Event::on(Deltas::class, Deltas::EVENT_REGISTER_IGNORED_TYPES, function(RegisterIgnoredTypesEvent $event) {

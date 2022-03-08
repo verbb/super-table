@@ -35,47 +35,57 @@ class SuperTableBlockQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['supertableblocks.sortOrder' => SORT_ASC];
+    protected array $defaultOrderBy = ['supertableblocks_owners.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|string|false|null The field ID(s) that the resulting SuperTable blocks must belong to.
+     * @var int|int[]|string|false|null The field ID(s) that the resulting Super Table blocks must belong to.
+     * @used-by fieldId()
      */
-    public $fieldId;
+    public mixed $fieldId = null;
 
     /**
-     * @var int|int[]|null The owner element ID(s) that the resulting SuperTable blocks must belong to.
+     * @var int|int[]|null The primary owner element ID(s) that the resulting Super Table blocks must belong to.
+     * @used-by primaryOwner()
+     * @used-by primaryOwnerId()
+     * @since 3.0.0
      */
-    public $ownerId;
+    public mixed $primaryOwnerId = null;
 
     /**
-     * @var mixed
-     * @deprecated in 2.2.0
+     * @var int|int[]|null The owner element ID(s) that the resulting Super Table blocks must belong to.
+     * @used-by owner()
+     * @used-by ownerId()
      */
-    public $ownerSiteId;
+    public mixed $ownerId = null;
 
     /**
      * @var bool|null Whether the owner elements can be drafts.
      * @used-by allowOwnerDrafts()
      * @since 2.4.2
      */
-    public $allowOwnerDrafts;
+    public ?bool $allowOwnerDrafts = null;
 
     /**
      * @var bool|null Whether the owner elements can be revisions.
      * @used-by allowOwnerRevisions()
      * @since 2.4.2
      */
-    public $allowOwnerRevisions;
+    public ?bool $allowOwnerRevisions = null;
 
     /**
-     * @var int|int[]|null The block type ID(s) that the resulting SuperTable blocks must have.
+     * @var int|int[]|null The block type ID(s) that the resulting Super Table blocks must have.
+     * @used-by SuperTableBlockQuery::type()
+     * @used-by typeId()
      */
-    public $typeId;
+    public mixed $typeId = null;
 
-    public $staticField;
+    /**
+     * @var bool|null Whether the field is static.
+     */
+    public ?bool $staticField = null;
 
 
     // Public Methods
@@ -92,6 +102,9 @@ class SuperTableBlockQuery extends ElementQuery
                 break;
             case 'owner':
                 $this->owner($value);
+                break;
+            case 'primaryOwner':
+                $this->primaryOwner($value);
                 break;
             case 'type':
                 $this->type($value);
@@ -145,7 +158,7 @@ class SuperTableBlockQuery extends ElementQuery
      * @uses $fieldId
      * @since 2.4.1
      */
-    public function field($value): static
+    public function field(mixed $value): self
     {
         if ($value instanceof SuperTableField) {
             $this->fieldId = [$value->id];
@@ -180,9 +193,38 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function fieldId($value): static
+    public function fieldId(mixed $value): self
     {
         $this->fieldId = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the primary owner element of the Super Table blocks, per the owners’ IDs.
+     *
+     * @param int|int[]|null $value The property value
+     * @return self self reference
+     * @uses $primaryOwnerId
+     * @since 3.0.0
+     */
+    public function primaryOwnerId(mixed $value): self
+    {
+        $this->primaryOwnerId = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the primary owner element of the Super Table blocks, per the owners’ IDs.
+     *
+     * @param int|int[]|null $value The property value
+     * @return self self reference
+     * @uses $primaryOwnerId
+     * @since 3.0.0
+     */
+    public function primaryOwner(ElementInterface $primaryOwner): self
+    {
+        $this->primaryOwnerId = [$primaryOwner->id];
+        $this->siteId = $primaryOwner->siteId;
         return $this;
     }
 
@@ -200,43 +242,13 @@ class SuperTableBlockQuery extends ElementQuery
     }
 
     /**
-     * @return static self reference
-     * @deprecated in 2.2.0.
-     */
-    public function ownerSiteId(): static
-    {
-        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSiteId()', 'The `ownerSiteId” SuperTable block query param has been deprecated. Use `site” or `siteId” instead.');
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 2.2.0.
-     */
-    public function ownerSite(): static
-    {
-        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSite()', 'The `ownerSite” SuperTable block query param has been deprecated. Use `site” or `siteId” instead.');
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 2.0.
-     */
-    public function ownerLocale($value): static
-    {
-        Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The `ownerLocale” SuperTable block query param has been deprecated. Use `site” or `siteId” instead.');
-        return $this;
-    }
-
-    /**
-     * Sets the [[ownerId]] and [[ownerSiteId]] properties based on a given element.
+     * Sets the [[ownerId()]] and [[siteId()]] parameters based on a given element.
      *
      * @param ElementInterface $owner The owner element
-     *
-     * @return static self reference
+     * @return self self reference
+     * @uses $ownerId
      */
-    public function owner(ElementInterface $owner): static
+    public function owner(ElementInterface $owner): self
     {
         $this->ownerId = [$owner->id];
         $this->siteId = $owner->siteId;
@@ -247,11 +259,10 @@ class SuperTableBlockQuery extends ElementQuery
      * Narrows the query results based on whether the Super Table blocks’ owners are drafts.
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $allowOwnerDrafts
-     * @since 2.4.1
      */
-    public function allowOwnerDrafts($value = true): static
+    public function allowOwnerDrafts(?bool $value = true): self
     {
         $this->allowOwnerDrafts = $value;
         return $this;
@@ -261,11 +272,11 @@ class SuperTableBlockQuery extends ElementQuery
      * Narrows the query results based on whether the Super Table blocks’ owners are revisions.
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $allowOwnerDrafts
-     * @since 2.4.1
+     * @since 2.4.2
      */
-    public function allowOwnerRevisions($value = true): static
+    public function allowOwnerRevisions(?bool $value = true): self
     {
         $this->allowOwnerRevisions = $value;
         return $this;
@@ -274,13 +285,13 @@ class SuperTableBlockQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property based on a given block type(s)’s id(s).
      *
-     * @param string|string[]|SuperTableBlockType|null $value The property value
-     *
-     * @return static self reference
+     * @param string|string[]|SuperTableBlockTypeModel|null $value The property value
+     * @return self self reference
+     * @uses $typeId
      */
-    public function type($value): static
+    public function type(mixed $value): self
     {
-        if ($value instanceof SuperTableBlockType) {
+        if ($value instanceof SuperTableBlockTypeModel) {
             $this->typeId = $value->id;
         } else if ($value !== null) {
             $this->typeId = (new Query())
@@ -302,13 +313,13 @@ class SuperTableBlockQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function typeId($value): static
+    public function typeId(mixed $value): self
     {
         $this->typeId = $value;
         return $this;
     }
 
-    public function staticField($value): static
+    public function staticField(mixed $value): self
     {
         $this->staticField = $value;
         return $this;
@@ -324,7 +335,7 @@ class SuperTableBlockQuery extends ElementQuery
         $class = new \ReflectionClass($this);
         $names = [];
 
-        // Restore legancy-handling for people using `entry.stfield.field` via direct access. They shouldn't be, as it's
+        // Restore legacy-handling for people using `entry.stfield.field` via direct access. They shouldn't be, as it's
         // considered invalid unless it's a static field, but we better keep this alive for the time-being to keep the peace.
         // This was a direct issue with changes to `criteriaAttributes()` in Craft 3.5.17 which causes ST fields to error
         // when being saved, due to incorrect custom fields.
@@ -352,13 +363,34 @@ class SuperTableBlockQuery extends ElementQuery
     protected function beforePrepare(): bool
     {
         $this->_normalizeFieldId();
-        $this->_normalizeOwnerId();
+
+        try {
+            $this->primaryOwnerId = $this->_normalizeOwnerId($this->primaryOwnerId);
+        } catch (InvalidArgumentException) {
+            throw new InvalidConfigException('Invalid ownerId param value');
+        }
+
+        try {
+            $this->ownerId = $this->_normalizeOwnerId($this->ownerId);
+        } catch (InvalidArgumentException) {
+            throw new InvalidConfigException('Invalid ownerId param value');
+        }
 
         $this->joinElementTable('supertableblocks');
 
+        // Join in the supertableblocks_owners table
+        $ownersCondition = [
+            'and',
+            '[[supertableblocks_owners.blockId]] = [[elements.id]]',
+            $this->ownerId ? ['supertableblocks_owners.ownerId' => $this->ownerId] : '[[supertableblocks_owners.ownerId]] = [[supertableblocks.primaryOwnerId]]',
+        ];
+
+        $this->query->innerJoin(['supertableblocks_owners' => '{{%supertableblocks_owners}}'], $ownersCondition);
+        $this->subQuery->innerJoin(['supertableblocks_owners' => '{{%supertableblocks_owners}}'], $ownersCondition);
+
         // Figure out which content table to use
         $this->contentTable = null;
-        if ($this->fieldId && (is_countable($this->fieldId) ? count($this->fieldId) : 0) === 1) {
+        if ($this->fieldId && count($this->fieldId) === 1) {
             /** @var SuperTableField $superTableField */
             $superTableField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
             if ($superTableField) {
@@ -368,35 +400,39 @@ class SuperTableBlockQuery extends ElementQuery
 
         $this->query->select([
             'supertableblocks.fieldId',
-            'supertableblocks.ownerId',
+            'supertableblocks.primaryOwnerId',
             'supertableblocks.typeId',
-            'supertableblocks.sortOrder',
+            'supertableblocks_owners.ownerId',
+            'supertableblocks_owners.sortOrder',
         ]);
 
         if ($this->fieldId) {
             $this->subQuery->andWhere(['supertableblocks.fieldId' => $this->fieldId]);
         }
 
-        if ($this->ownerId) {
-            $this->subQuery->andWhere(['supertableblocks.ownerId' => $this->ownerId]);
+        if ($this->primaryOwnerId) {
+            $this->subQuery->andWhere(['supertableblocks.primaryOwnerId' => $this->primaryOwnerId]);
         }
 
-        if ($this->typeId !== null) {
+        if (isset($this->typeId)) {
             // If typeId is an empty array, it's because type() was called but no valid type handles were passed in
             if (empty($this->typeId)) {
                 return false;
             }
 
-            $this->subQuery->andWhere(Db::parseParam('supertableblocks.typeId', $this->typeId));
+            $this->subQuery->andWhere(Db::parseNumericParam('supertableblocks.typeId', $this->typeId));
         }
 
         // Ignore revision/draft blocks by default
-        $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->ownerId);
-        $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->ownerId);
+        $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
+        $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
 
         if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
             // todo: we will need to expand on this when Super Table blocks can be nested.
-            $this->subQuery->innerJoin(['owners' => Table::ELEMENTS], '[[owners.id]] = [[supertableblocks.ownerId]]');
+            $this->subQuery->innerJoin(
+                ['owners' => Table::ELEMENTS],
+                $this->ownerId ? '[[owners.id]] = [[supertableblocks_owners.ownerId]]' : '[[owners.id]] = [[supertableblocks.primaryOwnerId]]'
+            );
 
             if (!$allowOwnerDrafts) {
                 $this->subQuery->andWhere(['owners.draftId' => null]);
@@ -422,7 +458,7 @@ class SuperTableBlockQuery extends ElementQuery
                 ->select(['fieldId'])
                 ->distinct()
                 ->from(['{{%supertableblocks}}'])
-                ->where(Db::parseParam('id', $this->id))
+                ->where(Db::parseNumericParam('id', $this->id))
                 ->column() ?: false;
         }
 
@@ -438,26 +474,34 @@ class SuperTableBlockQuery extends ElementQuery
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
-                ->where(Db::parseParam('id', $this->fieldId))
+                ->where(Db::parseNumericParam('id', $this->fieldId))
                 ->andWhere(['type' => SuperTableField::class])
                 ->column();
         }
     }
 
     /**
-     * Normalizes the ownerId param to an array of IDs or null
+     * Normalizes the primaryOwnerId param to an array of IDs or null
      *
-     * @throws InvalidConfigException
+     * @param mixed $value
+     * @return int[]|null
+     * @throws InvalidArgumentException
      */
-    private function _normalizeOwnerId(): void
+    private function _normalizeOwnerId(mixed $value): ?array
     {
-        if (empty($this->ownerId)) {
-            $this->ownerId = null;
-        } else if (is_numeric($this->ownerId)) {
-            $this->ownerId = [$this->ownerId];
-        } else if (!is_array($this->ownerId) || !ArrayHelper::isNumeric($this->ownerId)) {
-            throw new InvalidConfigException('Invalid ownerId param value');
+        if (empty($value)) {
+            return null;
         }
+
+        if (is_numeric($value)) {
+            return [$value];
+        }
+
+        if (!is_array($value) || !ArrayHelper::isNumeric($value)) {
+            throw new InvalidArgumentException();
+        }
+
+        return $value;
     }
 
     /**
@@ -469,8 +513,12 @@ class SuperTableBlockQuery extends ElementQuery
         /** @var SuperTableField $supertableField */
         $supertableField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
 
-        if (!empty($this->typeId) && ArrayHelper::isNumeric($this->typeId)) {
-            return $supertableField->getBlockTypeFields($this->typeId);
+        if (!empty($this->typeId)) {
+            $blockTypes = ArrayHelper::toArray($this->typeId);
+
+            if (ArrayHelper::isNumeric($blockTypes)) {
+                return $supertableField->getBlockTypeFields($blockTypes);
+            }
         }
 
         return $supertableField->getBlockTypeFields();
@@ -482,31 +530,27 @@ class SuperTableBlockQuery extends ElementQuery
     protected function cacheTags(): array
     {
         $tags = [];
+
         // If both the field and owner are set, then only tag the combos
-        if ($this->fieldId && $this->ownerId) {
-            if (is_array($this->fieldId)) {
-                foreach ($this->fieldId as $fieldId) {
-                    foreach ($this->ownerId as $ownerId) {
-                        $tags[] = "field-owner:$fieldId-$ownerId";
-                    }
+        if ($this->fieldId && $this->primaryOwnerId) {
+            foreach ($this->fieldId as $fieldId) {
+                foreach ($this->primaryOwnerId as $primaryOwnerId) {
+                    $tags[] = "field-owner:$fieldId-$primaryOwnerId";
                 }
             }
         } else {
             if ($this->fieldId) {
-                if (is_array($this->fieldId)) {
-                    foreach ($this->fieldId as $fieldId) {
-                        $tags[] = "field:$fieldId";
-                    }
+                foreach ($this->fieldId as $fieldId) {
+                    $tags[] = "field:$fieldId";
                 }
             }
-            if ($this->ownerId) {
-                if (is_array($this->ownerId)) {
-                    foreach ($this->ownerId as $ownerId) {
-                        $tags[] = "owner:$ownerId";
-                    }
+            if ($this->primaryOwnerId) {
+                foreach ($this->primaryOwnerId as $primaryOwnerId) {
+                    $tags[] = "owner:$primaryOwnerId";
                 }
             }
         }
+        
         return $tags;
     }
 }

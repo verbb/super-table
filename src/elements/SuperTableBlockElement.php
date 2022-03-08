@@ -153,51 +153,57 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @var int|null Field ID
      */
-    public $fieldId;
+    public ?int $fieldId = null;
+
+    /**
+     * @var int|null Primary owner ID
+     * @since 3.0.0
+     */
+    public ?int $primaryOwnerId = null;
 
     /**
      * @var int|null Owner ID
      */
-    public $ownerId;
-
-    /**
-     * @var int|null Owner site ID
-     * @deprecated in 2.2.0. Use [[$siteId]] instead.
-     */
-    public $ownerSiteId;
+    public ?int $ownerId = null;
 
     /**
      * @var int|null Type ID
      */
-    public $typeId;
+    public ?int $typeId = null;
 
     /**
      * @var int|null Sort order
      */
-    public $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * @var bool Whether the block has changed.
      * @internal
      * @since 2.4.0
      */
-    public $dirty = false;
+    public bool $dirty = false;
 
     /**
      * @var bool Collapsed
      */
-    public $collapsed = false;
+    public bool $collapsed = false;
 
     /**
      * @var bool Whether the block was deleted along with its owner
      * @see beforeDelete()
      */
-    public $deletedWithOwner = false;
+    public bool $deletedWithOwner = false;
+
+    /**
+     * @var bool Whether to save the block’s row in the `supertableblock_owners` table in [[afterSave()]].
+     * @since 3.0.0
+     */
+    public bool $saveOwnership = true;
 
     /**
      * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
      */
-    private \craft\base\ElementInterface|false|null $_owner = null;
+    private ?ElementInterface $_owner = null;
 
     /**
      * @var ElementInterface[]|null
@@ -235,7 +241,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
+        $rules[] = [['fieldId', 'primaryOwnerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
         return $rules;
     }
 
@@ -246,7 +252,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     {
         try {
             $owner = $this->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (InvalidConfigException $e) {
             $owner = $this->duplicateOf;
         }
 
@@ -255,7 +261,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         }
 
         $field = $this->_field();
-        return SuperTable::$plugin->getService()->getSupportedSiteIds($this->_field()->propagationMethod, $owner);
+        return SuperTable::$plugin->getService()->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
     }
 
     /**
@@ -264,9 +270,9 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     public function getCacheTags(): array
     {
         return [
-            "field-owner:$this->fieldId-$this->ownerId",
+            "field-owner:$this->fieldId-$this->primaryOwnerId",
             "field:$this->fieldId",
-            "owner:$this->ownerId",
+            "owner:$this->primaryOwnerId",
         ];
     }
 
@@ -283,7 +289,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
      *
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
-    public function getType(): \SuperTableBlockType
+    public function getType(): SuperTableBlockTypeModel
     {
         if ($this->typeId === null) {
             throw new InvalidConfigException('SuperTable block is missing its type ID');
@@ -301,8 +307,8 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /** @inheritdoc */
     public function getOwner(): ?\craft\base\ElementInterface
     {
-        if ($this->_owner === null) {
-            if ($this->ownerId === null) {
+        if (!isset($this->_owner)) {
+            if (!isset($this->ownerId)) {
                 throw new InvalidConfigException('SuperTable block is missing its owner ID');
             }
 
@@ -318,9 +324,10 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
      *
      * @param ElementInterface|null $owner
      */
-    public function setOwner(ElementInterface $owner = null): void
+    public function setOwner(?ElementInterface $owner = null): void
     {
         $this->_owner = $owner;
+        $this->ownerId = $owner->id;
     }
 
     /**
@@ -361,28 +368,60 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
 
     /**
      * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if (!$this->primaryOwnerId && !$this->ownerId) {
+            throw new InvalidConfigException('No owner ID assigned to the Super Table block.');
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
      * @throws Exception if reasons
      */
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
+            $this->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
+            $this->ownerId = $this->ownerId ?? $this->primaryOwnerId;
+
             // Get the block record
             if (!$isNew) {
                 $record = SuperTableBlockRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid SuperTable block ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid SuperTable block ID: $this->id");
                 }
             } else {
                 $record = new SuperTableBlockRecord();
                 $record->id = (int)$this->id;
             }
 
-            $record->fieldId = (int)$this->fieldId;
-            $record->ownerId = (int)$this->ownerId;
-            $record->typeId = (int)$this->typeId;
-            $record->sortOrder = (int)$this->sortOrder ?: null;
+            $record->fieldId = $this->fieldId;
+            $record->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
+            $record->typeId = $this->typeId;
             $record->save(false);
+
+            // ownerId will be null when creating a revision
+            if ($this->saveOwnership) {
+                if ($isNew) {
+                    Db::insert('{{%supertableblocks_owners}}', [
+                        'blockId' => $this->id,
+                        'ownerId' => $this->ownerId,
+                        'sortOrder' => $this->sortOrder ?? 0,
+                    ]);
+                } else {
+                    Db::update('{{%supertableblocks_owners}}', [
+                        'sortOrder' => $this->sortOrder ?? 0,
+                    ], [
+                        'blockId' => $this->id,
+                        'ownerId' => $this->ownerId,
+                    ]);
+                }
+            }
         }
 
         parent::afterSave($isNew);
@@ -413,7 +452,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * Returns the SuperTable field.
      */
-    private function _field(): \verbb\supertable\SuperTable
+    private function _field(): \verbb\supertable\fields\SuperTableField
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);

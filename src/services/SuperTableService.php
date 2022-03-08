@@ -39,30 +39,24 @@ class SuperTableService extends Component
     // =========================================================================
 
     /**
-     * @var bool Whether to ignore changes to the project config.
-     * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
+     * @var SuperTableBlockTypeModel[]|null[]
      */
-    public $ignoreProjectConfigChanges = false;
+    private array $_blockTypesById = [];
 
     /**
-     * @var
+     * @var SuperTableBlockTypeModel[][]
      */
-    private $_blockTypesById;
+    private array $_blockTypesByFieldId = [];
 
     /**
-     * @var
+     * @var bool[]
      */
-    private $_blockTypesByFieldId;
+    private array $_fetchedAllBlockTypesForFieldId = [];
 
     /**
-     * @var
+     * @var SuperTableBlockTypeRecord[]
      */
-    private $_fetchedAllBlockTypesForFieldId;
-
-    /**
-     * @var
-     */
-    private $_blockTypeRecordsById;
+    private array $_blockTypeRecordsById = [];
 
     /**
      * @var string[]
@@ -85,7 +79,7 @@ class SuperTableService extends Component
      *
      * @param int $fieldId The Super Table field ID.
      *
-     * @return SuperTableBlockType[] An array of block types.
+     * @return SuperTableBlockTypeModel[] An array of block types.
      */
     public function getBlockTypesByFieldId(int $fieldId): array
     {
@@ -138,7 +132,7 @@ class SuperTableService extends Component
      */
     public function getBlockTypeById(int $blockTypeId): ?SuperTableBlockTypeModel
     {
-        if ($this->_blockTypesById !== null && array_key_exists($blockTypeId, $this->_blockTypesById)) {
+        if (array_key_exists($blockTypeId, $this->_blockTypesById)) {
             return $this->_blockTypesById[$blockTypeId];
         }
 
@@ -189,7 +183,7 @@ class SuperTableService extends Component
         $contentService->fieldContext = StringHelper::randomString(10);
         $contentService->fieldColumnPrefix = 'field_';
 
-        foreach ($blockType->getFields() as $field) {
+        foreach ($blockType->getCustomFields() as $field) {
             $field->validate();
 
             if ($field->handle) {
@@ -279,10 +273,6 @@ class SuperTableService extends Component
      */
     public function handleChangedBlockType(ConfigEvent $event): void
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
         $previousData = $event->oldValue;
@@ -411,10 +401,6 @@ class SuperTableService extends Component
      */
     public function handleDeletedBlockType(ConfigEvent $event): void
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $blockTypeUid = $event->tokenMatches[0];
         $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
@@ -463,7 +449,7 @@ class SuperTableService extends Component
                 $fieldsService->oldFieldColumnPrefix = "field_";
 
                 // Now delete the block type fields
-                foreach ($blockType->getFields() as $field) {
+                foreach ($blockType->getCustomFields() as $field) {
                     $fieldsService->deleteField($field);
                 }
 
@@ -528,7 +514,7 @@ class SuperTableService extends Component
 
                 // Make sure to look at validation for each field
                 if (!$blockTypeErrors) {
-                    foreach ($blockType->getFields() as $blockTypeField) {
+                    foreach ($blockType->getCustomFields() as $blockTypeField) {
                         $blockTypeFieldErrors = $blockTypeField->getErrors();
 
                         if ($blockTypeFieldErrors) {
@@ -559,13 +545,6 @@ class SuperTableService extends Component
     public function saveSettings(SuperTableField $supertableField, bool $validate = true): bool
     {
         if (!$supertableField->contentTable) {
-            // Silently fail if this is a migration or console request
-            $request = Craft::$app->getRequest();
-
-            if ($request->getIsConsoleRequest() || $request->getUrl() == '/actions/update/updateDatabase') {
-                return true;
-            }
-
             throw new Exception('Unable to save a Super Table field’s settings without knowing its content table: ' . $supertableField->contentTable);
         }
 
@@ -587,7 +566,7 @@ class SuperTableService extends Component
             }
 
             // Only make block type changes if we're not in the middle of applying YAML changes
-            if (!Craft::$app->getProjectConfig()->getIsApplyingYamlChanges()) {
+            if (!Craft::$app->getProjectConfig()->getIsApplyingExternalChanges()) {
                 // Delete the old block types first, in case there's a handle conflict with one of the new ones
                 $oldBlockTypes = $this->getBlockTypesByFieldId($supertableField->id);
                 $oldBlockTypesById = [];
@@ -676,17 +655,6 @@ class SuperTableService extends Component
     }
 
     /**
-     * Returns the content table name for a given Super Table field.
-     *
-     * @param SuperTableField $supertableField  The Super Table field.
-     * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
-     */
-    public function getContentTableName(SuperTableField $supertableField): string
-    {
-        return $supertableField->contentTable;
-    }
-
-    /**
      * Defines a new Super Table content table name.
      */
     public function defineContentTableName(SuperTableField $field): string
@@ -752,8 +720,7 @@ class SuperTableService extends Component
         if (($blocks = $query->getCachedResult()) !== null) {
             $saveAll = false;
         } else {
-            $blocksQuery = clone $query;
-            $blocks = $blocksQuery->anyStatus()->all();
+            $blocks = (clone $query)->status(null)->all();
             $saveAll = true;
         }
         $blockIds = [];
@@ -764,16 +731,27 @@ class SuperTableService extends Component
             foreach ($blocks as $block) {
                 $sortOrder++;
                 if ($saveAll || !$block->id || $block->dirty) {
-                    $block->ownerId = $owner->id;
+                    $block->primaryOwnerId = $block->ownerId = $owner->id;
                     $block->sortOrder = $sortOrder;
                     $elementsService->saveElement($block, false);
+
+                    // If this is a draft, we can shed the draft data now
+                    if ($block->getIsDraft()) {
+                        $canonicalBlockId = $block->getCanonicalId();
+                        Craft::$app->getDrafts()->removeDraftData($block);
+                        Db::delete('{{%supertableblocks_owners}}', [
+                            'blockId' => $canonicalBlockId,
+                            'ownerId' => $owner->id,
+                        ]);
+                    }
                 } else if ((int)$block->sortOrder !== $sortOrder) {
                     // Just update its sortOrder
                     $block->sortOrder = $sortOrder;
-                    Db::update('{{%supertableblocks}}', [
+                    Db::update('{{%supertableblocks_owners}}', [
                         'sortOrder' => $sortOrder,
                     ], [
-                        'id' => $block->id,
+                        'blockId' => $block->id,
+                        'ownerId' => $owner->id,
                     ], [], false);
                 }
 
@@ -790,7 +768,7 @@ class SuperTableService extends Component
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's SuperTable blocks
                 $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-                $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner);
+                $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
@@ -809,14 +787,13 @@ class SuperTableService extends Component
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
                         ->siteId($otherSiteIds)
-                        ->anyStatus()
+                        ->status(null)
                         ->all();
 
                     // Duplicate SuperTable blocks, ensuring we don't process the same blocks more than once
                     $handledSiteIds = [];
 
-                    $cachedQuery = clone $query;
-                    $cachedQuery->anyStatus();
+                    $cachedQuery = (clone $query)->status(null);
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
 
@@ -827,7 +804,7 @@ class SuperTableService extends Component
                         }
 
                         // Find all of the field’s supported sites shared with this target
-                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner);
+                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner, $field->propagationKeyFormat);
 
                         // Do blocks in this target happen to share supported sites with a preexisting site?
                         if (
@@ -839,7 +816,7 @@ class SuperTableService extends Component
                                 ->revisions($owner->getIsRevision())
                                 ->id($owner->id)
                                 ->siteId($sharedPreexistingOtherSiteIds)
-                                ->anyStatus()
+                                ->status(null)
                                 ->one()
                         ) {
                             // Just resave SuperTable blocks for that one site, and let them propagate over to the new site(s) from there
@@ -849,7 +826,7 @@ class SuperTableService extends Component
                         }
 
                         // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                        $handledSiteIds = [...$handledSiteIds, ...array_flip($sourceSupportedSiteIds)];
+                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
                     }
 
                     $owner->setFieldValue($field->handle, $query);
@@ -872,15 +849,14 @@ class SuperTableService extends Component
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
      * @throws \Throwable if reasons
      */
-    public function duplicateBlocks(SuperTableField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false): void
+    public function duplicateBlocks(SuperTableField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false, bool $deleteOtherBlocks = true): void
     {
         $elementsService = Craft::$app->getElements();
         /** @var SuperTableBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
         /** @var SuperTableBlockElement[] $blocks */
         if (($blocks = $query->getCachedResult()) === null) {
-            $blocksQuery = clone $query;
-            $blocks = $blocksQuery->anyStatus()->all();
+            $blocks = (clone $query)->status(null)->all();
         }
         $newBlockIds = [];
 
@@ -890,38 +866,39 @@ class SuperTableService extends Component
                 $newAttributes = [
                     // Only set the canonicalId if the target owner element is a derivative
                     'canonicalId' => $target->getIsDerivative() ? $block->id : null,
-                    'ownerId' => $target->id,
+                    'primaryOwnerId' => $target->id,
                     'owner' => $target,
                     'siteId' => $target->siteId,
                     'propagating' => false,
                 ];
 
-                if (
-                    $target->updatingFromDerivative &&
-                    $block->getCanonical() !== $block // in case the canonical block is soft-deleted
-                ) {
+                if ($target->updatingFromDerivative && $block->getIsDerivative()) {
                     if (
                         ElementHelper::isRevision($source) ||
                         !empty($target->newSiteIds) ||
                         $source->isFieldModified($field->handle, true)
                     ) {
-                        /** @var SuperTableBlockElement $newBlock */
-                        $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
-                        $newBlockId = $newBlock->id;
+                        $newBlockId = $elementsService->updateCanonicalElement($block, $newAttributes)->id;
                     } else {
                         $newBlockId = $block->getCanonicalId();
                     }
                 } else {
-                    /** @var SuperTableBlockElement $newBlock */
-                    $newBlock = $elementsService->duplicateElement($block, $newAttributes);
-                    $newBlockId = $newBlock->id;
+                    // If the block’s primary owner is equal to the target element ID, no need to do anything
+                    if ($block->primaryOwnerId !== $target->id) {
+                        /** @var SuperTableBlockElement $newBlock */
+                        $newBlockId = $elementsService->duplicateElement($block, $newAttributes)->id;
+                    } else {
+                        $newBlockId = $block->id;
+                    }
                 }
 
                 $newBlockIds[] = $newBlockId;
             }
 
-            // Delete any blocks that shouldn't be there anymore
-            $this->_deleteOtherBlocks($field, $target, $newBlockIds);
+            if ($deleteOtherBlocks) {
+                // Delete any blocks that shouldn't be there anymore
+                $this->_deleteOtherBlocks($field, $target, $newBlockIds);
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -933,7 +910,7 @@ class SuperTableService extends Component
         if ($checkOtherSites && $field->propagationMethod !== SuperTableField::PROPAGATION_METHOD_ALL) {
             // Find the target's site IDs that *aren't* supported by this site's SuperTable blocks
             $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
-            $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $target);
+            $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $target, $field->propagationKeyFormat);
             $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
 
             if (!empty($otherSiteIds)) {
@@ -944,7 +921,7 @@ class SuperTableService extends Component
                     ->revisions($source->getIsRevision())
                     ->id($source->id)
                     ->siteId($otherSiteIds)
-                    ->anyStatus()
+                    ->status(null)
                     ->all();
                 $otherTargets = $target::find()
                     ->drafts($target->getIsDraft())
@@ -952,7 +929,7 @@ class SuperTableService extends Component
                     ->revisions($target->getIsRevision())
                     ->id($target->id)
                     ->siteId($otherSiteIds)
-                    ->anyStatus()
+                    ->status(null)
                     ->indexBy('siteId')
                     ->all();
 
@@ -974,11 +951,75 @@ class SuperTableService extends Component
                     $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
 
                     // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                    $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherSource);
+                    $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherSource, $field->propagationKeyFormat);
                     $handledSiteIds = array_merge($handledSiteIds, $sourceSupportedSiteIds);
                 }
             }
         }
+    }
+
+    /**
+     * Duplicates block ownership relations for a new draft element.
+     *
+     * @param SuperTableField $field The Super Table field
+     * @param ElementInterface $canonical The canonical element
+     * @param ElementInterface $draft The draft element
+     * @since 3.0.0
+     */
+    public function duplicateOwnership(SuperTableField $field, ElementInterface $canonical, ElementInterface $draft): void
+    {
+        if (!$canonical->getIsCanonical()) {
+            throw new InvalidArgumentException('The source element must be canonical.');
+        }
+
+        if (!$draft->getIsDraft()) {
+            throw new InvalidArgumentException('The target element must be a draft.');
+        }
+
+        $blocksTable = '{{%supertableblocks}}';
+        $ownersTable = '{{%supertableblocks_owners}}';
+
+        Craft::$app->getDb()->createCommand(<<<SQL
+INSERT INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]]) 
+SELECT [[o.blockId]], '$draft->id', [[o.sortOrder]] 
+FROM $ownersTable AS [[o]]
+INNER JOIN $blocksTable AS [[b]] ON [[b.id]] = [[o.blockId]] AND [[b.primaryOwnerId]] = '$canonical->id' AND [[b.fieldId]] = '$field->id'
+WHERE [[o.ownerId]] = '$canonical->id'
+SQL
+        )->execute();
+    }
+
+    /**
+     * Creates revisions for all the blocks that belong to the given canonical element, and assigns those
+     * revisions to the given owner revision.
+     *
+     * @param SuperTableField $field The Super Table field
+     * @param ElementInterface $canonical The canonical element
+     * @param ElementInterface $revision The revision element
+     * @since 4.0.0
+     */
+    public function createRevisionBlocks(SuperTableField $field, ElementInterface $canonical, ElementInterface $revision): void
+    {
+        $blocks = SuperTableBlockElement::find()
+            ->ownerId($canonical->id)
+            ->fieldId($field->id)
+            ->siteId('*')
+            ->unique()
+            ->status(null)
+            ->all();
+
+        $revisionsService = Craft::$app->getRevisions();
+        $ownershipData = [];
+
+        foreach ($blocks as $block) {
+            $blockRevisionId = $revisionsService->createRevision($block, null, null, [
+                'primaryOwnerId' => $revision->id,
+                'saveOwnership' => false,
+            ]);
+            $ownershipData[] = [$blockRevisionId, $revision->id, $block->sortOrder];
+        }
+
+        Db::batchInsert('{{%supertableblocks_owners}}', ['blockId', 'ownerId', 'sortOrder'], $ownershipData);
     }
 
     /**
@@ -996,7 +1037,7 @@ class SuperTableService extends Component
             ->drafts($owner->getIsDraft())
             ->provisionalDrafts($owner->isProvisionalDraft)
             ->revisions($owner->getIsRevision())
-            ->anyStatus()
+            ->status(null)
             ->ignorePlaceholders()
             ->indexBy('siteId')
             ->all();
@@ -1006,7 +1047,7 @@ class SuperTableService extends Component
         $canonicalOwners = $owner::find()
             ->id($owner->getCanonicalId())
             ->siteId(array_keys($localizedOwners))
-            ->anyStatus()
+            ->status(null)
             ->ignorePlaceholders()
             ->all();
 
@@ -1021,7 +1062,7 @@ class SuperTableService extends Component
             // Get all the canonical owner’s blocks, including soft-deleted ones
             $canonicalBlocks = SuperTableBlockElement::find()
                 ->fieldId($field->id)
-                ->ownerId($canonicalOwner->id)
+                ->primaryOwnerId($canonicalOwner->id)
                 ->siteId($canonicalOwner->siteId)
                 ->status(null)
                 ->trashed(null)
@@ -1031,7 +1072,7 @@ class SuperTableService extends Component
             // Get all the derivative owner’s blocks, so we can compare
             $derivativeBlocks = SuperTableBlockElement::find()
                 ->fieldId($field->id)
-                ->ownerId($owner->id)
+                ->primaryOwnerId($owner->id)
                 ->siteId($canonicalOwner->siteId)
                 ->status(null)
                 ->trashed(null)
@@ -1049,7 +1090,7 @@ class SuperTableService extends Component
                         if ($derivativeBlock->dateUpdated == $derivativeBlock->dateCreated) {
                             $elementsService->deleteElement($derivativeBlock);
                         }
-                    } else if (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
+                    } elseif (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
                         // Merge the upstream changes into the derivative block
                         $elementsService->mergeCanonicalChanges($derivativeBlock);
                     }
@@ -1057,7 +1098,7 @@ class SuperTableService extends Component
                     // This is a new block, so duplicate it into the derivative owner
                     $elementsService->duplicateElement($canonicalBlock, [
                         'canonicalId' => $canonicalBlock->id,
-                        'ownerId' => $owner->id,
+                        'primaryOwnerId' => $owner->id,
                         'owner' => $localizedOwners[$canonicalBlock->siteId],
                         'siteId' => $canonicalBlock->siteId,
                         'propagating' => false,
@@ -1066,22 +1107,11 @@ class SuperTableService extends Component
             }
 
             // Keep track of the sites we've already covered
-            $siteIds = $this->getSupportedSiteIds($field->propagationMethod, $canonicalOwner);
+            $siteIds = $this->getSupportedSiteIds($field->propagationMethod, $canonicalOwner, $field->propagationKeyFormat);
             foreach ($siteIds as $siteId) {
                 $handledSiteIds[$siteId] = true;
             }
         }
-    }
-
-    /**
-     * Returns the site IDs that are supported by SuperTable blocks for the given SuperTable field and owner element.
-     *
-     * @return int[]
-     * @deprecated in 2.3.2. Use [[getSupportedSiteIds()]] instead.
-     */
-    public function getSupportedSiteIdsForField(SuperTableField $field, ElementInterface $owner): array
-    {
-        return $this->getSupportedSiteIds($field->propagationMethod, $owner);
     }
 
     /**
@@ -1090,9 +1120,8 @@ class SuperTableService extends Component
      * @return int[]
      * @since 2.3.2
      */
-    public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner): array    
+    public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner, ?string $propagationKeyFormat = null): array
     {
-        $propagationKeyFormat = null;
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
@@ -1120,7 +1149,7 @@ class SuperTableService extends Component
                     if (!isset($propagationKey)) {
                         $include = true;
                     } else {
-                        $siteOwner = $elementsService->getElementById($owner->id, $owner::class, $siteId);
+                        $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
                         $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($propagationKeyFormat, $siteOwner);
                     }
                     break;
@@ -1181,7 +1210,7 @@ class SuperTableService extends Component
 
         // Loop the fields on the block type and save the first one that matches our handle
         $fieldId = false;
-        foreach ($superTableBlockType->getFields() as $field) {
+        foreach ($superTableBlockType->getCustomFields() as $field) {
             if ($field->handle === $superTableBlockFieldHandle) {
                 $fieldId = $field->id;
                 break;
@@ -1309,8 +1338,8 @@ class SuperTableService extends Component
      */
     private function _deleteOtherBlocks(SuperTableField $field, ElementInterface $owner, array $except): void
     {
-        $deleteBlocks = SuperTableBlockElement::find()
-            ->anyStatus()
+        $blocks = SuperTableBlockElement::find()
+            ->status(null)
             ->ownerId($owner->id)
             ->fieldId($field->id)
             ->siteId($owner->siteId)
@@ -1318,9 +1347,22 @@ class SuperTableService extends Component
             ->all();
 
         $elementsService = Craft::$app->getElements();
+        $deleteOwnership = [];
 
-        foreach ($deleteBlocks as $deleteBlock) {
-            $elementsService->deleteElement($deleteBlock);
+        foreach ($blocks as $block) {
+            if ($block->primaryOwnerId === $owner->id) {
+                $elementsService->deleteElement($block);
+            } else {
+                // Just delete the ownership relation
+                $deleteOwnership[] = $block->id;
+            }
+        }
+
+        if ($deleteOwnership) {
+            Db::delete('{{%supertableblocks_owners}}', [
+                'blockId' => $deleteOwnership,
+                'ownerId' => $owner->id,
+            ]);
         }
     }
 }
