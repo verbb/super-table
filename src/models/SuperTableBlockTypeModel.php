@@ -41,7 +41,6 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
      */
     public bool $hasFieldErrors = false;
 
-    public string|int|null $id = null;
     /**
      * @var string|null
      */
