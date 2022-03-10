@@ -12,7 +12,7 @@ use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
 use craft\helpers\Db;
 use craft\helpers\Json;
-use craft\helpers\MigrationHelper;
+use craft\helpers\Db;
 use craft\services\ProjectConfig;
 
 class m190120_000000_fix_supertablecontent_tables extends Migration
@@ -40,7 +40,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                     if ($oldCount !== $newCount && $newCount === '0') {
                         // Remove the new (empty) table and rename the old one.
                         $this->dropTableIfExists($newTableName);
-                        MigrationHelper::renameTable($tableName, $newTableName, null);
+                        Db::renameTable($tableName, $newTableName, null);
 
                         echo "    > Removed empty table {$newTableName}, re-created from {$tableName} ...\n";
                     }
@@ -167,7 +167,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
                         $this->dropTableIfExists($wrongContentTable);
                         echo "    > Deleted content table to {$wrongContentTable} ...\n";
                     } else {
-                        MigrationHelper::renameTable($wrongContentTable, $contentTable, $this);
+                        Db::renameTable($wrongContentTable, $contentTable, $this);
                         echo "    > Renamed content table to {$contentTable} ...\n";
                     }
 

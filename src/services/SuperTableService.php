@@ -19,7 +19,6 @@ use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\Site;
@@ -546,7 +545,7 @@ class SuperTableService extends Component
             if (!$db->tableExists($supertableField->contentTable)) {
                 $oldContentTable = $supertableField->oldSettings['contentTable'] ?? null;
                 if ($oldContentTable && $db->tableExists($oldContentTable)) {
-                    MigrationHelper::renameTable($oldContentTable, $supertableField->contentTable);
+                    Db::renameTable($oldContentTable, $supertableField->contentTable);
                 } else {
                     $this->_createContentTable($supertableField->contentTable);
                 }

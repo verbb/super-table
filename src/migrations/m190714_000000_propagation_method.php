@@ -2,15 +2,15 @@
 namespace verbb\supertable\migrations;
 
 use craft\db\Migration;
-use craft\helpers\MigrationHelper;
+use craft\helpers\Db;
 
 class m190714_000000_propagation_method extends Migration
 {
     public function safeUp(): bool
     {
         if ($this->db->columnExists('{{%supertableblocks}}', 'ownerSiteId')) {
-            MigrationHelper::dropForeignKeyIfExists('{{%supertableblocks}}', ['ownerSiteId'], $this);
-            MigrationHelper::dropIndexIfExists('{{%supertableblocks}}', ['ownerSiteId'], false, $this);
+            Db::dropForeignKeyIfExists('{{%supertableblocks}}', ['ownerSiteId'], $this);
+            Db::dropIndexIfExists('{{%supertableblocks}}', ['ownerSiteId'], false, $this);
             $this->dropColumn('{{%supertableblocks}}', 'ownerSiteId');
         }
 

@@ -8,7 +8,7 @@ use craft\db\Migration;
 use craft\db\Table;
 use craft\db\Query;
 use craft\helpers\Json;
-use craft\helpers\MigrationHelper;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use yii\db\Expression;
 
@@ -43,18 +43,18 @@ class m180219_000000_sites extends Migration
         // ---------------------------------------------------------------------
 
         if ($this->db->columnExists('{{%supertableblocks}}', 'ownerLocale__siteId')) {
-            MigrationHelper::renameColumn('{{%supertableblocks}}', 'ownerLocale__siteId', 'ownerSiteId');
+            Db::renameColumn('{{%supertableblocks}}', 'ownerLocale__siteId', 'ownerSiteId');
         }
 
         // Drop the old FKs
         // ---------------------------------------------------------------------
 
-        MigrationHelper::dropForeignKeyIfExists('{{%supertableblocks}}', ['ownerLocale'], $this);
+        Db::dropForeignKeyIfExists('{{%supertableblocks}}', ['ownerLocale'], $this);
 
         // Drop the old indexes
         // ---------------------------------------------------------------------
 
-        MigrationHelper::dropIndexIfExists('{{%supertableblocks}}', ['ownerLocale'], false, $this);
+        Db::dropIndexIfExists('{{%supertableblocks}}', ['ownerLocale'], false, $this);
 
         // Drop the locale columns
         // ---------------------------------------------------------------------
@@ -84,7 +84,7 @@ class m180219_000000_sites extends Migration
                     $this->addForeignKey(null, $tableName, ['locale__siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
                 }
 
-                // There's actually an issue here in the MigrationHelper::dropAllIndexesOnTable class, not using the current migration
+                // There's actually an issue here in the Db::dropAllIndexesOnTable class, not using the current migration
                 // as context to find existing indexes. This is important, because the indexes have changed from their current names
                 $this->dropAllForeignKeysOnTable($tableName);
                 $this->dropAllIndexesOnTable($tableName);

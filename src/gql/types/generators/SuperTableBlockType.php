@@ -8,11 +8,11 @@ use verbb\supertable\gql\interfaces\elements\SuperTableBlock as SuperTableBlockI
 use verbb\supertable\gql\types\elements\SuperTableBlock;
 use verbb\supertable\models\SuperTableBlockTypeModel;
 
+use Craft;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeManager;
 
 class SuperTableBlockType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
@@ -58,7 +58,7 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
                 $entity = new SuperTableBlock([
                     'name' => $typeName,
                     'fields' => function() use ($blockTypeFields, $typeName) {
-                        return TypeManager::prepareFieldDefinitions($blockTypeFields, $typeName);
+                        return Craft::$app->getGql()->prepareFieldDefinitions($blockTypeFields, $typeName);
                     },
                 ]);
 
