@@ -32,6 +32,8 @@ class SuperTable extends Plugin
 
     public bool $hasCpSettings = true;
     public string $schemaVersion = '3.0.0';
+    public string $minVersionRequired = '2.2.1';
+
 
     // Traits
     // =========================================================================
