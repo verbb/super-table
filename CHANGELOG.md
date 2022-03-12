@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-beta.2 - 2022-03-12
+
+### Fixed
+- Fix potential error in migration.
+- Fix an error with some old/deprecated field settings not being unset.
+
 ## 3.0.0-beta.1 - 2022-03-10
 
 ### Changed
