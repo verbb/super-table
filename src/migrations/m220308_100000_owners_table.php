@@ -29,6 +29,9 @@ class m220308_100000_owners_table extends Migration
         $blocksTable = '{{%supertableblocks}}';
         $ownersTable = '{{%supertableblocks_owners}}';
 
+        // Fix any null sortOrders. It can happen!
+        $this->update($blocksTable, ['sortOrder' => '1'], ['sortOrder' => null]);
+
         $this->execute(<<<SQL
 INSERT INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]]) 
 SELECT [[id]], [[ownerId]], [[sortOrder]] 
