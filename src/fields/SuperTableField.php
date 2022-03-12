@@ -184,6 +184,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             unset($config['localizeBlocks']);
         }
 
+        // Remove unneeded/deprecated properties
+        unset($config['placeholderKey']);
+
         parent::__construct($config);
     }
 
