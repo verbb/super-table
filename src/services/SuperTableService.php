@@ -1102,7 +1102,7 @@ class SuperTableService extends Component
      * @return int[]
      * @since 2.3.2
      */
-    public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner): array    
+    public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner, ?string $propagationKeyFormat = null): array
     {
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');

@@ -255,7 +255,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         }
 
         $field = $this->_field();
-        return SuperTable::$plugin->getService()->getSupportedSiteIds($this->_field()->propagationMethod, $owner);
+        return SuperTable::$plugin->getService()->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
     }
 
     /**
