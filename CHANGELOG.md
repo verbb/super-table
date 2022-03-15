@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0-beta.3 - 2022-03-16
+
+### Fixed
+- Fix an error during install.
+
 ## 3.0.0-beta.2 - 2022-03-12
 
 ### Fixed
