@@ -29,6 +29,7 @@ class Install extends Migration
 
     protected function createTables(): void
     {
+        $this->archiveTableIfExists('{{%supertableblocks}}');
         $this->createTable('{{%supertableblocks}}', [
             'id' => $this->integer()->notNull(),
             'primaryOwnerId' => $this->integer()->notNull(),
@@ -40,7 +41,7 @@ class Install extends Migration
             'PRIMARY KEY([[id]])',
         ]);
 
-
+        $this->archiveTableIfExists('{{%supertableblocks_owners}}');
         $this->createTable('{{%supertableblocks_owners}}', [
             'blockId' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
@@ -48,6 +49,7 @@ class Install extends Migration
             'PRIMARY KEY([[blockId]], [[ownerId]])',
         ]);
 
+        $this->archiveTableIfExists('{{%supertableblocktypes}}');
         $this->createTable('{{%supertableblocktypes}}', [
             'id' => $this->primaryKey(),
             'fieldId' => $this->integer()->notNull(),
