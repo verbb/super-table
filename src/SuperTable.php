@@ -52,12 +52,15 @@ class SuperTable extends Plugin
 
         $this->_registerComponents();
         $this->_registerLogTarget();
-        $this->_registerCpRoutes();
         $this->_registerVariables();
         $this->_registerFieldTypes();
         $this->_registerElementTypes();
         $this->_registerIntegrations();
         $this->_registerProjectConfigEventListeners();
+
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->_registerCpRoutes();
+        }
     }
 
     public function getSettingsResponse(): mixed
