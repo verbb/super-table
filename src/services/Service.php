@@ -29,7 +29,7 @@ use yii\base\InvalidArgumentException;
 
 use Throwable;
 
-class SuperTableService extends Component
+class Service extends Component
 {
     // Properties
     // =========================================================================

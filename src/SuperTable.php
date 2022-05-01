@@ -5,7 +5,7 @@ use verbb\supertable\base\PluginTrait;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\helpers\ProjectConfigData;
-use verbb\supertable\services\SuperTableService;
+use verbb\supertable\services\Service;
 use verbb\supertable\variables\SuperTableVariable;
 
 use Craft;
@@ -103,9 +103,9 @@ class SuperTable extends Plugin
     private function _registerProjectConfigEventListeners(): void
     {
         Craft::$app->projectConfig
-            ->onAdd(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
-            ->onUpdate(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
-            ->onRemove(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleDeletedBlockType']);
+            ->onAdd(Service::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
+            ->onUpdate(Service::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
+            ->onRemove(Service::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleDeletedBlockType']);
 
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function(RebuildConfigEvent $event) {
             $event->config['superTableBlockTypes'] = ProjectConfigData::rebuildProjectConfig();

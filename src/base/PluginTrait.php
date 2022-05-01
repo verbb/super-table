@@ -2,7 +2,7 @@
 namespace verbb\supertable\base;
 
 use verbb\supertable\SuperTable;
-use verbb\supertable\services\SuperTableService;
+use verbb\supertable\services\Service;
 use verbb\base\BaseHelper;
 
 use Craft;
@@ -38,7 +38,7 @@ trait PluginTrait
     // Public Methods
     // =========================================================================
 
-    public function getService(): SuperTableService
+    public function getService(): Service
     {
         return $this->get('service');
     }
@@ -50,7 +50,7 @@ trait PluginTrait
     private function _registerComponents(): void
     {
         $this->setComponents([
-            'service' => SuperTableService::class,
+            'service' => Service::class,
         ]);
 
         BaseHelper::registerModule();

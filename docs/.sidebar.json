@@ -4,7 +4,8 @@
         "collapsable": false,
         "children": [
             "get-started/installation-setup",
-            "get-started/requirements"
+            "get-started/requirements",
+            "get-started/upgrading-from-v2"
         ]
     },
     {
