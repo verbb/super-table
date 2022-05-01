@@ -10,6 +10,10 @@ use verbb\supertable\variables\SuperTableVariable;
 
 use Craft;
 use craft\base\Plugin;
+use craft\console\Application as ConsoleApplication;
+use craft\console\Controller as ConsoleController;
+use craft\console\controllers\ResaveController;
+use craft\events\DefineConsoleActionsEvent;
 use craft\events\RebuildConfigEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -60,6 +64,10 @@ class SuperTable extends Plugin
 
         if (Craft::$app->getRequest()->getIsCpRequest()) {
             $this->_registerCpRoutes();
+        }
+
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            $this->_registerResaveCommand();
         }
     }
 
@@ -123,6 +131,25 @@ class SuperTable extends Plugin
                 $event->types[] = SuperTableBlockElement::class;
             });
         }
+    }
+
+    private function _registerResaveCommand(): void
+    {
+        if (!Craft::$app instanceof ConsoleApplication) {
+            return;
+        }
+
+        Event::on(ResaveController::class, ConsoleController::EVENT_DEFINE_ACTIONS, function(DefineConsoleActionsEvent $e) {
+            $e->actions['supertable-blocks'] = [
+                'action' => function(): int {
+                    $controller = Craft::$app->controller;
+                    $query = SuperTableBlockElement::find();
+                    return $controller->resaveElements($query);
+                },
+                'options' => [],
+                'helpSummary' => 'Re-saves Super Table blocks.',
+            ];
+        });
     }
 
 }
