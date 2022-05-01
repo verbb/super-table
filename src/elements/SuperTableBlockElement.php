@@ -4,7 +4,7 @@ namespace verbb\supertable\elements;
 use verbb\supertable\SuperTable;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
 use verbb\supertable\fields\SuperTableField;
-use verbb\supertable\models\SuperTableBlockTypeModel;
+use verbb\supertable\models\SuperTableBlockType;
 use verbb\supertable\records\SuperTableBlock as SuperTableBlockRecord;
 
 use Craft;
@@ -283,7 +283,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
      *
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
-    public function getType(): SuperTableBlockTypeModel
+    public function getType(): SuperTableBlockType
     {
         if ($this->typeId === null) {
             throw new InvalidConfigException('SuperTable block is missing its type ID');

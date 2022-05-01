@@ -57,6 +57,6 @@ class SuperTableBlock extends ActiveRecord
      */
     public function getType(): ActiveQuery
     {
-        return $this->hasOne(SuperTableBlockTypeRecord::class, ['id' => 'typeId']);
+        return $this->hasOne(SuperTableBlockType::class, ['id' => 'typeId']);
     }
 }
