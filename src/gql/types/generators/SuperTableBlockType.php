@@ -6,7 +6,7 @@ use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\gql\interfaces\elements\SuperTableBlock as SuperTableBlockInterface;
 use verbb\supertable\gql\types\elements\SuperTableBlock;
-use verbb\supertable\models\SuperTableBlockTypeModel;
+use verbb\supertable\models\SuperTableBlockType;
 
 use Craft;
 use craft\gql\base\Generator;
@@ -44,7 +44,7 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
      */
     public static function generateType(mixed $context): mixed
     {
-        /** @var SuperTableBlockTypeModel $superTableBlockType */
+        /** @var SuperTableBlockType $superTableBlockType */
         $typeName = SuperTableBlockElement::gqlTypeNameByContext($context);
 
         if (!($entity = GqlEntityRegistry::getEntity($typeName))) {

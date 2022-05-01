@@ -6,7 +6,7 @@ use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\errors\SuperTableBlockTypeNotFoundException;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\migrations\CreateSuperTableContentTable;
-use verbb\supertable\models\SuperTableBlockTypeModel;
+use verbb\supertable\models\SuperTableBlockType;
 use verbb\supertable\records\SuperTableBlockType as SuperTableBlockTypeRecord;
 
 use Craft;
@@ -35,12 +35,12 @@ class Service extends Component
     // =========================================================================
 
     /**
-     * @var SuperTableBlockTypeModel[]|null[]
+     * @var SuperTableBlockType[]|null[]
      */
     private array $_blockTypesById = [];
 
     /**
-     * @var SuperTableBlockTypeModel[][]
+     * @var SuperTableBlockType[][]
      */
     private array $_blockTypesByFieldId = [];
 
@@ -65,7 +65,7 @@ class Service extends Component
      *
      * @param int $fieldId The Super Table field ID.
      *
-     * @return SuperTableBlockTypeModel[] An array of block types.
+     * @return SuperTableBlockType[] An array of block types.
      */
     public function getBlockTypesByFieldId(int $fieldId): array
     {
@@ -80,7 +80,7 @@ class Service extends Component
             ->all();
 
         foreach ($results as $result) {
-            $blockType = new SuperTableBlockTypeModel($result);
+            $blockType = new SuperTableBlockType($result);
             $this->_blockTypesById[$blockType->id] = $blockType;
             $this->_blockTypesByFieldId[$fieldId][] = $blockType;
         }
@@ -93,7 +93,7 @@ class Service extends Component
     /**
      * Returns all the block types.
      *
-     * @return SuperTableBlockTypeModel[] An array of block types.
+     * @return SuperTableBlockType[] An array of block types.
      */
     public function getAllBlockTypes(): array
     {
@@ -103,7 +103,7 @@ class Service extends Component
             ->all();
 
         foreach ($results as $key => $result) {
-            $results[$key] = new SuperTableBlockTypeModel($result);
+            $results[$key] = new SuperTableBlockType($result);
         }
 
         return $results;
@@ -114,9 +114,9 @@ class Service extends Component
      *
      * @param int $blockTypeId The block type ID.
      *
-     * @return SuperTableBlockTypeModel|null The block type, or `null` if it didn’t exist.
+     * @return SuperTableBlockType|null The block type, or `null` if it didn’t exist.
      */
-    public function getBlockTypeById(int $blockTypeId): ?SuperTableBlockTypeModel
+    public function getBlockTypeById(int $blockTypeId): ?SuperTableBlockType
     {
         if (array_key_exists($blockTypeId, $this->_blockTypesById)) {
             return $this->_blockTypesById[$blockTypeId];
@@ -126,7 +126,7 @@ class Service extends Component
             ->where(['bt.id' => $blockTypeId])
             ->one();
 
-        return $this->_blockTypesById[$blockTypeId] = $result ? new SuperTableBlockTypeModel($result) : null;
+        return $this->_blockTypesById[$blockTypeId] = $result ? new SuperTableBlockType($result) : null;
     }
 
     /**
@@ -134,13 +134,13 @@ class Service extends Component
      *
      * If the block type doesn’t validate, any validation errors will be stored on the block type.
      *
-     * @param SuperTableBlockTypeModel $blockType The block type.
+     * @param SuperTableBlockType $blockType The block type.
      * @param bool $validateUniques Whether the Name and Handle attributes should be validated to
      *                                              ensure they’re unique. Defaults to `true`.
      *
      * @return bool Whether the block type validated.
      */
-    public function validateBlockType(SuperTableBlockTypeModel $blockType, bool $validateUniques = true): bool
+    public function validateBlockType(SuperTableBlockType $blockType, bool $validateUniques = true): bool
     {
         $validates = true;
 
@@ -228,13 +228,13 @@ class Service extends Component
     /**
      * Saves a block type.
      *
-     * @param SuperTableBlockTypeModel $blockType The block type to be saved.
+     * @param SuperTableBlockType $blockType The block type to be saved.
      * @param bool $runValidation Whether the block type should be validated before being saved.
      * Defaults to `true`.
      * @throws Exception if an error occurs when saving the block type
      * @throws Throwable if reasons
      */
-    public function saveBlockType(SuperTableBlockTypeModel $blockType, bool $runValidation = true): bool
+    public function saveBlockType(SuperTableBlockType $blockType, bool $runValidation = true): bool
     {
         if ($runValidation && !$blockType->validate()) {
             return false;
@@ -370,10 +370,10 @@ class Service extends Component
     /**
      * Deletes a block type.
      *
-     * @param SuperTableBlockTypeModel $blockType The block type.
+     * @param SuperTableBlockType $blockType The block type.
      * @return bool Whether the block type was deleted successfully.
      */
-    public function deleteBlockType(SuperTableBlockTypeModel $blockType): bool
+    public function deleteBlockType(SuperTableBlockType $blockType): bool
     {
         Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid, "Delete super table block type for parent field “{$blockType->getField()->handle}”");
 
@@ -1270,11 +1270,11 @@ SQL
     /**
      * Returns a block type record by its ID or creates a new one.
      *
-     * @param string|SuperTableBlockTypeModel $blockType
+     * @param string|SuperTableBlockType $blockType
      * @return SuperTableBlockTypeRecord
      * @throws SuperTableBlockTypeNotFoundException if $blockType->id is invalid
      */
-    private function _getBlockTypeRecord(string|SuperTableBlockTypeModel $blockType): SuperTableBlockTypeRecord
+    private function _getBlockTypeRecord(string|SuperTableBlockType $blockType): SuperTableBlockTypeRecord
     {
         if (is_string($blockType)) {
             $blockTypeRecord = SuperTableBlockTypeRecord::findOne(['uid' => $blockType]) ?? new SuperTableBlockTypeRecord();

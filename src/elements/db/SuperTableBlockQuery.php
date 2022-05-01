@@ -3,7 +3,7 @@ namespace verbb\supertable\elements\db;
 
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
-use verbb\supertable\models\SuperTableBlockTypeModel;
+use verbb\supertable\models\SuperTableBlockType;
 
 use Craft;
 use craft\base\ElementInterface;
@@ -284,13 +284,13 @@ class SuperTableBlockQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property based on a given block type(s)’s id(s).
      *
-     * @param string|string[]|SuperTableBlockTypeModel|null $value The property value
+     * @param string|string[]|SuperTableBlockType|null $value The property value
      * @return self self reference
      * @uses $typeId
      */
     public function type(mixed $value): self
     {
-        if ($value instanceof SuperTableBlockTypeModel) {
+        if ($value instanceof SuperTableBlockType) {
             $this->typeId = $value->id;
         } else if ($value !== null) {
             $this->typeId = (new Query())

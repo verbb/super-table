@@ -9,7 +9,7 @@ use verbb\supertable\gql\arguments\elements\SuperTableBlock as SuperTableBlockAr
 use verbb\supertable\gql\resolvers\elements\SuperTableBlock as SuperTableBlockResolver;
 use verbb\supertable\gql\types\generators\SuperTableBlockType as SuperTableBlockTypeGenerator;
 use verbb\supertable\gql\types\input\SuperTableBlock as SuperTableBlockInputType;
-use verbb\supertable\models\SuperTableBlockTypeModel;
+use verbb\supertable\models\SuperTableBlockType;
 
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
@@ -140,12 +140,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     public ?string $propagationKeyFormat = null;
 
     /**
-     * @var SuperTableBlockTypeModel[]|null The field’s block types
+     * @var SuperTableBlockType[]|null The field’s block types
      */
     private ?array $_blockTypes = null;
 
     /**
-     * @var SuperTableBlockTypeModel[]|null The block types' fields
+     * @var SuperTableBlockType[]|null The block types' fields
      */
     private ?array $_blockTypeFields = null;
 
@@ -220,7 +220,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * Returns the block types.
      *
-     * @return SuperTableBlockTypeModel[]
+     * @return SuperTableBlockType[]
      */
     public function getBlockTypes(): array
     {
@@ -292,9 +292,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * Sets the block types.
      *
-     * @param SuperTableBlockTypeModel|array $blockTypes The block type settings or actual SuperTableBlockType model instances
+     * @param SuperTableBlockType|array $blockTypes The block type settings or actual SuperTableBlockType model instances
      */
-    public function setBlockTypes(array|SuperTableBlockTypeModel $blockTypes): void
+    public function setBlockTypes(array|SuperTableBlockType $blockTypes): void
     {
         $this->_blockTypes = [];
         $defaultFieldConfig = [
@@ -310,10 +310,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ];
 
         foreach ($blockTypes as $key => $config) {
-            if ($config instanceof SuperTableBlockTypeModel) {
+            if ($config instanceof SuperTableBlockType) {
                 $this->_blockTypes[] = $config;
             } else {
-                $blockType = new SuperTableBlockTypeModel();
+                $blockType = new SuperTableBlockType();
                 $blockType->fieldId = $this->id;
 
                 // Existing block type?
@@ -1173,7 +1173,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      * Returns info about each block type and their field types for the Super Table field input.
      *
      * @param ElementInterface|null $element
-     * @param SuperTableBlockTypeModel[] $blockTypes
+     * @param SuperTableBlockType[] $blockTypes
      * @param string $placeholderKey
      * @return array
      */
@@ -1247,7 +1247,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     private function _createBlocksFromSerializedData(array $value, ElementInterface $element): array
     {
         // Get the possible block types for this field
-        /** @var SuperTableBlockTypeModel[] $blockTypes */
+        /** @var SuperTableBlockType[] $blockTypes */
         $blockTypes = ArrayHelper::index(SuperTable::$plugin->getService()->getBlockTypesByFieldId($this->id), 'id');
 
         // Get the old blocks

@@ -11,7 +11,7 @@ use craft\behaviors\FieldLayoutBehavior;
 
 use yii\base\InvalidConfigException;
 
-class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterface
+class SuperTableBlockType extends Model implements GqlInlineFragmentInterface
 {
     // Properties
     // =========================================================================
