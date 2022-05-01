@@ -5,7 +5,7 @@ use verbb\supertable\SuperTable;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\models\SuperTableBlockTypeModel;
-use verbb\supertable\records\SuperTableBlockRecord;
+use verbb\supertable\records\SuperTableBlock as SuperTableBlockRecord;
 
 use Craft;
 use craft\base\BlockElementInterface;

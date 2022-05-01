@@ -6,7 +6,7 @@ use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\models\FieldLayout;
 
-class SuperTableBlockTypeRecord extends ActiveRecord
+class SuperTableBlockType extends ActiveRecord
 {
     // Public Methods
     // =========================================================================

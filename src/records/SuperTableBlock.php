@@ -8,7 +8,7 @@ use craft\db\ActiveRecord;
 
 use yii\db\ActiveQueryInterface;
 
-class SuperTableBlockRecord extends ActiveRecord
+class SuperTableBlock extends ActiveRecord
 {
     // Public Methods
     // =========================================================================

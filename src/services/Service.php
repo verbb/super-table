@@ -7,7 +7,7 @@ use verbb\supertable\errors\SuperTableBlockTypeNotFoundException;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\migrations\CreateSuperTableContentTable;
 use verbb\supertable\models\SuperTableBlockTypeModel;
-use verbb\supertable\records\SuperTableBlockTypeRecord;
+use verbb\supertable\records\SuperTableBlockType as SuperTableBlockTypeRecord;
 
 use Craft;
 use craft\base\ElementInterface;

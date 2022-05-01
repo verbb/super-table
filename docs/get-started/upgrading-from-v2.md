@@ -6,4 +6,6 @@ The following classes have been renamed.
 
 Old | What to do instead
 --- | ---
+| `verbb\supertable\record\SuperTableBlockRecord` | `verbb\supertable\record\SuperTableBlock`
+| `verbb\supertable\record\SuperTableBlockTypeRecord` | `verbb\supertable\record\SuperTableBlockType`
 | `verbb\supertable\services\SuperTableService` | `verbb\supertable\services\Service`
