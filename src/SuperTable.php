@@ -89,7 +89,6 @@ class SuperTable extends Plugin
         });
     }
 
-
     private function _registerVariables(): void
     {
         Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {

@@ -109,10 +109,6 @@ class SuperTableBlock extends InputObjectType
                 }
             }
 
-            if ($missingId) {
-                Craft::$app->getDeprecator()->log('SuperTableInput::normalizeValue()', 'The `id` field will be required when mutating Super Table fields as of Craft 4.0.');
-            }
-
             $value['blocks'] = $preparedBlocks;
         }
 

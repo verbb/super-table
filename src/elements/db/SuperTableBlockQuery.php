@@ -108,12 +108,6 @@ class SuperTableBlockQuery extends ElementQuery
             case 'type':
                 $this->type($value);
                 break;
-            case 'ownerSite':
-                Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerSite()', 'The `ownerSite` SuperTable block query param has been deprecated. Use `site` or `siteId` instead.');
-                break;
-            case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('SuperTableBlockQuery::ownerLocale()', 'The `ownerLocale` SuperTable block query param has been deprecated. Use `site` or `siteId` instead.');
-                break;
             default:
                 parent::__set($name, $value);
         }
