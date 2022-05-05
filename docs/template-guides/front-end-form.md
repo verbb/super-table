@@ -1,6 +1,6 @@
 # Front-end Form
 
-Updating a Super Table field from a front-end form is straightforward - its very similar to a Matrix.
+Updating a Super Table field from a front-end form is straightforward - it's very similar to a Matrix.
 
 Refer to the following code - we have a Super Table field with handle `mySuperTableField` in our User profile, which we want to modify. This could apply to any endpoint in Craft, be it Entries, Global Set, etc.
 

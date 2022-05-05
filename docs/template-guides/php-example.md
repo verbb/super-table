@@ -1,13 +1,13 @@
 # PHP Example
 
-The below is an example in PHP to programatically save a Super Table field with content.
+The below is an example in PHP to programmatically save a Super Table field with content.
 
 ```php
 use Craft;
 use craft\elements\Entry;
 use verbb\supertable\SuperTable;
 
-// Setup your new Entry
+// Set up your new Entry
 $entry = new Entry();
 $entry->getContent()->title = 'My Title';
 $entry->sectionId = 1;

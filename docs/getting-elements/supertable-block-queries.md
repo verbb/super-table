@@ -16,7 +16,7 @@ $mySuperTableBlockQuery = \verbb\supertable\elements\SuperTableBlockElement::fin
 Once you’ve created a Super Table block query, you can set [parameters](#parameters) on it to narrow down the results, and then execute it by calling `.all()`. An array of Super Table Block objects will be returned.
 
 ::: tip
-See [Introduction to Element Queries](README.md) to learn about how element queries work.
+See [Introduction to Element Queries](https://craftcms.com/docs/3.x/element-queries.html) to learn about how element queries work.
 :::
 
 ## Example

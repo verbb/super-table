@@ -32,12 +32,5 @@
         "children": [
             "getting-elements/super-table-block-queries"
         ]
-    },
-    {
-        "title": "Support",
-        "collapsable": false,
-        "children": [
-            "support/get-support"
-        ]
     }
 ]
