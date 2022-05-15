@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.2 - 2022-05-15
+
+### Fixed
+- Fix an incompatibility with Craft 3.7.11 or less.
+- Fix checking against a derivative block.
+- Fix in some cases not fetching the correct supported sites for a block.
+- Fix GraphQL mutations. Blocks now require `type_blockTypeId`. (see https://github.com/verbb/super-table/issues/449).
+
 ## 2.7.1 - 2021-12-31
 
 ### Fixed
