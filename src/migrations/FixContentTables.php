@@ -12,6 +12,7 @@ use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\helpers\MigrationHelper;
 use craft\services\ProjectConfig;
 
 class FixContentTables extends Migration
@@ -47,7 +48,7 @@ class FixContentTables extends Migration
             }
 
             // Some migrations may have not happened correctly. with a missing index, etc. This code cleans those up
-            if (str_contains($tableName, 'stc_') && !Db::doesIndexExist($tableName, ['elementId', 'siteId'], true, $this->db)) {
+            if (str_contains($tableName, 'stc_') && !MigrationHelper::doesIndexExist($tableName, ['elementId', 'siteId'], true, $this->db)) {
                 // Check to see if Craft hasn't renamed the locale column to locale__siteId
                 if ($this->db->columnExists($tableName, 'locale') && !$this->db->columnExists($tableName, 'locale__siteId')) {
                     echo "    > {$tableName} is missing new fields introduced in previous migrations...\n";
@@ -59,7 +60,7 @@ class FixContentTables extends Migration
                 }
 
                 // This is the old way of doing things, so create the correct one
-                if (Db::doesIndexExist($tableName, ['elementId'], true, $this->db)) {
+                if (MigrationHelper::doesIndexExist($tableName, ['elementId'], true, $this->db)) {
                     echo "    > {$tableName} is missing the correct index on elementId and siteId...\n";
                     $this->createIndex(null, $tableName, ['elementId', 'siteId'], true);
                 }
