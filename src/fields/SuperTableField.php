@@ -741,7 +741,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
             $minRows = ($this->staticField) ? 1 : $this->minRows;
 
-            for ($i = count($value); $i < $this->minRows; $i++) {
+            for ($i = count($value); $i < $minRows; $i++) {
                 $js .= "\nsuperTableInput.addRow({$blockTypeJs});";
             }
         }
