@@ -10,3 +10,12 @@ Old | What to do instead
 | `verbb\supertable\record\SuperTableBlockRecord` | `verbb\supertable\record\SuperTableBlock`
 | `verbb\supertable\record\SuperTableBlockTypeRecord` | `verbb\supertable\record\SuperTableBlockType`
 | `verbb\supertable\services\SuperTableService` | `verbb\supertable\services\Service`
+
+## Query Params
+Some element query params have been removed:
+
+Old Param | What to do instead
+--- | ---
+| `ownerLocale` | `site` or `siteId`
+| `ownerSite` | `site`
+| `ownerSiteId` | `siteId`

@@ -1,5 +1,27 @@
 # Changelog
 
+## 3.0.0-beta.4 - 2022-05-18
+
+### Added
+- Add resave console command for elements.
+- Add checks for registering events for performance.
+- Add `archiveTableIfExists()` to install migration.
+
+### Changed
+- Rename model classes.
+- Rename record classes.
+- Rename service classes.
+- Rename base plugin methods.
+
+### Fixed
+- Fix JS not initialising when selecting new fields in settings (`footHtml` to `bodyHtml`).
+- Fix an error when running the “check content tables” helper.
+- Fix an error with new static fields not having any field content output in the control panel.
+- Fix an error where return type of `prepareQuery` was incorrect. (thanks @davidwebca).
+
+### Removed
+- Remove deprecated Craft and Super Table functions.
+
 ## 3.0.0-beta.3 - 2022-03-16
 
 ### Fixed
