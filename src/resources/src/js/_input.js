@@ -592,12 +592,18 @@ if (typeof Craft.SuperTable === typeof undefined) {
             this.$titlebar = this.$tr.children('.titlebar');
             this.$previewContainer = this.$titlebar.children('.preview');
             this.$fieldsContainer = this.$tr.children('.fields');
-            var $menuBtn = this.$tr.find('> .actions > .settings'),
-                menuBtn = new Garnish.MenuBtn($menuBtn);
+            var $menuBtn = this.$tr.find('> .actions > .settings');
 
-            this.$actionMenu = menuBtn.menu.$container;
+            // Check for a menu button, which isn't there for static fields
+            if ($menuBtn) {
+                var menuBtn = new Garnish.MenuBtn($menuBtn);
 
-            menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
+                if (menuBtn.menu) {
+                    this.$actionMenu = menuBtn.menu.$container;
+
+                    menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
+                }
+            }
 
             // Was this block already collapsed?
             if (Garnish.hasAttr(this.$tr, 'data-collapsed')) {
