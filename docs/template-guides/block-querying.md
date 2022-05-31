@@ -3,7 +3,7 @@
 The below is by no means a full solution, but will certainly assist in querying content from a Super Table field.
 
 ::: code
-```twig
+```twig Twig
 {% set blocks = craft.superTable.blocks({ ownerId: '149081', fieldId: '563' }).all() %}
 
 {% for block in blocks %}
@@ -15,7 +15,7 @@ The below is by no means a full solution, but will certainly assist in querying 
 {% endfor %}
 ```
 
-```php
+```php PHP
 use verbb\supertable\elements\SuperTableBlockElement;
 
 $query = SuperTableBlockElement::find()
