@@ -3,7 +3,7 @@
 You can fetch Super Table blocks in your templates or PHP code using **Super Table block queries**.
 
 ::: code
-```twig
+```twig Twig
 {# Create a new Super Table block query #}
 {% set mySuperTableBlockQuery = craft.superTable.blocks() %}
 ```
@@ -58,14 +58,14 @@ Super Table block queries support the following parameters:
 Causes the query to return matching Super Table blocks as arrays of data, rather than Super Table block objects.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks as arrays #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .asArray()
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks as arrays
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->asArray()
@@ -88,7 +88,7 @@ Possible values include:
 | `['and', '>= 2018-04-04', '< 2018-05-01']` | that were created between 2018-04-01 and 2018-05-01.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks created last month #}
 {% set start = date('first day of last month')|atom %}
 {% set end = date('first day of this month')|atom %}
@@ -98,7 +98,7 @@ Possible values include:
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks created last month
 $start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
 $end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
@@ -124,7 +124,7 @@ Possible values include:
 | `['and', '>= 2018-04-04', '< 2018-05-01']` | that were updated between 2018-04-01 and 2018-05-01.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks updated in the last week #}
 {% set lastWeek = date('1 week ago')|atom %}
 
@@ -133,7 +133,7 @@ Possible values include:
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks updated in the last week
 $lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
 
@@ -159,14 +159,14 @@ Possible values include:
 | `['not', 1, 2]` | not in a field with an ID of 1 or 2.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks in the field with an ID of 1 #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .fieldId(1)
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks in the field with an ID of 1
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->fieldId(1)
@@ -181,7 +181,7 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 Causes the query results to be returned in the order specified by [id](#id).
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks in a specific order #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .id([1, 2, 3, 4, 5])
@@ -189,7 +189,7 @@ Causes the query results to be returned in the order specified by [id](#id).
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks in a specific order
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->id([1, 2, 3, 4, 5])
@@ -214,14 +214,14 @@ Possible values include:
 | `['not', 1, 2]` | not with an ID of 1 or 2.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch the Super Table block by its ID #}
 {% set superTableBlock = craft.superTable.blocks()
     .id(1)
     .one() %}
 ```
 
-```php
+```php PHP
 // Fetch the Super Table block by its ID
 $superTableBlock = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->id(1)
@@ -240,14 +240,14 @@ This can be combined with [fixedOrder](#fixedorder) if you want the results to b
 Causes the query results to be returned in reverse order.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks in reverse #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .inReverse()
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks in reverse
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->inReverse()
@@ -262,14 +262,14 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 Determines the number of Super Table blocks that should be returned.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch up to 10 Super Table blocks  #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .limit(10)
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch up to 10 Super Table blocks
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->limit(10)
@@ -284,14 +284,14 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 Determines how many Super Table blocks should be skipped in the results.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch all Super Table blocks except for the first 3 #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .offset(3)
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch all Super Table blocks except for the first 3
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->offset(3)
@@ -306,14 +306,14 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 Determines the order that the Super Table blocks should be returned in.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch all Super Table blocks in order of date created #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .orderBy('elements.dateCreated asc')
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch all Super Table blocks in order of date created
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->orderBy('elements.dateCreated asc')
@@ -328,14 +328,14 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 Sets the [ownerId](#ownerid) and [siteId](#siteid) parameters based on a given element.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks created for this entry #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .owner(myEntry)
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks created for this entry
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->owner($myEntry)
@@ -359,14 +359,14 @@ Possible values include:
 | `['not', 1, 2]` | not created for an element with an ID of 1 or 2.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks created for an element with an ID of 1 #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .ownerId(1)
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks created for an element with an ID of 1
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->ownerId(1)
@@ -383,7 +383,7 @@ Narrows the query results to only Super Table blocks that match a search query.
 See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanation of how to work with this parameter.
 
 ::: code
-```twig
+```twig Twig
 {# Get the search query from the 'q' query string param #}
 {% set searchQuery = craft.request.getQueryParam('q') %}
 
@@ -393,7 +393,7 @@ See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanat
     .all() %}
 ```
 
-```php
+```php PHP
 // Get the search query from the 'q' query string param
 $searchQuery = \Craft::$app->request->getQueryParam('q');
 
@@ -420,14 +420,14 @@ Possible values include:
 | a [Site](https://docs.craftcms.com/api/v3/craft-models-site.html) object | from the site represented by the object.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks from the Foo site #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .site('foo')
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks from the Foo site
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->site('foo')
@@ -444,14 +444,14 @@ Determines which site the Super Table blocks should be queried in, per the site�
 The current site will be used by default.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks from the site with an ID of 1 #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .siteId(1)
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks from the site with an ID of 1
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->siteId(1)
@@ -466,14 +466,14 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 Narrows the query results based on the Super Table blocks’ UIDs.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch the Super Table block by its UID #}
 {% set superTableBlock = craft.superTable.blocks()
     .uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
     .one() %}
 ```
 
-```php
+```php PHP
 // Fetch the Super Table block by its UID
 $superTableBlock = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
@@ -490,14 +490,14 @@ Causes the query to return matching Super Table blocks eager-loaded with related
 See [Eager-Loading Elements](https://docs.craftcms.com/v3/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
 
 ::: code
-```twig
+```twig Twig
 {# Fetch Super Table blocks eager-loaded with the "Related" field’s relations #}
 {% set mySuperTableBlocks = craft.superTable.blocks()
     .with(['related'])
     .all() %}
 ```
 
-```php
+```php PHP
 // Fetch Super Table blocks eager-loaded with the "Related" field’s relations
 $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
     ->with(['related'])
