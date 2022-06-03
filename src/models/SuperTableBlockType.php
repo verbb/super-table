@@ -142,10 +142,10 @@ class SuperTableBlockType extends Model implements GqlInlineFragmentInterface
             'fields' => [],
         ];
 
-        if (
-            ($fieldLayout = $this->getFieldLayout()) &&
-            ($fieldLayoutConfig = $fieldLayout->getConfig())
-        ) {
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+
+        if ($fieldLayoutConfig) {
             $config['fieldLayouts'][$fieldLayout->uid] = $fieldLayoutConfig;
         }
 

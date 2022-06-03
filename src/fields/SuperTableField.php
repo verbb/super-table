@@ -166,6 +166,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
     public array $columns = [];
 
+    // Required for some reason to prompt project config that a change has occured when adding new fields
+    // when nested within Matrix. For Matrix > ST fields, when adding new fields, they won't save correctly.
+    // This is because project config will only apply changes if there are any, but the `blocktype->getConfig()`
+    // doesn't show any changes. Someday we'll figure it out.
+    public int $blockTypeFields = 0;
+
 
     // Public Methods
     // =========================================================================
@@ -182,6 +188,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         if (array_key_exists('localizeBlocks', $config)) {
             $config['propagationMethod'] = $config['localizeBlocks'] ? 'none' : 'all';
             unset($config['localizeBlocks']);
+        }
+
+        if (isset($config['blockTypes']) && $config['blockTypes'] === '') {
+            $config['blockTypes'] = [];
         }
 
         // Remove unneeded/deprecated properties
@@ -224,7 +234,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public function getBlockTypes(): array
     {
-        if ($this->_blockTypes !== null) {
+        if (isset($this->_blockTypes)) {
             return $this->_blockTypes;
         }
 
@@ -366,6 +376,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
                         $layoutElements[] = Craft::createObject([
                             'class' => CustomField::class,
+                            'uid' => $fieldConfig['uid'] ?? null,
                             'required' => (bool)$fieldConfig['required'],
                             'width' => (int)($fieldConfig['width'] ?? 0) ?: 100,
                         ], [$field]);
@@ -374,6 +385,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
                 $fieldLayoutTab->setElements($layoutElements);
                 $this->_blockTypes[] = $blockType;
+
+                // Set the number of blocktype fields, due to project config issues we're yet to figure out
+                $this->blockTypeFields = count($fields);
             }
         }
     }
@@ -769,6 +783,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             [
                 'validateBlocks',
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
+                'skipOnEmpty' => false,
             ],
         ];
     }

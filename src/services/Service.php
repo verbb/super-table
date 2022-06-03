@@ -332,7 +332,7 @@ class Service extends Component
                     $layout->type = SuperTableBlockElement::class;
                     $layout->uid = key($data['fieldLayouts']);
 
-                    $fieldsService->saveLayout($layout);
+                    $fieldsService->saveLayout($layout, false);
                     $blockTypeRecord->fieldLayoutId = $layout->id;
                 } else if ($blockTypeRecord->fieldLayoutId) {
                     // Delete the field layout
@@ -453,7 +453,9 @@ class Service extends Component
                     ->scalar();
 
                 // Delete the field layout
-                $fieldsService->deleteLayoutById($fieldLayoutId);
+                if ($fieldLayoutId) {
+                    $fieldsService->deleteLayoutById($fieldLayoutId);
+                }
 
                 // Delete the actual block type
                 Db::delete('{{%supertableblocktypes}}', [
