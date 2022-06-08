@@ -170,6 +170,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     // when nested within Matrix. For Matrix > ST fields, when adding new fields, they won't save correctly.
     // This is because project config will only apply changes if there are any, but the `blocktype->getConfig()`
     // doesn't show any changes. Someday we'll figure it out.
+    public mixed $changedFieldIndicator = null;
+
+    // TODO: to remove due to adding the above for better handling
     public int $blockTypeFields = 0;
 
 
@@ -385,11 +388,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
                 $fieldLayoutTab->setElements($layoutElements);
                 $this->_blockTypes[] = $blockType;
-
-                // Set the number of blocktype fields, due to project config issues we're yet to figure out
-                $this->blockTypeFields = count($fields);
             }
         }
+
+        // Add a random value to trigger projcet config changes, we still need to figure out
+        $this->changedFieldIndicator = rand();
     }
 
     /**
