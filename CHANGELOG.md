@@ -2,6 +2,7 @@
 
 ## 3.0.0-beta.5 - 2022-06-08
 
+### Fixed
 - Fix Matrix > Super Table fields not saving new fields when editing the field
 - Fix move/delete button sizing for table layout.
 - Fix a JS error when viewing a static field, in Matrix layout.
