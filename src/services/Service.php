@@ -869,14 +869,14 @@ class Service extends Component
                     } else {
                         $newBlockId = $block->getCanonicalId();
                     }
+                } elseif ($block->primaryOwnerId === $target->id) {
+                    // Only the block ownership was duplicated, so just update its sort order for the target element
+                    Db::update('{{%supertableblocks_owners}}', [
+                        'sortOrder' => $block->sortOrder,
+                    ], ['blockId' => $block->id, 'ownerId' => $target->id], updateTimestamp: false);
+                    $newBlockId = $block->id;
                 } else {
-                    // If the block’s primary owner is equal to the target element ID, no need to do anything
-                    if ($block->primaryOwnerId !== $target->id) {
-                        /** @var SuperTableBlockElement $newBlock */
-                        $newBlockId = $elementsService->duplicateElement($block, $newAttributes)->id;
-                    } else {
-                        $newBlockId = $block->id;
-                    }
+                    $newBlockId = $elementsService->duplicateElement($block, $newAttributes)->id;
                 }
 
                 $newBlockIds[] = $newBlockId;
