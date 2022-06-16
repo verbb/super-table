@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-beta.6 - 2022-06-17
+
+### Fixed
+- Fixed block ordering issues, and ensure sort order is updated when block ownership is duplicated. (thanks @mmikkel).
+- Fixed a bug where changes to existing blocks weren’t saving for element types that supported drafts but not change tracking.
+
 ## 3.0.0-beta.5 - 2022-06-08
 
 ### Fixed
