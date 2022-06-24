@@ -17,12 +17,12 @@ class SuperTableBlock extends ElementArguments
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the field the Super Table blocks belong to, per the fields’ IDs.'
+                'description' => 'Narrows the query results based on the field the Super Table blocks belong to, per the fields’ IDs.',
             ],
             'ownerId' => [
                 'name' => 'ownerId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => ' Narrows the query results based on the owner element of the Super Table blocks, per the owners’ IDs.'
+                'description' => ' Narrows the query results based on the owner element of the Super Table blocks, per the owners’ IDs.',
             ],
             'typeId' => Type::listOf(QueryArgument::getType()),
         ]);

@@ -7,7 +7,7 @@ class CreateSuperTableContentTable extends Migration
 {
     // Properties
     // =========================================================================
-    
+
     /**
      * @var string|null The table name
      */
@@ -38,7 +38,7 @@ class CreateSuperTableContentTable extends Migration
      * Adds the foreign keys.
      */
     public function addForeignKeys()
-    {        
+    {
         $this->addForeignKey(null, $this->tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, $this->tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
     }

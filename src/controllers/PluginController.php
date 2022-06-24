@@ -230,9 +230,9 @@ class PluginController extends Controller
         }
 
         // Identify tables that are missing the correct index from a missed/failed migration
-        foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
+        foreach (Craft::$app->getDb()->schema->getTableNames() as $tableName) {
             if (strstr($tableName, 'stc_')) {
-                $correctIndexExists = MigrationHelper::doesIndexExist($tableName, ['elementId', 'siteId'], true, Craft::$app->db);
+                $correctIndexExists = MigrationHelper::doesIndexExist($tableName, ['elementId', 'siteId'], true, Craft::$app->getDb());
                 if (!$correctIndexExists) {
                     echo "    > {$tableName} is missing the correct unique index on elementId and siteId...\n";
                 }
@@ -285,7 +285,7 @@ class PluginController extends Controller
         }
 
         // Find any `supertablecontents_*` tables, these should be `stc_*`. But we should check if these tables are completely empty
-        foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
+        foreach (Craft::$app->getDb()->schema->getTableNames() as $tableName) {
             if (strstr($tableName, 'supertablecontent_')) {
                 // Does a shortned (correct) table name exist? It really should at this point...
                 $newTableName = str_replace('supertablecontent_', 'stc_', $tableName);

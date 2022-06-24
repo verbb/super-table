@@ -432,7 +432,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                 if ($field instanceof MissingField) {
                     $blockTypeFields[$i] = $field->createFallback(PlainText::class);
                     $blockTypeFields[$i]->addError('type', Craft::t('super-table', 'The field type “{type}” could not be found.', [
-                        'type' => $field->expectedType
+                        'type' => $field->expectedType,
                     ]));
                     $blockType->hasFieldErrors = true;
                 }
@@ -526,14 +526,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $view->registerAssetBundle(SuperTableAsset::class);
 
         $placeholderKey = StringHelper::randomString(10);
-        
+
         $view->registerJs('new Craft.SuperTable.Configurator(' .
             Json::encode($tableId, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->namespaceInputName("blockTypes[__BLOCK_TYPE_{$placeholderKey}__][fields][__FIELD_{$placeholderKey}__][typesettings]")) . ', ' .
             Json::encode($placeholderKey) .
-        ');');
+            ');');
 
         return $view->renderTemplate('super-table/settings', [
             'supertableField' => $this,
@@ -934,14 +934,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ];
     }
 
-     /**
+    /**
      * @inheritdoc
      */
     public function getContentGqlType()
     {
         $typeArray = SuperTableBlockTypeGenerator::generateTypes($this);
         $typeName = $this->handle . '_SuperTableField';
-        $resolver = function (SuperTableBlockElement $value) {
+        $resolver = function(SuperTableBlockElement $value) {
             return $value->getGqlTypeName();
         };
 

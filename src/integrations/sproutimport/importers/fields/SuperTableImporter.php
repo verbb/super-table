@@ -35,11 +35,11 @@ class SuperTableImporter extends FieldImporter
             $count = 1;
 
             foreach ($blocks as $block) {
-                $key = 'new'.$count;
+                $key = 'new' . $count;
 
                 $values[$key] = [
                     'type' => $block->id,
-                    'enabled' => 1
+                    'enabled' => 1,
                 ];
 
                 $fieldLayoutId = $block->fieldLayoutId;

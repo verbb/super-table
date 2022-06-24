@@ -40,7 +40,6 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
         }
 
         return $gqlTypes;
-
     }
 
     /**
@@ -63,7 +62,7 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
                     'name' => $typeName,
                     'fields' => function() use ($blockTypeFields) {
                         return $blockTypeFields;
-                    }
+                    },
                 ]);
 
                 // It's possible that creating the super table block triggered creating all super table block types, so check again.

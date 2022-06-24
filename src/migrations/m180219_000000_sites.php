@@ -118,7 +118,7 @@ class m180219_000000_sites extends Migration
             ->where([
                 'type' => [
                     SuperTableField::class,
-                ]
+                ],
             ])
             ->all($this->db);
 
@@ -127,7 +127,7 @@ class m180219_000000_sites extends Migration
             $settings = Json::decodeIfJson($field['settings']);
 
             if (!is_array($settings)) {
-                echo 'Field '.$field['id'].' ('.$field['type'].') settings were invalid JSON: '.$field['settings']."\n";
+                echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were invalid JSON: ' . $field['settings'] . "\n";
                 $settings = [];
             }
 
@@ -168,7 +168,7 @@ class m180219_000000_sites extends Migration
     {
         $rawTableName = $this->db->getSchema()->getRawTableName($tableName);
         $allIndexes = $this->db->getSchema()->findIndexes($tableName);
- 
+
         foreach ($allIndexes as $indexName => $indexColumns) {
             $this->dropIndex($indexName, $rawTableName);
         }
@@ -185,7 +185,7 @@ class m180219_000000_sites extends Migration
 
         // Set the values
         $this->update($table, [
-            $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql))
+            $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql)),
         ], '', [], false);
 
         // In case there were any referenced locales that no longer exist.

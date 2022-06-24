@@ -7,7 +7,7 @@
       "uuidString" : "ECE3F09A-2816-43C6-9715-3F4A30BD28C5"
     }
   ],
-  "creatorBuild" : "34359",
+  "creatorBuild" : "34365",
   "files" : {
     "\/.github" : {
       "ft" : 65536,
@@ -320,6 +320,14 @@
       "ft" : 65536,
       "oA" : 1,
       "oAP" : "\/src\/templates",
+      "oF" : 0
+    },
+    "\/src\/translations\/en\/buttonbox.php" : {
+      "cB" : 0,
+      "ft" : 8192,
+      "hM" : 0,
+      "oA" : 2,
+      "oAP" : "\/src\/translations\/en\/buttonbox.php",
       "oF" : 0
     },
     "\/src\/variables" : {

@@ -22,7 +22,7 @@ class m190117_000001_context_to_uids extends Migration
             ->select(['id', 'uid'])
             ->from(['{{%supertableblocktypes}}'])
             ->pairs();
-        
+
         // Get all the Super Table sub-fields
         $fields = (new Query())
             ->select(['id', 'context'])
@@ -32,7 +32,7 @@ class m190117_000001_context_to_uids extends Migration
 
         // Switch out IDs for UUIDs
         foreach ($fields as $field) {
-            list(, $blockTypeId) = explode(':', $field['context'], 2);
+            [, $blockTypeId] = explode(':', $field['context'], 2);
 
             // Make sure the block type still exists
             if (!isset($blockTypeUids[$blockTypeId])) {
@@ -40,7 +40,7 @@ class m190117_000001_context_to_uids extends Migration
             }
 
             $this->update('{{%fields}}', [
-                'context' => 'superTableBlockType:' . $blockTypeUids[$blockTypeId]
+                'context' => 'superTableBlockType:' . $blockTypeUids[$blockTypeId],
             ], ['id' => $field['id']], [], false);
         }
     }

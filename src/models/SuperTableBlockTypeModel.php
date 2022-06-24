@@ -97,7 +97,7 @@ class SuperTableBlockTypeModel extends Model implements GqlInlineFragmentInterfa
     {
         if (!isset($this->handle) && $this->fieldId) {
             $field = Craft::$app->fields->getFieldById($this->fieldId);
-            
+
             foreach ($field->getBlockTypes() as $index => $blockType) {
                 if ($blockType->id == $this->id) {
                     $this->handle = $field->handle . '_' . $index;

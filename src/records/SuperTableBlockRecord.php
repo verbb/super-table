@@ -10,7 +10,7 @@ class SuperTableBlockRecord extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-    
+
     /**
      * @inheritdoc
      *

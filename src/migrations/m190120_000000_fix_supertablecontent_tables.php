@@ -28,7 +28,7 @@ class m190120_000000_fix_supertablecontent_tables extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
 
         // Find any `supertablecontents_*` tables, these should be `stc_*`. But we should check if these tables are completely empty
-        foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
+        foreach (Craft::$app->getDb()->schema->getTableNames() as $tableName) {
             if (strstr($tableName, 'supertablecontent_')) {
                 // Does a shortned (correct) table name exist? It really should at this point...
                 $newTableName = str_replace('supertablecontent_', 'stc_', $tableName);

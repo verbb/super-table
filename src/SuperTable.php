@@ -111,7 +111,7 @@ class SuperTable extends Plugin
             ->onUpdate(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleChangedBlockType'])
             ->onRemove(SuperTableService::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$this->getService(), 'handleDeletedBlockType']);
 
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function (RebuildConfigEvent $event) {
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function(RebuildConfigEvent $event) {
             $event->config['superTableBlockTypes'] = ProjectConfigData::rebuildProjectConfig();
         });
     }
@@ -120,7 +120,7 @@ class SuperTable extends Plugin
     {
         // Support for Schematic - https://github.com/nerds-and-company/schematic
         if (class_exists(Schematic::class)) {
-            Event::on(Schematic::class, Schematic::EVENT_RESOLVE_CONVERTER, function (ConverterEvent $event) {
+            Event::on(Schematic::class, Schematic::EVENT_RESOLVE_CONVERTER, function(ConverterEvent $event) {
                 if ($event->modelClass == SuperTableField::class) {
                     $event->converterClass = 'verbb\supertable\integrations\schematic\converters\fields\SuperTableSchematic';
                 }
@@ -133,7 +133,7 @@ class SuperTable extends Plugin
 
         // Support for Sprout Import - https://github.com/barrelstrength/craft-sprout-import
         if (class_exists(Importers::class)) {
-            Event::on(Importers::class, Importers::EVENT_REGISTER_IMPORTER_TYPES, function (RegisterComponentTypesEvent $event) {
+            Event::on(Importers::class, Importers::EVENT_REGISTER_IMPORTER_TYPES, function(RegisterComponentTypesEvent $event) {
                 $event->types[] = 'verbb\supertable\integrations\sproutimport\importers\fields\SuperTableImporter';
             });
         }
@@ -141,8 +141,8 @@ class SuperTable extends Plugin
         // Support for Gatsby Helper
         if (class_exists(Deltas::class)) {
             Event::on(Deltas::class, Deltas::EVENT_REGISTER_IGNORED_TYPES, function(RegisterIgnoredTypesEvent $event) {
-              $event->types[] = SuperTableBlockElement::class;
-          });
+                $event->types[] = SuperTableBlockElement::class;
+            });
         }
     }
 

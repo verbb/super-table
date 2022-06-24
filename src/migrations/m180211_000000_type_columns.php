@@ -40,7 +40,7 @@ class m180211_000000_type_columns extends Migration
             $condition = ['type' => $componentType['oldClass']];
 
             foreach ($componentType['tables'] as $table) {
-                if (Craft::$app->db->tableExists($table)) {
+                if (Craft::$app->getDb()->tableExists($table)) {
                     $this->alterColumn($table, 'type', $this->string()->notNull());
                     $this->update($table, $columns, $condition, [], false);
                 }

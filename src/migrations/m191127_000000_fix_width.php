@@ -63,7 +63,7 @@ class m191127_000000_fix_width extends Migration
         }
 
         $projectConfig->muteEvents = false;
-        
+
         return true;
     }
 
