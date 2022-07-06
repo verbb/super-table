@@ -1,0 +1,24 @@
+name: Feature Request
+description: Suggest an idea or enhancement
+labels: 'feature request'
+body:
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: What are you trying to do?
+      description: A description of what you want to happen.
+      placeholder: "I would like to see..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: What's your proposed solution?
+      description: A description of how you think this could be solved, including any alternatives that you considered.
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.

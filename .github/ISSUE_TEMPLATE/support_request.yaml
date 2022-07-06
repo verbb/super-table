@@ -1,0 +1,25 @@
+name: Support Request
+description: Ask a question about this plugin.
+labels: 'question'
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you send through your support request, please ensure you have taken these steps first:
+        
+          ✅ I‘ve searched the [documentation](https://verbb.io/craft-plugins/super-table/docs).
+          ✅ I‘ve searched open and closed issues.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: A question about the plugin or how it works.
+      placeholder: "Is it possible to do..."
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the support request here.
