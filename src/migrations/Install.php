@@ -2,6 +2,7 @@
 namespace verbb\supertable\migrations;
 
 use craft\db\Migration;
+use craft\helpers\MigrationHelper;
 
 class Install extends Migration
 {
@@ -10,24 +11,22 @@ class Install extends Migration
 
     public function safeUp(): bool
     {
-        if (!$this->db->tableExists('{{%supertableblocks}}')) {
-            $this->createTables();
-            $this->createIndexes();
-            $this->addForeignKeys();
-        }
+        $this->createTables();
+        $this->createIndexes();
+        $this->addForeignKeys();
 
         return true;
     }
 
     public function safeDown(): bool
     {
+        $this->dropForeignKeys();
+        $this->dropTables();
+
         return true;
     }
 
-    // Protected Methods
-    // =========================================================================
-
-    protected function createTables(): void
+    public function createTables(): void
     {
         $this->archiveTableIfExists('{{%supertableblocks}}');
         $this->createTable('{{%supertableblocks}}', [
@@ -60,7 +59,7 @@ class Install extends Migration
         ]);
     }
 
-    protected function createIndexes(): void
+    public function createIndexes(): void
     {
         $this->createIndex(null, '{{%supertableblocks}}', ['primaryOwnerId'], false);
         $this->createIndex(null, '{{%supertableblocks}}', ['fieldId'], false);
@@ -69,7 +68,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%supertableblocktypes}}', ['fieldLayoutId'], false);
     }
 
-    protected function addForeignKeys(): void
+    public function addForeignKeys(): void
     {
         $this->addForeignKey(null, '{{%supertableblocks}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%supertableblocks}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
@@ -79,5 +78,27 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%supertableblocks_owners}}', ['ownerId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%supertableblocktypes}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%supertableblocktypes}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);
+    }
+
+    public function dropTables(): void
+    {
+        $this->dropTableIfExists('{{%supertableblocks}}');
+        $this->dropTableIfExists('{{%supertableblocks_owners}}');
+        $this->dropTableIfExists('{{%supertableblocktypes}}');
+    }
+
+    public function dropForeignKeys(): void
+    {
+        if ($this->db->tableExists('{{%supertableblocks}}')) {
+            MigrationHelper::dropAllForeignKeysOnTable('{{%supertableblocks}}', $this);
+        }
+
+        if ($this->db->tableExists('{{%supertableblocks_owners}}')) {
+            MigrationHelper::dropAllForeignKeysOnTable('{{%supertableblocks_owners}}', $this);
+        }
+
+        if ($this->db->tableExists('{{%supertableblocktypes}}')) {
+            MigrationHelper::dropAllForeignKeysOnTable('{{%supertableblocktypes}}', $this);
+        }
     }
 }
