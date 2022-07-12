@@ -68,7 +68,7 @@ class SuperTableBlock extends Element
             'typeId' => [
                 'name' => 'typeId',
                 'type' => Type::nonNull(Type::int()),
-                'description' => 'The ID of the Super Table block\'s type.',
+                'description' => 'The ID of the Super Table block‘s type.',
             ],
             'sortOrder' => [
                 'name' => 'sortOrder',
