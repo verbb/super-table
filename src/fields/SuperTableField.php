@@ -43,6 +43,8 @@ use craft\validators\ArrayValidator;
 
 use GraphQL\Type\Definition\Type;
 
+use Illuminate\Support\Collection;
+
 use yii\base\InvalidArgumentException;
 
 class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
@@ -597,7 +599,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): array
     {
-        /** @var SuperTableBlockQuery $value */
+        /** @var SuperTableBlockQuery|Collection $value */
         $serialized = [];
         $new = 0;
 
@@ -796,7 +798,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var SuperTableBlockQuery $value */
+        /** @var SuperTableBlockQuery|Collection $value */
         return $value->count() === 0;
     }
 
@@ -805,7 +807,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public function validateBlocks(ElementInterface $element): void
     {
-        /** @var SuperTableBlockQuery $value */
+        /** @var SuperTableBlockQuery|Collection $value */
         $value = $element->getFieldValue($this->handle);
         $blocks = $value->all();
         $allBlocksValidate = true;
@@ -866,7 +868,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        /** @var SuperTableBlockQuery $value */
+        /** @var SuperTableBlockQuery|Collection $value */
         /** @var SuperTableBlockElement $block */
         $keywords = [];
 
@@ -888,7 +890,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        /** @var SuperTableBlockQuery $value */
+        /** @var SuperTableBlockQuery|Collection $value */
         $value = $value->all();
 
         /** @var SuperTableBlockElement[] $value */
@@ -1098,10 +1100,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         // Repopulate the SuperTable block query if this is a new element
         if ($resetValue || $isNew) {
-            /** @var SuperTableBlockQuery $query */
-            $query = $element->getFieldValue($this->handle);
-            $this->_populateQuery($query, $element);
-            $query->clearCachedResult();
+            /** @var SuperTableBlockQuery|Collection $query */
+            $value = $element->getFieldValue($this->handle);
+            
+            if ($value instanceof SuperTableBlockQuery) {
+                $this->_populateQuery($value, $element);
+            }
+
+            $value->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);

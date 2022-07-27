@@ -29,6 +29,8 @@ use yii\base\InvalidArgumentException;
 
 use Throwable;
 
+use Illuminate\Support\Collection;
+
 class Service extends Component
 {
     // Properties
@@ -701,15 +703,23 @@ class Service extends Component
     public function saveField(SuperTableField $field, ElementInterface $owner): void
     {
         $elementsService = Craft::$app->getElements();
-        /** @var SuperTableBlockQuery $query */
-        $query = $owner->getFieldValue($field->handle);
-        /** @var SuperTableBlockElement[] $blocks */
-        if (($blocks = $query->getCachedResult()) !== null) {
-            $saveAll = false;
-        } else {
-            $blocks = (clone $query)->status(null)->all();
+
+        /** @var SuperTableBlockQuery|Collection $value */
+        $value = $owner->getFieldValue($field->handle);
+
+        if ($value instanceof Collection) {
+            $blocks = $value->all();
             $saveAll = true;
+        } else {
+            $blocks = $value->getCachedResult();
+            if ($blocks !== null) {
+                $saveAll = false;
+            } else {
+                $blocks = (clone $value)->status(null)->all();
+                $saveAll = true;
+            }
         }
+
         $blockIds = [];
         $sortOrder = 0;
 
@@ -780,9 +790,11 @@ class Service extends Component
                     // Duplicate SuperTable blocks, ensuring we don't process the same blocks more than once
                     $handledSiteIds = [];
 
-                    $cachedQuery = (clone $query)->status(null);
-                    $cachedQuery->setCachedResult($blocks);
-                    $owner->setFieldValue($field->handle, $cachedQuery);
+                    if ($value instanceof SuperTableBlockQuery) {
+                        $cachedQuery = (clone $value)->status(null);
+                        $cachedQuery->setCachedResult($blocks);
+                        $owner->setFieldValue($field->handle, $cachedQuery);
+                    }
 
                     foreach ($localizedOwners as $localizedOwner) {
                         // Make sure we haven't already duplicated blocks for this site, via propagation from another site
@@ -816,7 +828,9 @@ class Service extends Component
                         $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
                     }
 
-                    $owner->setFieldValue($field->handle, $query);
+                    if ($value instanceof SuperTableBlockQuery) {
+                        $owner->setFieldValue($field->handle, $value);
+                    }
                 }
             }
 
@@ -839,12 +853,16 @@ class Service extends Component
     public function duplicateBlocks(SuperTableField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false, bool $deleteOtherBlocks = true): void
     {
         $elementsService = Craft::$app->getElements();
-        /** @var SuperTableBlockQuery $query */
-        $query = $source->getFieldValue($field->handle);
-        /** @var SuperTableBlockElement[] $blocks */
-        if (($blocks = $query->getCachedResult()) === null) {
-            $blocks = (clone $query)->status(null)->all();
+
+        /** @var SuperTableBlockQuery|Collection $value */
+        $value = $source->getFieldValue($field->handle);
+
+        if ($value instanceof Collection) {
+            $blocks = $value->all();
+        } else {
+            $blocks = $value->getCachedResult() ?? (clone $value)->status(null)->all();
         }
+
         $newBlockIds = [];
 
         $transaction = Craft::$app->getDb()->beginTransaction();
