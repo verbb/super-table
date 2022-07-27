@@ -1,56 +1,37 @@
 # Changelog
 
-## 3.0.0-beta.6 - 2022-06-17
-
-### Fixed
-- Fixed block ordering issues, and ensure sort order is updated when block ownership is duplicated. (thanks @mmikkel).
-- Fixed a bug where changes to existing blocks weren’t saving for element types that supported drafts but not change tracking.
-
-## 3.0.0-beta.5 - 2022-06-08
-
-### Fixed
-- Fix Matrix > Super Table fields not saving new fields when editing the field
-- Fix move/delete button sizing for table layout.
-- Fix a JS error when viewing a static field, in Matrix layout.
-
-## 3.0.0-beta.4 - 2022-05-18
+## 3.0.0 - 2022-07-27
 
 ### Added
+- Add missing English Translations.
 - Add resave console command for elements.
 - Add checks for registering events for performance.
 - Add `archiveTableIfExists()` to install migration.
 
 ### Changed
+- Now requires PHP `^8.0.2`.
+- Now requires Craft `^4.0.0`.
+- Super Table database tables and content is now permanently deleted when uninstalling the plugin.
 - Rename model classes.
 - Rename record classes.
 - Rename service classes.
 - Rename base plugin methods.
 
 ### Fixed
+- Fixed a bug where fields were assuming their values hadn’t been eager-loaded on element save.
+- Fixed block ordering issues, and ensure sort order is updated when block ownership is duplicated. (thanks @mmikkel).
+- Fixed a bug where changes to existing blocks weren’t saving for element types that supported drafts but not change tracking.
+- Fix Matrix > Super Table fields not saving new fields when editing the field
+- Fix move/delete button sizing for table layout.
+- Fix a JS error when viewing a static field, in Matrix layout.
 - Fix JS not initialising when selecting new fields in settings (`footHtml` to `bodyHtml`).
 - Fix an error when running the “check content tables” helper.
 - Fix an error with new static fields not having any field content output in the control panel.
 - Fix an error where return type of `prepareQuery` was incorrect. (thanks @davidwebca).
+- Fix potential error in migration.
 
 ### Removed
 - Remove deprecated Craft and Super Table functions.
-
-## 3.0.0-beta.3 - 2022-03-16
-
-### Fixed
-- Fix an error during install.
-
-## 3.0.0-beta.2 - 2022-03-12
-
-### Fixed
-- Fix potential error in migration.
-- Fix an error with some old/deprecated field settings not being unset.
-
-## 3.0.0-beta.1 - 2022-03-10
-
-### Changed
-- Now requires PHP `^8.0.2`.
-- Now requires Craft `^4.0.0-beta.1`.
 
 ## 2.7.2 - 2022-05-15
 
