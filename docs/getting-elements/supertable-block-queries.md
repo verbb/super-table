@@ -380,7 +380,7 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 Narrows the query results to only Super Table blocks that match a search query.
 
-See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanation of how to work with this parameter.
+See [Searching](https://craftcms.com/docs/4.x/searching.html) for a full explanation of how to work with this parameter.
 
 ::: code
 ```twig Twig
@@ -417,7 +417,7 @@ Possible values include:
 | Value | Fetches Super Table blocks…
 | - | -
 | `'foo'` | from the site with a handle of `foo`.
-| a [Site](https://docs.craftcms.com/api/v3/craft-models-site.html) object | from the site represented by the object.
+| a [Site](https://docs.craftcms.com/api/v4/craft-models-site.html) object | from the site represented by the object.
 
 ::: code
 ```twig Twig
@@ -487,7 +487,7 @@ $superTableBlock = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 Causes the query to return matching Super Table blocks eager-loaded with related elements.
 
-See [Eager-Loading Elements](https://docs.craftcms.com/v3/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
+See [Eager-Loading Elements](https://craftcms.com/docs/4.x/eager-loading-elements.html) for a full explanation of how to work with this parameter.
 
 ::: code
 ```twig Twig
