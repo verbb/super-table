@@ -58,6 +58,10 @@
                             
                             <div data-id="{{ fieldId }}" {% if not loop.first %}class="settings-hidden"{% endif %}>
                                 {% namespace 'blockTypes[' ~ blockTypeId ~ '][fields][' ~ fieldId ~ ']' %}
+                                    {% if layoutElement.uid %}
+                                        {{ hiddenInput('uid', layoutElement.uid) }}
+                                    {% endif %}
+                                    
                                     {{ forms.textField({
                                         label: "Name" | t('app'),
                                         id: 'name',
