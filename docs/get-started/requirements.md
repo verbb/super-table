@@ -1,7 +1,7 @@
 # Requirements
 
 ## Craft CMS
-Super Table requires Craft CMS 3.7 or greater.
+Super Table requires Craft CMS 4.0 or greater.
 
 ## PHP
-Super Table requires PHP 7.2.5 or greater.
+Super Table requires PHP 8.0.2 or greater.
