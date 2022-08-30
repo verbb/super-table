@@ -142,8 +142,8 @@ class SuperTable extends Plugin
             $e->actions['supertable-blocks'] = [
                 'action' => function(): int {
                     $controller = Craft::$app->controller;
-                    $query = SuperTableBlockElement::find();
-                    return $controller->resaveElements($query);
+                    
+                    return $controller->resaveElements(SuperTableBlockElement::class);
                 },
                 'options' => [],
                 'helpSummary' => 'Re-saves Super Table blocks.',
