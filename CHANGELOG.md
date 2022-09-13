@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.1 - 2022-09-14
+
+### Fixed
+- Fix an error running `resave` console commands.
+- Fixed a bug where block types’ layout elements were getting new UUIDs assigned each time the field was edited.
+
 ## 3.0.0 - 2022-07-27
 
 ### Added
