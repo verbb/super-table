@@ -46,6 +46,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 
 use yii\base\InvalidArgumentException;
+use yii\db\Expression;
 
 class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
@@ -636,15 +637,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $existsQuery = (new Query())
             ->from(["supertableblocks_$ns" => "{{%supertableblocks}}"])
             ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[supertableblocks_$ns.id]]")
-            ->innerJoin(["supertableblocks_owners_$ns" => "{{%supertableblocks_owners}}"], [
-                'and',
-                "[[supertableblocks_owners_$ns.blockId]] = [[elements_$ns.id]]",
-                "[[supertableblocks_owners_$ns.ownerId]] = [[elements.id]]",
-            ])
+            ->innerJoin(["supertableblocks_owners_$ns" => "{{%supertableblocks_owners}}"], "[[supertableblocks_owners_$ns.blockId]] = [[elements_$ns.id]]")
             ->andWhere([
                 "supertableblocks_$ns.fieldId" => $this->id,
                 "elements_$ns.enabled" => true,
                 "elements_$ns.dateDeleted" => null,
+                "[[supertableblocks_owners_$ns.ownerId]]" => new Expression('[[elements.id]]'),
             ]);
 
         if ($value === 'not :empty:') {
