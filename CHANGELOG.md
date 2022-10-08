@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.2 - 2022-10-09
+
+### Fixed
+- Fix Matrix > Super Table > Matrix field settings not saving correctly, due to lack of project config change detection.
+- Fixed a SQL error that could occur on MySQL 5.
+- Fixed an error that could occur when saving fields with either Min Rows or Max Rows configured, but not both, if the Intl extension wasn’t installed.
+- Fixed an error that could occur when saving an entry with Super Table blocks, if the entry had been deleted for a site. (thanks @brandonkelly).
+
 ## 3.0.1 - 2022-09-14
 
 ### Fixed
