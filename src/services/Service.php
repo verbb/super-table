@@ -1005,10 +1005,13 @@ SQL
      */
     public function createRevisionBlocks(SuperTableField $field, ElementInterface $canonical, ElementInterface $revision): void
     {
+        // Only fetch blocks in the sites the owner element supports
+        $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($canonical), 'siteId');
+
         $blocks = SuperTableBlockElement::find()
             ->ownerId($canonical->id)
             ->fieldId($field->id)
-            ->siteId('*')
+            ->siteId($siteIds)
             ->unique()
             ->status(null)
             ->all();
