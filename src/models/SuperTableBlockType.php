@@ -46,6 +46,11 @@ class SuperTableBlockType extends Model implements GqlInlineFragmentInterface
      */
     public ?string $uid = null;
 
+    // Required for some reason to prompt project config that a change has occured when modifying fields
+    // for Matrix > ST > Matrix. Changes won't apply unless something in the blocktype model has changed, 
+    // so for the moment, we'll use this as a flag to always trigger a save, until we figure it out.
+    public mixed $changedFieldIndicator = null;
+
 
     // Public Methods
     // =========================================================================
@@ -138,6 +143,7 @@ class SuperTableBlockType extends Model implements GqlInlineFragmentInterface
         $field = $this->getField();
 
         $config = [
+            'changedFieldIndicator' => $this->changedFieldIndicator,
             'field' => $field->uid,
             'fields' => [],
         ];

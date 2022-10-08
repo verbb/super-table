@@ -389,6 +389,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                     }
                 }
 
+                // Add a random value to trigger project config changes, we still need to figure out
+                $blockType->changedFieldIndicator = rand();
+
                 $fieldLayoutTab->setElements($layoutElements);
                 $this->_blockTypes[] = $blockType;
             }
