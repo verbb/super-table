@@ -393,7 +393,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             }
         }
 
-        // Add a random value to trigger projcet config changes, we still need to figure out
+        // Add a random value to trigger project config changes, we still need to figure out
         $this->changedFieldIndicator = rand();
     }
 
@@ -846,14 +846,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $arrayValidator = new ArrayValidator([
                 'min' => $this->minRows ?: null,
                 'max' => $this->maxRows ?: null,
-                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.', [
+                'tooFew' => $this->minRows ? Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.', [
                     'attribute' => Craft::t('site', $this->name),
                     'min' => $this->minRows, // Need to pass this in now
-                ]),
-                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.', [
+                ]) : null,
+                'tooMany' => $this->maxRows ? Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.', [
                     'attribute' => Craft::t('site', $this->name),
                     'max' => $this->maxRows, // Need to pass this in now
-                ]),
+                ]) : null,
                 'skipOnEmpty' => false,
             ]);
 
