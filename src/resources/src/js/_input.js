@@ -661,7 +661,7 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
             for (var i = 0; i < $fields.length; i++) {
                 var $field = $($fields[i]),
-                    $inputs = $field.children('.input').find('select,input[type!="hidden"],textarea,.label'),
+                    $inputs = $field.find('.input').find('select,input[type!="hidden"],textarea,.label'),
                     inputPreviewText = '';
 
                 for (var j = 0; j < $inputs.length; j++) {
