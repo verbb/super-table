@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.3 - 2022-10-18
+
+### Fixed
+- Fix collapsed matrix-style fields no longer have preview text. (thanks @stevecomrie).
+
 ## 3.0.2 - 2022-10-09
 
 ### Fixed
