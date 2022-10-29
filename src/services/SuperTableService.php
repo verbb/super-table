@@ -851,7 +851,9 @@ class SuperTableService extends Component
                             // Just resave SuperTable blocks for that one site, and let them propagate over to the new site(s) from there
                             $this->saveField($field, $preexistingLocalizedOwner);
                         } else {
-                            $this->duplicateBlocks($field, $owner, $localizedOwner);
+                            // Duplicate the blocks, but **don't track** the duplications, so the edit page doesn’t think
+                            // its blocks have been replaced by the other sites’ blocks
+                            $this->duplicateBlocks($field, $owner, $localizedOwner, false, false);
                         }
 
                         // Make sure we don't duplicate blocks for any of the sites that were just propagated to
@@ -876,10 +878,17 @@ class SuperTableService extends Component
      * @param ElementInterface $source The source element blocks should be duplicated from
      * @param ElementInterface $target The target element blocks should be duplicated to
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
+     * @param bool $trackDuplications whether to keep track of the duplications from [[\craft\services\Elements::$duplicatedElementIds]]
+     * and [[\craft\services\Elements::$duplicatedElementSourceIds]]
      * @throws \Throwable if reasons
      */
-    public function duplicateBlocks(SuperTableField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
-    {
+    public function duplicateBlocks(
+        SuperTableField $field,
+        ElementInterface $source,
+        ElementInterface $target,
+        bool $checkOtherSites = false,
+        bool $trackDuplications = true
+    ) {
         $elementsService = Craft::$app->getElements();
         /** @var SuperTableBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
@@ -916,7 +925,7 @@ class SuperTableService extends Component
                     }
                 } else {
                     /** @var SuperTableBlockElement $newBlock */
-                    $newBlock = $elementsService->duplicateElement($block, $newAttributes);
+                    $newBlock = $elementsService->duplicateElement($block, $newAttributes, true, $trackDuplications);
                     $newBlockId = $newBlock->id;
                 }
 
