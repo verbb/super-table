@@ -184,6 +184,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             unset($config['localizeBlocks']);
         }
 
+        if (isset($config['blockTypes']) && $config['blockTypes'] === '') {
+            $config['blockTypes'] = [];
+        }
+
         parent::__construct($config);
     }
 
