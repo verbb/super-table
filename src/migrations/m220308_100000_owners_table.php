@@ -33,8 +33,8 @@ class m220308_100000_owners_table extends Migration
         $this->update($blocksTable, ['sortOrder' => '1'], ['sortOrder' => null]);
 
         $this->execute(<<<SQL
-INSERT INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]]) 
-SELECT [[id]], [[ownerId]], [[sortOrder]] 
+INSERT IGNORE INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]])
+SELECT [[id]], [[ownerId]], [[sortOrder]]
 FROM $blocksTable
 SQL
         );
