@@ -232,16 +232,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [['fieldId', 'primaryOwnerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
-        return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSupportedSites(): array
     {
         try {
@@ -256,18 +246,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
 
         $field = $this->_field();
         return SuperTable::$plugin->getService()->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCacheTags(): array
-    {
-        return [
-            "field-owner:$this->fieldId-$this->primaryOwnerId",
-            "field:$this->fieldId",
-            "owner:$this->primaryOwnerId",
-        ];
     }
 
     /**
@@ -441,8 +419,35 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     }
 
 
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
+        $rules[] = [['fieldId', 'primaryOwnerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function cacheTags(): array
+    {
+        return [
+            "field-owner:$this->fieldId-$this->primaryOwnerId",
+            "field:$this->fieldId",
+            "owner:$this->primaryOwnerId",
+        ];
+    }
+
+
     // Private Methods
     // =========================================================================
+
     /**
      * Returns the SuperTable field.
      */

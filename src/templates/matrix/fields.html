@@ -3,8 +3,7 @@
 
 {% namespace namespace %}
     {% for field in fields %}
-        {% set width = settings.columns[field.uid].width ?? '' %}
-        <div class="field" {% if width %} style="width: calc({{ width }} - 48px)"{% endif %}>
+        <div class="field">
             {% include "super-table/field" with {
                 field: field,
                 required: field.required,

@@ -52,6 +52,14 @@
 ### Removed
 - Remove deprecated Craft and Super Table functions.
 
+## 2.7.3 - 2022-09-14
+
+### Fixed
+- Fix elements overflowing grid column bounds in Row Layout. (thanks @bencarr).
+
+### Removed
+- Remove “Column Width” for fields in Matrix layout.
+
 ## 2.7.2 - 2022-05-15
 
 ### Fixed

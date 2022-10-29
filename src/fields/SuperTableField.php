@@ -200,6 +200,15 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $config['blockTypes'] = [];
         }
 
+        parent::__construct($config);
+    }
+
+    public function init()
+    {
+        if ($this->propagationKeyFormat === '') {
+            $this->propagationKeyFormat = null;
+        }
+
         // Remove unneeded/deprecated properties
         unset($config['placeholderKey']);
 
@@ -522,14 +531,14 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $view->registerAssetBundle(SuperTableAsset::class);
 
         $placeholderKey = StringHelper::randomString(10);
-        
+
         $view->registerJs('new Craft.SuperTable.Configurator(' .
             Json::encode($tableId, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->namespaceInputName("blockTypes[__BLOCK_TYPE_{$placeholderKey}__][fields][__FIELD_{$placeholderKey}__][typesettings]")) . ', ' .
             Json::encode($placeholderKey) .
-        ');');
+            ');');
 
         return $view->renderTemplate('super-table/settings', [
             'supertableField' => $this,
@@ -955,7 +964,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ];
     }
 
-     /**
+    /**
      * @inheritdoc
      */
     public function getContentGqlType(): array|Type

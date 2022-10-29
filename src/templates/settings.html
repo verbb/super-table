@@ -61,7 +61,11 @@
                                     {% if layoutElement.uid %}
                                         {{ hiddenInput('uid', layoutElement.uid) }}
                                     {% endif %}
-                                    
+
+                                    {% if field.columnSuffix %}
+                                        {{ hiddenInput('columnSuffix', field.columnSuffix) }}
+                                    {% endif %}
+
                                     {{ forms.textField({
                                         label: "Name" | t('app'),
                                         id: 'name',
@@ -186,8 +190,9 @@
             </div>
         </div>
     </div>
-
 {% endset %}
+
+{{ hiddenInput('blockTypes', '') }}
 
 {{ forms.selectField({
     label: "Field Layout" | t('super-table'),
