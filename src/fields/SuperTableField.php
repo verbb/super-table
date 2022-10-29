@@ -200,19 +200,17 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             $config['blockTypes'] = [];
         }
 
-        parent::__construct($config);
-    }
-
-    public function init()
-    {
-        if ($this->propagationKeyFormat === '') {
-            $this->propagationKeyFormat = null;
-        }
-
         // Remove unneeded/deprecated properties
         unset($config['placeholderKey']);
 
         parent::__construct($config);
+    }
+
+    public function init(): void
+    {
+        if ($this->propagationKeyFormat === '') {
+            $this->propagationKeyFormat = null;
+        }
     }
 
     /**
