@@ -147,27 +147,21 @@ class SuperTableBlockQuery extends ElementQuery
      */
     public function field($value)
     {
-        if ($value instanceof SuperTableField) {
-            $this->fieldId = [$value->id];
-        } else if (is_string($value) || (is_array($value) && count($value) === 1)) {
-            if (!is_string($value)) {
-                $value = reset($value);
+        if (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getFields()->getFieldByHandle($item);
             }
-            $field = Craft::$app->getFields()->getFieldByHandle($value);
-            if ($field && $field instanceof SuperTableField) {
-                $this->fieldId = [$field->id];
-            } else {
-                $this->fieldId = false;
-            }
-        } else if ($value !== null) {
+
+            return $item instanceof SuperTableField ? $item->id : null;
+        })) {
+            $this->fieldId = $value;
+        } else {
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
                 ->where(Db::parseParam('handle', $value))
                 ->andWhere(['type' => SuperTableField::class])
                 ->column();
-        } else {
-            $this->fieldId = null;
         }
 
         return $this;
