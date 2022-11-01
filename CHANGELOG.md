@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.0.4 - 2022-11-01
+
+### Changed
+- Block queries’ `field` params now support passing an array of `verbb\supertable\fields\SuperTableField` objects.
+
+### Fixed
+- Fix a bug where saving a field without any block types would result in no changes made to the previously-configured block types, rather than displaying a validation error.
+- Fix a bug where blocks could be deleted from newly-created multi-site entries, if the edit page was reloaded.
+- Fix collapsed matrix-style fields no longer have preview text.
+- Fix a Craft 3 to 4 migration issue.
+
 ## 3.0.3 - 2022-10-18
 
 ### Fixed
