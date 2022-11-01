@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.5 - 2022-11-01
+
+### Fixed
+- Fix an error introduced in 3.0.4 when saving owner elements.
+
 ## 3.0.4 - 2022-11-01
 
 ### Changed
