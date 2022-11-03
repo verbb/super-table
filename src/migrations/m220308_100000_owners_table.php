@@ -32,12 +32,23 @@ class m220308_100000_owners_table extends Migration
         // Fix any null sortOrders. It can happen!
         $this->update($blocksTable, ['sortOrder' => '1'], ['sortOrder' => null]);
 
-        $this->execute(<<<SQL
+        if ($this->db->getIsPgsql()) {
+            $this->execute(<<<SQL
+INSERT INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]])
+SELECT [[id]], [[ownerId]], [[sortOrder]]
+FROM $blocksTable
+ON CONFLICT DO NOTHING
+SQL
+            );
+        } else {
+            $this->execute(<<<SQL
 INSERT IGNORE INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]])
 SELECT [[id]], [[ownerId]], [[sortOrder]]
 FROM $blocksTable
 SQL
-        );
+            );
+        }
+
 
         // drop sortOrder
         $this->dropIndexIfExists('{{%supertableblocks}}', ['sortOrder'], false);
