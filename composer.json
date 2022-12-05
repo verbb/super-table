@@ -2,7 +2,7 @@
     "name": "verbb/super-table",
     "description": "Super-charge your Craft workflow with Super Table. Use it to group fields together or build complex Matrix-in-Matrix solutions.",
     "type": "craft-plugin",
-    "version": "3.0.5",
+    "version": "3.0.6",
     "keywords": [
         "craft",
         "cms",
