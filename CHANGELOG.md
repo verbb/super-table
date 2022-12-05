@@ -3,7 +3,7 @@
 ## 3.0.6 - 2022-12-06
 
 ### Fixed
-- Fix a migration error for Postges. (thanks @ul8).
+- Fix a migration error for Postgres. (thanks @ul8).
 
 ## 3.0.5 - 2022-11-01
 
