@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.7 - 2022-12-10
+
+### Fixed
+- Fix return type for `getRelatedElementsQuery`.
+
 ## 3.0.6 - 2022-12-06
 
 ### Fixed
