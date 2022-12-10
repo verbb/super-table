@@ -14,6 +14,7 @@ use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\elements\db\ElementQueryInterface;
 use craft\events\ConfigEvent;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
@@ -1218,9 +1219,9 @@ SQL
      *
      * @method getRelatedElements
      * @param array|null $params Should contain 'relatedTo' but can also optionally include 'elementType' and 'criteria'
-     * @return SuperTableBlockElement
+     * @return ElementQueryInterface|null
      */
-    public function getRelatedElementsQuery(array $params = null): ?SuperTableBlockQuery
+    public function getRelatedElementsQuery(array $params = null): ?ElementQueryInterface
     {
         // Parse out the field handles
         $fieldParams = explode('.', $params['relatedTo']['field']);

@@ -2,6 +2,7 @@
 namespace verbb\supertable\variables;
 
 use Craft;
+use craft\elements\db\ElementQueryInterface;
 
 use verbb\supertable\SuperTable;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
@@ -20,7 +21,7 @@ class SuperTableVariable
         return $query;
     }
 
-    public function getRelatedElements($params = null): SuperTableBlockElement|SuperTableBlockQuery|null
+    public function getRelatedElements($params = null): ?ElementQueryInterface
     {
         return SuperTable::$plugin->getService()->getRelatedElementsQuery($params);
     }
