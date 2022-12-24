@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.7.4 - 2022-12-25
+
+### Changed
+- Block queries’ `field` params now support passing an array of `verbb\supertable\fields\SuperTableField` objects.
+
+### Fixed
+- Fix translation file.
+- Fix a bug where saving a field without any block types would result in no changes made to the previously-configured block types, rather than displaying a validation error.
+- Fix a bug where blocks could be deleted from newly-created multi-site entries, if the edit page was reloaded.
+- Fix collapsed matrix-style fields no longer have preview text.
+
 ## 2.7.3 - 2022-09-14
 
 ### Fixed

@@ -322,12 +322,12 @@
       "oAP" : "\/src\/templates",
       "oF" : 0
     },
-    "\/src\/translations\/en\/buttonbox.php" : {
+    "\/src\/translations\/en\/super-table.php" : {
       "cB" : 0,
       "ft" : 8192,
       "hM" : 0,
       "oA" : 2,
-      "oAP" : "\/src\/translations\/en\/buttonbox.php",
+      "oAP" : "\/src\/translations\/en\/super-table.php",
       "oF" : 0
     },
     "\/src\/variables" : {
