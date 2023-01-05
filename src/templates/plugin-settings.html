@@ -1,5 +1,8 @@
 {% extends '_layouts/cp' %}
+
 {% import '_includes/forms' as forms %}
+
+{% requireAdmin %}
 
 {% set title = 'Super Table' | t('super-table') %}
 
