@@ -62,7 +62,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%supertableblocktypes}}', ['fieldLayoutId'], false);
     }
 
-    protected function addForeignKeys()
+    public function addForeignKeys()
     {
         $this->addForeignKey(null, '{{%supertableblocks}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%supertableblocks}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
