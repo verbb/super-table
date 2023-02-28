@@ -11,6 +11,7 @@ use craft\db\Table;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\services\ProjectConfig;
@@ -261,7 +262,7 @@ class FixContentTables extends Migration
             if ($fieldLayout) {
                 foreach ($fieldLayout->getCustomFields() as $field) {
                     if ($field::hasContentColumn()) {
-                        $correctFieldColumns[] = 'field_' . $field->handle;
+                        $correctFieldColumns[] = ElementHelper::fieldColumnFromField($field);
                     }
 
                     if ($field::class == MissingField::class) {
