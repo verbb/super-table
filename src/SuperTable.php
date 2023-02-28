@@ -7,6 +7,7 @@ use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\helpers\ProjectConfigData;
 use verbb\supertable\services\Service;
 use verbb\supertable\variables\SuperTableVariable;
+use verbb\supertable\migrations\Install;
 
 use Craft;
 use craft\base\Plugin;
@@ -26,6 +27,8 @@ use craft\web\twig\variables\CraftVariable;
 
 use craft\gatsbyhelper\events\RegisterIgnoredTypesEvent;
 use craft\gatsbyhelper\services\Deltas;
+
+use craft\fixfks\controllers\RestoreController;
 
 use yii\base\Event;
 
@@ -128,6 +131,13 @@ class SuperTable extends Plugin
         if (class_exists(Deltas::class)) {
             Event::on(Deltas::class, Deltas::EVENT_REGISTER_IGNORED_TYPES, function(RegisterIgnoredTypesEvent $event) {
                 $event->types[] = SuperTableBlockElement::class;
+            });
+        }
+        // Support Fix Fks - https://github.com/craftcms/fix-fks
+        if (class_exists(RestoreController::class)) {
+            Event::on(RestoreController::class, RestoreController::EVENT_AFTER_RESTORE_FKS, function(Event $event) {
+                (new Install)->addForeignKeys();
+
             });
         }
     }
