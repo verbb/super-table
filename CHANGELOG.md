@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.0.8 - 2023-02-28
+
+### Added
+- Add support for Fix Fks plugin. (thanks @olivierbon).
+
+### Changed
+- Only admins are now allowed to access plugin settings.
+
+### Fixed
+- Fixed a bug where Super Table field property type was incorrect.
+- Fixed an error that could occur when saving an element with an eager-loaded Super Table field.
+- Fixed a bug where Super Table blocks weren’t getting duplicated to other sites when first editing an unpublished draft.
+- Fix custom field comparison checks for content table checker.
+
 ## 3.0.7 - 2022-12-10
 
 ### Fixed
