@@ -1113,9 +1113,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             
             if ($value instanceof SuperTableBlockQuery) {
                 $this->_populateQuery($value, $element);
+                $value->clearCachedResult();
             }
-
-            $value->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);
