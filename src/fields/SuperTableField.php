@@ -92,7 +92,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public static function valueType(): string
     {
-        return SuperTableBlockQuery::class;
+        return sprintf('\\%s|\\%s[]', SuperTableBlockQuery::class, SuperTableBlockElement::class);
     }
 
     /**
