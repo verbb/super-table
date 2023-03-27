@@ -532,9 +532,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $placeholderKey = StringHelper::randomString(10);
 
         $view->registerJs('new Craft.SuperTable.Configurator(' .
-            Json::encode($tableId, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($tableId) . ', ' .
+            Json::encode($fieldTypeInfo) . ', ' .
+            Json::encode($view->getNamespace()) . ', ' .
             Json::encode($view->namespaceInputName("blockTypes[__BLOCK_TYPE_{$placeholderKey}__][fields][__FIELD_{$placeholderKey}__][typesettings]")) . ', ' .
             Json::encode($placeholderKey) .
             ');');
@@ -751,9 +751,9 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         $js = 'var superTableInput = new Craft.SuperTable.Input(' .
             '"' . $view->namespaceInputId($id) . '", ' .
-            Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($blockTypeInfo) . ', ' .
             '"' . $view->namespaceInputName($this->handle) . '", ' .
-            Json::encode($settings, JSON_UNESCAPED_UNICODE) .
+            Json::encode($settings) .
             ');';
 
         // Safe to create the default blocks?
