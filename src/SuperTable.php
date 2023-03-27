@@ -133,6 +133,7 @@ class SuperTable extends Plugin
                 $event->types[] = SuperTableBlockElement::class;
             });
         }
+
         // Support Fix Fks - https://github.com/craftcms/fix-fks
         if (class_exists(RestoreController::class)) {
             Event::on(RestoreController::class, RestoreController::EVENT_AFTER_RESTORE_FKS, function(Event $event) {

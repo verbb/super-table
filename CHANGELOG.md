@@ -78,6 +78,14 @@
 ### Removed
 - Remove deprecated Craft and Super Table functions.
 
+## 2.7.5 - 2023-03-28
+
+### Added
+- Add support for Fix Fks plugin. (thanks @olivierbon).
+
+### Fixed
+- Fixed a bug where Super Table field property type was incorrect.
+
 ## 2.7.4 - 2022-12-25
 
 ### Changed
