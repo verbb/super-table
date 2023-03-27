@@ -21,6 +21,7 @@ use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\db\Query;
 use craft\db\Table as DbTable;
+use craft\elements\ElementCollection;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\fieldlayoutelements\CustomField;
@@ -92,7 +93,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public static function valueType(): string
     {
-        return SuperTableBlockQuery::class;
+        return sprintf('\\%s|\\%s<\\%s>', SuperTableBlockQuery::class, ElementCollection::class, SuperTableBlockElement::class);
     }
 
     /**
