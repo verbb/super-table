@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.7.5.1 - 2023-03-28
+
+### Fixed
+- Fix an error with JSON output introduced in 2.7.5.
+
 ## 2.7.5 - 2023-03-28
 
 ### Added
