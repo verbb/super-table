@@ -551,7 +551,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): ElementQueryInterface
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
@@ -559,12 +559,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): ElementQueryInterface
     {
         return $this->_normalizeValueInternal($value, $element, true);
     }
 
-    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): mixed
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ElementQueryInterface
     {
         if ($value instanceof ElementQueryInterface) {
             return $value;
