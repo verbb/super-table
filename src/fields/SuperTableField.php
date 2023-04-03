@@ -1,6 +1,7 @@
 <?php
 namespace verbb\supertable\fields;
 
+use craft\errors\InvalidFieldException;
 use verbb\supertable\SuperTable;
 use verbb\supertable\assetbundles\SuperTableAsset;
 use verbb\supertable\elements\db\SuperTableBlockQuery;
@@ -552,6 +553,19 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): ElementQueryInterface
     {
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): ElementQueryInterface
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ElementQueryInterface
+    {
         if ($value instanceof ElementQueryInterface) {
             return $value;
         }
@@ -564,7 +578,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         if ($value === '') {
             $query->setCachedResult([]);
         } else if ($element && is_array($value)) {
-            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
+            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element, $fromRequest));
         }
 
         return $query;
@@ -1274,9 +1288,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      *
      * @param array $value The raw field value
      * @param ElementInterface $element The element the field is associated with
+     * @param bool $fromRequest Whether the data came from the request post data
      * @return SuperTableBlockElement[]
      */
-    private function _createBlocksFromSerializedData(array $value, ElementInterface $element): array
+    private function _createBlocksFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
         // Get the possible block types for this field
         /** @var SuperTableBlockType[] $blockTypes */
@@ -1376,7 +1391,16 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             }
 
             if (isset($blockData['fields'])) {
-                $block->setFieldValues($blockData['fields']);
+                foreach ($blockData['fields'] as $fieldHandle => $fieldValue) {
+                    try {
+                        if ($fromRequest) {
+                            $block->setFieldValueFromRequest($fieldHandle, $fieldValue);
+                        } else {
+                            $block->setFieldValue($fieldHandle, $fieldValue);
+                        }
+                    } catch (InvalidFieldException) {
+                    }
+                }
             }
 
             // Set the prev/next blocks
