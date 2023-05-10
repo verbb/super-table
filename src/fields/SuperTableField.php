@@ -864,7 +864,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
 
         if (
             $element->getScenario() === Element::SCENARIO_LIVE &&
-            ($this->minRows || $this->maxRows)
+            ($this->minRows || $this->maxRows) &&
+            // Don't check static fields, since unedited static fields on new entries, or that were newly added to an
+            // existing entry's field layout, that had minRows/maxRows set would cause the array validator to fail
+            !$this->staticField
         ) {
             $arrayValidator = new ArrayValidator([
                 'min' => $this->minRows ?: null,
