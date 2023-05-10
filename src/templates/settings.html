@@ -265,35 +265,37 @@
     {% endif %}
 {% endif %}
 
-{{ forms.textField({
-    label: "New Row Label" | t('super-table'),
-    instructions: "Enter the text you want to appear in the button to create a new row." | t('super-table'),
-    id: 'selectionLabel',
-    name: 'selectionLabel',
-    value: supertableField.selectionLabel,
-    placeholder: supertableField.defaultSelectionLabel(),
-    errors: supertableField.getErrors('selectionLabel')
-}) }}
+<div id="row-settings">
+    {{ forms.textField({
+        label: "New Row Label" | t('super-table'),
+        instructions: "Enter the text you want to appear in the button to create a new row." | t('super-table'),
+        id: 'selectionLabel',
+        name: 'selectionLabel',
+        value: supertableField.selectionLabel,
+        placeholder: supertableField.defaultSelectionLabel(),
+        errors: supertableField.getErrors('selectionLabel')
+    }) }}
 
-{{ forms.textField({
-    label: "Min Rows" | t('super-table'),
-    instructions: "The minimum number of rows the field must have." | t('super-table'),
-    id: 'minRows',
-    name: 'minRows',
-    value: supertableField.minRows,
-    size: 3,
-    errors: supertableField.getErrors('minRows')
-}) }}
+    {{ forms.textField({
+        label: "Min Rows" | t('super-table'),
+        instructions: "The minimum number of rows the field must have." | t('super-table'),
+        id: 'minRows',
+        name: 'minRows',
+        value: supertableField.minRows,
+        size: 3,
+        errors: supertableField.getErrors('minRows')
+    }) }}
 
-{{ forms.textField({
-    label: "Max Rows" | t('super-table'),
-    instructions: "The maximum number of rows the field is allowed to have." | t('super-table'),
-    id: 'maxRows',
-    name: 'maxRows',
-    value: supertableField.maxRows,
-    size: 3,
-    errors: supertableField.getErrors('maxRows')
-}) }}
+    {{ forms.textField({
+        label: "Max Rows" | t('super-table'),
+        instructions: "The maximum number of rows the field is allowed to have." | t('super-table'),
+        id: 'maxRows',
+        name: 'maxRows',
+        value: supertableField.maxRows,
+        size: 3,
+        errors: supertableField.getErrors('maxRows')
+    }) }}
+</div>
 
 {{ forms.lightswitchField({
     label: "Static field" | t('super-table'),
@@ -301,4 +303,5 @@
     id: 'staticField',
     name: 'staticField',
     on: supertableField.staticField,
+    reverseToggle: 'row-settings',
 }) }}
