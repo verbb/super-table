@@ -149,8 +149,8 @@ class SuperTable extends Plugin
             return;
         }
 
-        Event::on(ResaveController::class, ConsoleController::EVENT_DEFINE_ACTIONS, function(DefineConsoleActionsEvent $e) {
-            $e->actions['supertable-blocks'] = [
+        Event::on(ResaveController::class, ConsoleController::EVENT_DEFINE_ACTIONS, function(DefineConsoleActionsEvent $event) {
+            $event->actions['supertable-blocks'] = [
                 'action' => function(): int {
                     $controller = Craft::$app->controller;
                     
