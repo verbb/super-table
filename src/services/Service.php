@@ -731,7 +731,11 @@ class Service extends Component
             foreach ($blocks as $block) {
                 $sortOrder++;
                 if ($saveAll || !$block->id || $block->dirty) {
-                    $block->primaryOwnerId = $block->ownerId = $owner->id;
+                    $block->setOwner($owner);
+                    // If the block already has an ID and primary owner ID, don't reassign it
+                    if (!$block->id || !$block->primaryOwnerId) {
+                        $block->primaryOwnerId = $owner->id;
+                    }
                     $block->sortOrder = $sortOrder;
                     $elementsService->saveElement($block, false);
 
