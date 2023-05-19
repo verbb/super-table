@@ -11,9 +11,12 @@ use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
+
+use Illuminate\Support\Collection;
 
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -444,6 +447,20 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getLocalized(): ElementQueryInterface|Collection
+    {
+        $query = parent::getLocalized();
+
+        if ($query instanceof SuperTableBlockQuery && $this->ownerId !== null) {
+            // Maintain the same ownerId for queried blocks
+            $query->ownerId($this->ownerId);
+        }
+
+        return $query;
+    }
 
     // Private Methods
     // =========================================================================
