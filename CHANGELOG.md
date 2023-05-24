@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.0.9 - 2023-05-24
+
+### Added
+- Add `normalizeValueFromRequest()` calls to sub-fields. (thanks @brandonkelly).
+
+### Changed
+- Maintain ownerId from getLocalized(). (thanks @brandonkelly).
+- Hide row settings if the Super Table field is static. (thanks @ttempleton).
+
+### Fixed
+- Fix a couple Matrix/ST/Neo propagation + shared custody bugs. (thanks @brandonkelly).
+- Fix static block with Min Rows set to 1 shows an error when all fields are empty. (thanks @ttempleton).
+
 ## 3.0.8.1 - 2023-02-28
 
 ### Fixed

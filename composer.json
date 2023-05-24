@@ -2,7 +2,7 @@
     "name": "verbb/super-table",
     "description": "Super-charge your content builders and create nested Matrix fields.",
     "type": "craft-plugin",
-    "version": "3.0.8.1",
+    "version": "3.0.9",
     "keywords": [
         "craft",
         "cms",
