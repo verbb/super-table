@@ -94,6 +94,8 @@ if (typeof Craft.SuperTable === typeof undefined) {
             }
 
             this.updateAddBlockBtn();
+
+            this.trigger('afterInit');
         },
 
         addRow: function() {
@@ -122,6 +124,10 @@ if (typeof Craft.SuperTable === typeof undefined) {
             var $tr = $(html).appendTo(this.$tbody);
 
             Garnish.$bod.append(footHtml);
+
+            this.trigger('blockAdded', {
+                $block: $tr,
+            });
 
             Craft.initUiElements($tr);
 
@@ -218,6 +224,9 @@ if (typeof Craft.SuperTable === typeof undefined) {
                 magnetStrength: 4,
                 helperLagBase: 1.5,
                 helperOpacity: 0.9,
+                onDragStop: () => {
+                    this.trigger('blockSortDragStop');
+                },
             });
 
             for (var i = 0; i < this.$rows.length; i++) {
@@ -241,6 +250,8 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
             this.addListener(this.$div, 'resize', 'onResize');
             Garnish.$doc.ready($.proxy(this, 'onResize'));
+
+            this.trigger('afterInit');
         },
 
         addRow: function() {
@@ -275,6 +286,10 @@ if (typeof Craft.SuperTable === typeof undefined) {
             var $tr = $(html).appendTo(this.$divInner);
 
             Garnish.$bod.append(footHtml);
+
+            this.trigger('blockAdded', {
+                $block: $tr,
+            });
 
             Craft.initUiElements($tr);
 
@@ -408,6 +423,9 @@ if (typeof Craft.SuperTable === typeof undefined) {
                 magnetStrength: 4,
                 helperLagBase: 1.5,
                 helperOpacity: 0.9,
+                onDragStop: () => {
+                    this.trigger('blockSortDragStop');
+                },
             });
 
             for (var i = 0; i < this.$rows.length; i++) {
@@ -435,6 +453,8 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
             this.addListener(this.$div, 'resize', 'onResize');
             Garnish.$doc.ready($.proxy(this, 'onResize'));
+
+            this.trigger('afterInit');
         },
 
         addRow: function() {
@@ -481,6 +501,10 @@ if (typeof Craft.SuperTable === typeof undefined) {
             Garnish.$bod.append(footHtml);
 
             Craft.initUiElements($tr);
+
+            this.trigger('blockAdded', {
+                $block: $tr,
+            });
 
             var row = new Craft.SuperTable.InputMatrix.Row(this, $tr);
             this.sorter.addItems($tr);
