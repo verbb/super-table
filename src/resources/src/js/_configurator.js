@@ -379,7 +379,6 @@ Craft.SuperTable.Field = Garnish.Base.extend({
 
     getParsedFieldTypeHtml: function(html) {
         if (typeof html === 'string') {
-            console.log('ST Placeholder: ' + this.configurator.placeholderKey)
             html = html.replace(new RegExp(`__BLOCK_TYPE_${this.configurator.placeholderKey}__`, 'g'), this.blockType.id);
             html = html.replace(new RegExp(`__FIELD_${this.configurator.placeholderKey}__`, 'g'), this.id);
         }
