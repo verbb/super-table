@@ -1,5 +1,4 @@
 # Block Querying
-
 The below is by no means a full solution, but will certainly assist in querying content from a Super Table field.
 
 ::: code
@@ -7,7 +6,7 @@ The below is by no means a full solution, but will certainly assist in querying 
 {% set blocks = craft.superTable.blocks({ ownerId: '149081', fieldId: '563' }).all() %}
 
 {% for block in blocks %}
-    {% for field in block.getFieldLayout().getFields() %}
+    {% for field in block.getFieldLayout().getCustomFields() %}
         {% set value = block.getFieldValue(field.handle) %}
 
         {{ dump(value) }}
@@ -27,7 +26,7 @@ $blocks = $query->all();
 foreach ($blocks as $block) {
     $values = [];
 
-    foreach ($block->getFieldLayout()->getFields() as $field) {
+    foreach ($block->getFieldLayout()->getCustomFields() as $field) {
         $value = $block->getFieldValue($field->handle);
 
         var_dump($value);
