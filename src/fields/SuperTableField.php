@@ -699,6 +699,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
      */
     public function getIsTranslatable(?ElementInterface $element = null): bool
     {
+        if ($this->propagationMethod === self::PROPAGATION_METHOD_CUSTOM) {
+            $propagationKey = Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $element);
+
+            return $element === null || $propagationKey !== '';
+        }
+        
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
     }
 
