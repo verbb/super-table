@@ -302,7 +302,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     public function setOwner(?ElementInterface $owner = null): void
     {
         $this->_owner = $owner;
-        $this->ownerId = $owner->id;
+        $this->ownerId = $owner?->id;
     }
 
     /**
