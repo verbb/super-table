@@ -1306,6 +1306,8 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                 ->fieldId($this->id)
                 ->ownerId($element->id)
                 ->siteId($element->siteId)
+                ->drafts(null)
+                ->revisions(null)
                 ->status(null)
                 ->indexBy('id')
                 ->all();
