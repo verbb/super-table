@@ -1395,6 +1395,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
                 $block->siteId = $element->siteId;
             }
 
+            // Allow setting the UID for the block element
+            if (isset($blockData['uid'])) {
+                $block->uid = $blockData['uid'];
+            }
+
             $block->setOwner($element);
 
             // Set the content post location on the block if we can
