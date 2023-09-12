@@ -785,9 +785,10 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             ');';
 
         // Safe to create the default blocks?
-        if ($createDefaultBlocks || $this->staticField) {
+        if ($createDefaultBlocks || $this->staticField && count($value) < $this->minRows) {
             $blockTypeJs = Json::encode($this->getBlockTypes()[0]);
 
+            $view->setInitialDeltaValue($this->handle, null);
             $minRows = ($this->staticField) ? 1 : $this->minRows;
 
             for ($i = count($value); $i < $minRows; $i++) {
