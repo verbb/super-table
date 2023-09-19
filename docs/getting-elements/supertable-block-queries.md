@@ -1,5 +1,4 @@
 # Super Table Block Queries
-
 You can fetch Super Table blocks in your templates or PHP code using **Super Table block queries**.
 
 ::: code
@@ -20,7 +19,6 @@ See [Introduction to Element Queries](https://craftcms.com/docs/3.x/element-quer
 :::
 
 ## Example
-
 We can display content from all the Super Table blocks of an element by doing the following:
 
 1. Create a Super Table block query with `craft.superTable.blocks()`.
@@ -48,13 +46,11 @@ In order for the returned Super Table block(s) to be populated with their custom
 :::
 
 ## Parameters
-
 Super Table block queries support the following parameters:
 
 <!-- BEGIN PARAMS -->
 
 ### `asArray`
-
 Causes the query to return matching Super Table blocks as arrays of data, rather than Super Table block objects.
 
 ::: code
@@ -76,7 +72,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `dateCreated`
-
 Narrows the query results based on the Super Table blocks’ creation dates.
 
 Possible values include:
@@ -112,7 +107,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `dateUpdated`
-
 Narrows the query results based on the Super Table blocks’ last-updated dates.
 
 Possible values include:
@@ -146,7 +140,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `fieldId`
-
 Narrows the query results based on the field the Super Table blocks belong to, per the fields’ IDs.
 
 Possible values include:
@@ -177,7 +170,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `fixedOrder`
-
 Causes the query results to be returned in the order specified by [id](#id).
 
 ::: code
@@ -201,7 +193,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `id`
-
 Narrows the query results based on the Super Table blocks’ IDs.
 
 Possible values include:
@@ -236,7 +227,6 @@ This can be combined with [fixedOrder](#fixedorder) if you want the results to b
 
 
 ### `inReverse`
-
 Causes the query results to be returned in reverse order.
 
 ::: code
@@ -258,7 +248,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `limit`
-
 Determines the number of Super Table blocks that should be returned.
 
 ::: code
@@ -280,7 +269,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `offset`
-
 Determines how many Super Table blocks should be skipped in the results.
 
 ::: code
@@ -302,7 +290,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `orderBy`
-
 Determines the order that the Super Table blocks should be returned in.
 
 ::: code
@@ -324,7 +311,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `owner`
-
 Sets the [ownerId](#ownerid) and [siteId](#siteid) parameters based on a given element.
 
 ::: code
@@ -346,7 +332,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `ownerId`
-
 Narrows the query results based on the owner element of the Super Table blocks, per the owners’ IDs.
 
 Possible values include:
@@ -377,7 +362,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `search`
-
 Narrows the query results to only Super Table blocks that match a search query.
 
 See [Searching](https://craftcms.com/docs/4.x/searching.html) for a full explanation of how to work with this parameter.
@@ -407,7 +391,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `site`
-
 Determines which site the Super Table blocks should be queried in.
 
 The current site will be used by default.
@@ -438,7 +421,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `siteId`
-
 Determines which site the Super Table blocks should be queried in, per the site’s ID.
 
 The current site will be used by default.
@@ -462,7 +444,6 @@ $superTableBlocks = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `uid`
-
 Narrows the query results based on the Super Table blocks’ UIDs.
 
 ::: code
@@ -484,7 +465,6 @@ $superTableBlock = \verbb\supertable\elements\SuperTableBlockElement::find()
 
 
 ### `with`
-
 Causes the query to return matching Super Table blocks eager-loaded with related elements.
 
 See [Eager-Loading Elements](https://craftcms.com/docs/4.x/eager-loading-elements.html) for a full explanation of how to work with this parameter.

@@ -1,5 +1,4 @@
 # PHP Example
-
 The below is an example in PHP to programmatically save a Super Table field with content.
 
 ```php
