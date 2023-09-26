@@ -1,5 +1,5 @@
 # Super Table plugin for Craft CMS
-<img width="500" src="https://verbb.imgix.net/plugins/super-table/super-table-social-card.png?v=2">
+<img width="500" src="https://verbb.imgix.net/plugins/super-table/super-table-social-card.png?v=3">
 
 Super Table is a Craft CMS plugin with a field type to allow you to create powerful tables. You can utilise all your favourite native Craft field types in your tables, including Assets, Users, Entries and even Matrix. Also supports many third-party field types.
 
