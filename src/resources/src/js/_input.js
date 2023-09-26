@@ -737,12 +737,12 @@ if (typeof Craft.SuperTable === typeof undefined) {
 
             if (animate) {
                 this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-                this.$tr.velocity({height: 16}, 'fast');
+                this.$tr.velocity({height: 32}, 'fast');
             }
             else {
                 this.$previewContainer.show();
                 this.$fieldsContainer.hide();
-                this.$tr.css({height: 16});
+                this.$tr.css({height: 32});
             }
 
             setTimeout($.proxy(function() {
