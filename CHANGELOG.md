@@ -1,5 +1,22 @@
 # Changelog
 
+## 3.0.10 - 2023-10-03
+
+### Added
+- Add `uid` handling for blocks when converting from serialized blocks.
+- Add content table index fixer console command.
+- Add events to input JS.
+
+### Fixed
+- Fix the height of collapsed matrix-style rows. (thanks @evanwarner).
+- Fix collapsed block preview text to handle Dropdown fields.
+- Fix a bug where blocks that were initially created for a newly-added site within a draft could be lost when applying the draft.
+- Fix minor styling issue with field settings.
+- Fix a bug where Super Table fields with custom propagation methods were being marked as translatable if the rendered translation key was blank.
+- Fix a bug where it wasn’t possible to update a Super Table block on a revision without a new block ID being assigned.
+- Fix an error that could occur if `null` was passed to `SuperTableBlockElement::setOwner()`.
+- Fix field not using `setInitialDeltaValue()` for static fields. (thanks @internetztube).
+
 ## 3.0.9 - 2023-05-24
 
 ### Added
