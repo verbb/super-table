@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.12 - 2023-10-05
+
+### Fixed
+- Fix an error rendering fields.
+
 ## 3.0.11 - 2023-10-05
 
 ### Fixed
