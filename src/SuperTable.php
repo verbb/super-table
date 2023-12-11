@@ -153,10 +153,25 @@ class SuperTable extends Plugin
             $event->actions['supertable-blocks'] = [
                 'action' => function(): int {
                     $controller = Craft::$app->controller;
-                    
-                    return $controller->resaveElements(SuperTableBlockElement::class);
+
+                    $criteria = [];
+                    if ($controller->field) {
+                        $criteria['field'] = explode(',', $controller->field);
+                    }
+                    if ($controller->ownerId) {
+                        $criteria['ownerId'] = array_map(fn(string $id) => (int)$id, explode(',', (string)$controller->ownerId));
+                    }
+                    if ($controller->type) {
+                        $criteria['type'] = explode(',', $controller->type);
+                    }
+
+                    return $controller->resaveElements(SuperTableBlockElement::class, $criteria);
                 },
-                'options' => [],
+                'options' => [
+                    'field',
+                    'ownerId',
+                    'type',
+                ],
                 'helpSummary' => 'Re-saves Super Table blocks.',
             ];
         });
