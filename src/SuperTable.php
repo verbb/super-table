@@ -37,7 +37,6 @@ class SuperTable extends Plugin
     // Properties
     // =========================================================================
 
-    public bool $hasCpSettings = true;
     public string $schemaVersion = '3.0.0';
     public string $minVersionRequired = '2.7.1';
 
@@ -63,10 +62,6 @@ class SuperTable extends Plugin
         $this->_registerIntegrations();
         $this->_registerProjectConfigEventHandlers();
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->_registerCpRoutes();
-        }
-
         if (Craft::$app->getRequest()->getIsConsoleRequest()) {
             $this->_registerResaveCommand();
         }
@@ -80,15 +75,6 @@ class SuperTable extends Plugin
 
     // Private Methods
     // =========================================================================
-
-    private function _registerCpRoutes(): void
-    {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $event->rules = array_merge($event->rules, [
-                'super-table/settings' => 'super-table/plugin/settings',
-            ]);
-        });
-    }
 
     private function _registerVariables(): void
     {
