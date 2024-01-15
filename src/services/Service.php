@@ -270,6 +270,7 @@ class Service extends Component
 
         // Make sure the field has been synced
         $fieldId = Db::idByUid(Table::FIELDS, $data['field']);
+        
         if ($fieldId === null) {
             Craft::$app->getProjectConfig()->defer($event, [$this, __FUNCTION__]);
             return;
@@ -633,7 +634,7 @@ class Service extends Component
             // Drop the content table
             $db->createCommand()
                 ->dropTable($supertableField->contentTable)
-                ->execute();
+                ;
 
             Craft::$app->getContent()->contentTable = $originalContentTable;
 
@@ -917,7 +918,7 @@ class Service extends Component
                     ], ['blockId' => $block->id, 'ownerId' => $target->id], updateTimestamp: false);
                     $newBlockId = $block->id;
                 } else {
-                    $newBlockId = $elementsService->duplicateElement($block, $newAttributes, trackDuplication: $trackDuplications)->id;
+                    $newBlockId = $elementsService->duplicateElement($block, $newAttributes)->id;
                 }
 
                 $newBlockIds[] = $newBlockId;
@@ -1014,7 +1015,7 @@ FROM $ownersTable AS [[o]]
 INNER JOIN $blocksTable AS [[b]] ON [[b.id]] = [[o.blockId]] AND [[b.primaryOwnerId]] = '$canonical->id' AND [[b.fieldId]] = '$field->id'
 WHERE [[o.ownerId]] = '$canonical->id'
 SQL
-        )->execute();
+        );
     }
 
     /**

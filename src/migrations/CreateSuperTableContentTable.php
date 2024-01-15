@@ -16,9 +16,6 @@ class CreateSuperTableContentTable extends Migration
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     public function safeUp(): bool
     {
         $this->createTable($this->tableName, [
@@ -45,9 +42,6 @@ class CreateSuperTableContentTable extends Migration
         $this->addForeignKey(null, $this->tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
     }
 
-    /**
-     * @inheritdoc
-     */
     public function safeDown(): bool
     {
         return false;

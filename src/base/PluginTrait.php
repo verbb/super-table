@@ -3,35 +3,36 @@ namespace verbb\supertable\base;
 
 use verbb\supertable\SuperTable;
 use verbb\supertable\services\Service;
-use verbb\base\BaseHelper;
 
-use Craft;
-
-use yii\log\Logger;
+use verbb\base\LogTrait;
+use verbb\base\helpers\Plugin;
 
 trait PluginTrait
 {
     // Properties
     // =========================================================================
 
-    public static SuperTable $plugin;
+    public static ?SuperTable $plugin = null;
 
+
+    // Traits
+    // =========================================================================
+
+    use LogTrait;
+    
 
     // Static Methods
     // =========================================================================
-    
-    public static function log(string $message, array $params = []): void
+
+    public static function config(): array
     {
-        $message = Craft::t('super-table', $message, $params);
+        Plugin::bootstrapPlugin('super-table');
 
-        Craft::getLogger()->log($message, Logger::LEVEL_INFO, 'super-table');
-    }
-
-    public static function error(string $message, array $params = []): void
-    {
-        $message = Craft::t('super-table', $message, $params);
-
-        Craft::getLogger()->log($message, Logger::LEVEL_ERROR, 'super-table');
+        return [
+            'components' => [
+                'service' => Service::class,
+            ],
+        ];
     }
 
 
@@ -41,24 +42,6 @@ trait PluginTrait
     public function getService(): Service
     {
         return $this->get('service');
-    }
-
-
-    // Private Methods
-    // =========================================================================
-
-    private function _registerComponents(): void
-    {
-        $this->setComponents([
-            'service' => Service::class,
-        ]);
-
-        BaseHelper::registerModule();
-    }
-
-    private function _registerLogTarget(): void
-    {
-        BaseHelper::setFileLogging('super-table');
     }
 
 }

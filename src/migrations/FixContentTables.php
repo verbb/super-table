@@ -28,7 +28,7 @@ class FixContentTables extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
 
         // Find any `supertablecontents_*` tables, these should be `stc_*`. But we should check if these tables are completely empty
-        foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
+        foreach (Craft::$app->getDb()->schema->getTableNames() as $tableName) {
             if (str_contains($tableName, 'supertablecontent_')) {
                 // Does a shortened (correct) table name exist? It really should at this point...
                 $newTableName = str_replace('supertablecontent_', 'stc_', $tableName);
@@ -67,7 +67,7 @@ class FixContentTables extends Migration
                 }
                 // Find and drop the old index, and add the siteId index if it's not there
                 $siteIdIndex = false;
-                foreach (Craft::$app->db->getSchema()->findIndexes($tableName) as $name => $index) {
+                foreach (Craft::$app->getDb()->getSchema()->findIndexes($tableName) as $name => $index) {
                     if ($index['columns'] === ['elementId'] && $index['unique'] === true) {
                         echo "    > {$tableName}  dropping extra index that is just `elementId` {$name}...\n";
                         $this->dropIndex($name, $tableName);

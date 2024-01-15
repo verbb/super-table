@@ -2,7 +2,7 @@
     "name": "verbb/super-table",
     "description": "Super-charge your content builders and create nested Matrix fields.",
     "type": "craft-plugin",
-    "version": "3.0.10",
+    "version": "4.0.0-beta.1",
     "keywords": [
         "craft",
         "cms",
@@ -25,13 +25,13 @@
         }
     ],
     "require": {
-        "php": "^8.0.2",
-        "craftcms/cms": "^4.0.0",
-        "verbb/base": "^2.0.0"
+        "php": "^8.2",
+        "craftcms/cms": "^5.0.0-alpha.1",
+        "verbb/base": "^3.0.0-beta.1"
     },
     "autoload": {
         "psr-4": {
-          "verbb\\supertable\\": "src/"
+            "verbb\\supertable\\": "src/"
         }
     },
     "extra": {
@@ -39,7 +39,7 @@
         "handle": "super-table",
         "description": "Super-charge your Craft workflow with Super Table. Use it to group fields together or build complex Matrix-in-Matrix solutions.",
         "documentationUrl": "https://github.com/verbb/super-table",
-        "changelogUrl": "https://raw.githubusercontent.com/verbb/super-table/craft-4/CHANGELOG.md",
+        "changelogUrl": "https://raw.githubusercontent.com/verbb/super-table/craft-5/CHANGELOG.md",
         "class": "verbb\\supertable\\SuperTable"
     }
 }

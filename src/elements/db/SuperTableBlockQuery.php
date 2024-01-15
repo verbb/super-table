@@ -31,9 +31,6 @@ class SuperTableBlockQuery extends ElementQuery
     // Properties
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     protected array $defaultOrderBy = ['supertableblocks_owners.sortOrder' => SORT_ASC];
 
     // General parameters
@@ -90,9 +87,6 @@ class SuperTableBlockQuery extends ElementQuery
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     public function __set($name, $value)
     {
         switch ($name) {
@@ -113,9 +107,6 @@ class SuperTableBlockQuery extends ElementQuery
         }
     }
 
-    /**
-     * @inheritdoc
-     */
     public function __get($name)
     {
         // Handle querying via the direct field handles for a Static Super Table field - `{{ superTable.customField }}`
@@ -126,9 +117,6 @@ class SuperTableBlockQuery extends ElementQuery
         return parent::__get($name);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function __call($name, $params)
     {
         // Handle calling methods via a Static Super Table field - `{{ superTable.getFieldLayout().fields }}`
@@ -344,9 +332,6 @@ class SuperTableBlockQuery extends ElementQuery
     // Protected Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     protected function beforePrepare(): bool
     {
         $this->_normalizeFieldId();
@@ -491,9 +476,6 @@ class SuperTableBlockQuery extends ElementQuery
         return $value;
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function customFields(): array
     {
         // This method won't get called if $this->fieldId isn't set to a single int
@@ -511,9 +493,6 @@ class SuperTableBlockQuery extends ElementQuery
         return $supertableField->getBlockTypeFields();
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function cacheTags(): array
     {
         $tags = [];

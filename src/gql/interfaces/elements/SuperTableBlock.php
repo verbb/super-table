@@ -12,17 +12,11 @@ use GraphQL\Type\Definition\Type;
 
 class SuperTableBlock extends Element
 {
-    /**
-     * @inheritdoc
-     */
     public static function getTypeGenerator(): string
     {
         return SuperTableBlockType::class;
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function getType($fields = null): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
@@ -41,17 +35,11 @@ class SuperTableBlock extends Element
         return $type;
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function getName(): string
     {
         return 'SuperTableBlockInterface';
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function getFieldDefinitions(): array
     {
         return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [

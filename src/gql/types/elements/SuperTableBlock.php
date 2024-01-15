@@ -10,9 +10,6 @@ use GraphQL\Type\Definition\ResolveInfo;
 
 class SuperTableBlock extends Element
 {
-    /**
-     * @inheritdoc
-     */
     public function __construct(array $config)
     {
         $config['interfaces'] = [
@@ -22,9 +19,6 @@ class SuperTableBlock extends Element
         parent::__construct($config);
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         /** @var SuperTableBlockElement $source */

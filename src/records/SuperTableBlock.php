@@ -12,9 +12,6 @@ class SuperTableBlock extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-    /**
-     * @inheritdoc
-     */
     public static function tableName(): string
     {
         return '{{%supertableblocks}}';

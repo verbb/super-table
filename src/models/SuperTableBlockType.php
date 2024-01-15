@@ -119,17 +119,11 @@ class SuperTableBlockType extends Model implements GqlInlineFragmentInterface
         return $field;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getFieldContext(): string
     {
         return 'superTableBlockType:' . $this->uid;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getEagerLoadingPrefix(): string
     {
         return '';
@@ -163,22 +157,18 @@ class SuperTableBlockType extends Model implements GqlInlineFragmentInterface
         return $config;
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function defineBehaviors(): array
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => SuperTableBlockElement::class,
-            ],
+        $behaviors = parent::defineBehaviors();
+
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => SuperTableBlockElement::class,
         ];
+
+        return $behaviors;
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();

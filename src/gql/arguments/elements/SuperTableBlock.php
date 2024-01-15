@@ -8,9 +8,6 @@ use GraphQL\Type\Definition\Type;
 
 class SuperTableBlock extends ElementArguments
 {
-    /**
-     * @inheritdoc
-     */
     public static function getArguments(): array
     {
         return array_merge(parent::getArguments(), [
@@ -28,17 +25,11 @@ class SuperTableBlock extends ElementArguments
         ]);
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function getDraftArguments(): array
     {
         return [];
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function getRevisionArguments(): array
     {
         return [];

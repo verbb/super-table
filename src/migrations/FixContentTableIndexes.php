@@ -9,7 +9,7 @@ class FixContentTableIndexes extends Migration
 {
     public function safeUp(): bool
     {
-        foreach (Craft::$app->db->schema->getTableNames() as $tableName) {
+        foreach (Craft::$app->getDb()->schema->getTableNames() as $tableName) {
             if (str_contains($tableName, 'stc_')) {
                 MigrationHelper::dropAllForeignKeysOnTable($tableName, $this);
                 MigrationHelper::dropAllIndexesOnTable($tableName, $this);

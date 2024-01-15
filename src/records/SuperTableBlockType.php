@@ -10,9 +10,6 @@ class SuperTableBlockType extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-    /**
-     * @inheritdoc
-     */
     public static function tableName(): string
     {
         return '{{%supertableblocktypes}}';

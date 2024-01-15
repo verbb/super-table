@@ -70,17 +70,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     // Static Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     public static function displayName(): string
     {
         return Craft::t('super-table', 'Super Table');
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
@@ -89,17 +83,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', SuperTableBlockQuery::class, ElementCollection::class, SuperTableBlockElement::class);
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function defaultSelectionLabel(): string
     {
         return Craft::t('super-table', 'Add a row');
@@ -184,9 +172,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     public function __construct($config = [])
     {
         // Config normalization
@@ -215,17 +200,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         }
     }
 
-    /**
-     * @inheritdoc
-     */
     public function settingsAttributes(): array
     {
         return ArrayHelper::withoutValue(parent::settingsAttributes(), 'localizeBlocks');
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -410,9 +389,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         $this->changedFieldIndicator = rand();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function validate($attributeNames = null, $clearErrors = true): bool
     {
         // Run basic model validation first
@@ -426,17 +402,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         return $validates;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function hasContentColumn(): bool
+    public static function dbType(): array|string|null
     {
-        return false;
+        return null;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getSettingsHtml(): ?string
     {
         // Get the available field types data
@@ -548,18 +518,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ]);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): ElementQueryInterface
+    public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): ElementQueryInterface
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
     }
@@ -620,9 +584,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
             ->siteId($element->siteId ?? null);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): array
     {
         /** @var SuperTableBlockQuery|Collection $value */
@@ -640,17 +601,11 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         return $serialized;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
     }
 
-    /**
-     * @inheritdoc
-     */
     public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
         /** @var ElementQuery $query */
@@ -694,10 +649,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getIsTranslatable(?ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element): bool
     {
         if ($this->propagationMethod === self::PROPAGATION_METHOD_CUSTOM) {
             return (
@@ -709,10 +661,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTranslationDescription(?ElementInterface $element = null): ?string
+    public function getTranslationDescription(?ElementInterface $element): ?string
     {
         if (!$element) {
             return null;
@@ -738,10 +687,7 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
@@ -810,9 +756,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ]);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getElementValidationRules(): array
     {
         return [
@@ -824,9 +767,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var SuperTableBlockQuery|Collection $value */
@@ -897,9 +837,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         }
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var SuperTableBlockQuery|Collection $value */
@@ -919,9 +856,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         return parent::searchKeywords($keywords, $element);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var SuperTableBlockQuery|Collection $value */
@@ -949,9 +883,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ]);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getEagerLoadingMap(array $sourceElements): array|false|null
     {
         // Get the source element IDs
@@ -988,9 +919,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getContentGqlType(): array|Type
     {
         $typeArray = SuperTableBlockTypeGenerator::generateTypes($this);
@@ -1005,9 +933,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return SuperTableBlockInputType::getType($this);
@@ -1031,9 +956,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * @inheritdoc
-     */
     public function beforeSave(bool $isNew): bool
     {
         if (!parent::beforeSave($isNew)) {
@@ -1073,9 +995,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function afterSave(bool $isNew): void
     {
         SuperTable::$plugin->getService()->saveSettings($this, false);
@@ -1098,18 +1017,12 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         parent::afterSave($isNew);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function beforeApplyDelete(): void
     {
         SuperTable::$plugin->getService()->deleteSuperTableField($this);
         parent::beforeApplyDelete();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $superTableService = SuperTable::$plugin->getService();
@@ -1146,9 +1059,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         parent::afterElementPropagate($element, $isNew);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (!parent::beforeElementDelete($element)) {
@@ -1173,9 +1083,6 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any Super Table blocks for this element

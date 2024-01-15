@@ -8,91 +8,65 @@ use verbb\supertable\models\SuperTableBlockType;
 use verbb\supertable\records\SuperTableBlock as SuperTableBlockRecord;
 
 use Craft;
-use craft\base\BlockElementInterface;
+use craft\base\NestedElementInterface;
+use craft\base\NestedElementTrait;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\elements\ElementCollection;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
 
-use Illuminate\Support\Collection;
-
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
-class SuperTableBlockElement extends Element implements BlockElementInterface
+class SuperTableBlockElement extends Element implements NestedElementInterface
 {
+    // Traits
+    // =========================================================================
+
+    use NestedElementTrait;
+
+
     // Static Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     public static function displayName(): string
     {
         return Craft::t('super-table', 'SuperTable Block');
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function lowerDisplayName(): string
     {
         return Craft::t('super-table', 'SuperTable block');
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('super-table', 'SuperTable Blocks');
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function pluralLowerDisplayName(): string
     {
         return Craft::t('super-table', 'SuperTable blocks');
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function refHandle(): ?string
     {
         return 'supertableblock';
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function trackChanges(): bool
     {
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function hasContent(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function isLocalized(): bool
     {
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function hasStatuses(): bool
     {
         return true;
@@ -107,9 +81,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return new SuperTableBlockQuery(static::class);
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         // Get the block type
@@ -135,9 +106,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return $map;
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function gqlTypeNameByContext(mixed $context): string
     {
         return $context->getField()->handle . '_BlockType';
@@ -189,18 +157,13 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
      * @var bool Whether the block was deleted along with its owner
      * @see beforeDelete()
      */
-    public bool $deletedWithOwner = false;
+    public ?bool $deletedWithOwner = false;
 
     /**
      * @var bool Whether to save the block’s row in the `supertableblock_owners` table in [[afterSave()]].
      * @since 3.0.0
      */
     public bool $saveOwnership = true;
-
-    /**
-     * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
-     */
-    private ?ElementInterface $_owner = null;
 
     /**
      * @var ElementInterface[]|null
@@ -211,9 +174,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     public function attributes(): array
     {
         $names = parent::attributes();
@@ -221,9 +181,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return $names;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function extraFields(): array
     {
         $names = parent::extraFields();
@@ -232,9 +189,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return $names;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getSupportedSites(): array
     {
         try {
@@ -251,9 +205,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return SuperTable::$plugin->getService()->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
@@ -305,17 +256,11 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         $this->ownerId = $owner?->id;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getContentTable(): string
     {
         return $this->_field()->contentTable;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getFieldColumnPrefix(): string
     {
         return 'field_';
@@ -329,9 +274,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return 'superTableBlockType:' . $this->getType()->uid;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getGqlTypeName(): string
     {
         return static::gqlTypeNameByContext($this->getType());
@@ -341,9 +283,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * @inheritdoc
-     */
     public function beforeSave(bool $isNew): bool
     {
         if (!$this->primaryOwnerId && !$this->ownerId) {
@@ -402,9 +341,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         parent::afterSave($isNew);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function beforeDelete(): bool
     {
         if (!parent::beforeDelete()) {
@@ -425,9 +361,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     // Protected Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -435,9 +368,6 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         return $rules;
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function cacheTags(): array
     {
         return [
@@ -447,10 +377,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getLocalized(): ElementQueryInterface|Collection
+    public function getLocalized(): ElementQueryInterface|ElementCollection
     {
         $query = parent::getLocalized();
 

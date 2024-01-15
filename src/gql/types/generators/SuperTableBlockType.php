@@ -15,9 +15,6 @@ use craft\gql\GqlEntityRegistry;
 
 class SuperTableBlockType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
-    /**
-     * @inheritdoc
-     */
     public static function generateTypes(mixed $context = null): array
     {
         // If we need superTable block types for a specific SuperTable field, fetch those.
@@ -38,9 +35,6 @@ class SuperTableBlockType extends Generator implements GeneratorInterface, Singl
         return $gqlTypes;
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function generateType(mixed $context): mixed
     {
         /** @var SuperTableBlockType $superTableBlockType */
