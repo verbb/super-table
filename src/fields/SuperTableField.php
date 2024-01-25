@@ -27,7 +27,6 @@ class SuperTableField extends Matrix
         unset($config['columns']);
         unset($config['fieldLayout']);
         unset($config['selectionLabel']);
-        unset($config['staticField']);
         unset($config['placeholderKey']);
 
         if (array_key_exists('minRows', $config)) {
@@ -39,5 +38,10 @@ class SuperTableField extends Matrix
         }
 
         parent::__construct($config);
+    }
+
+    public function setStaticField(): void
+    {
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The `' . $this->handle . '` static Super Table field is no longer supported. Update any references from `block.myField` to `block.one().myField`.');
     }
 }

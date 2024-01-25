@@ -135,6 +135,12 @@
       "oA" : 2,
       "oAP" : "\/src\/SuperTable.php",
       "oF" : 0
+    },
+    "\/src\/variables" : {
+      "ft" : 65536,
+      "oA" : 1,
+      "oAP" : "\/src\/variables",
+      "oF" : 0
     }
   },
   "hooks" : [
