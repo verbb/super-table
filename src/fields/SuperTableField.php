@@ -1176,6 +1176,25 @@ class SuperTableField extends Field implements EagerLoadingFieldInterface, GqlIn
     /**
      * @inheritdoc
      */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool
+    {
+        $elementsService = Craft::$app->getElements();
+        $supertableBlocks = SuperTableBlockElement::find()
+            ->primaryOwnerId($element->id)
+            ->status(null)
+            ->siteId($element->siteId)
+            ->all();
+
+        foreach ($supertableBlocks as $supertableBlock) {
+            $elementsService->deleteElementForSite($supertableBlock);
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any Super Table blocks for this element
