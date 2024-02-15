@@ -281,7 +281,7 @@ class SuperTableBlockElement extends Element implements BlockElementInterface
     /**
      * Returns the block type.
      *
-     * @return SuperTableBlockType
+     * @return SuperTableBlockTypeModel
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
     public function getType()
