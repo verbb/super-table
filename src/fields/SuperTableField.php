@@ -15,6 +15,11 @@ class SuperTableField extends Matrix
         return Craft::t('super-table', 'Super Table');
     }
 
+    public static function icon(): string
+    {
+        return '@verbb/supertable/icon-mask.svg';
+    }
+
 
     // Public Methods
     // =========================================================================
