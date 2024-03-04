@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.12 - 2023-10-05
+
+### Fixed
+- Fix an error rendering fields.
+
+## 3.0.11 - 2023-10-05
+
+### Fixed
+- Fix an error with static fields not having their blocks created for new elements.
+
 ## 3.0.10 - 2023-10-03
 
 ### Added
