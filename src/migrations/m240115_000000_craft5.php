@@ -296,6 +296,12 @@ SQL,
 
         $fieldsService->refreshFields();
 
+        // remove the old Super Table block type configs
+        $muteEvents = $projectConfig->muteEvents;
+        $projectConfig->muteEvents = true;
+        $projectConfig->remove('superTableBlockTypes');
+        $projectConfig->muteEvents = $muteEvents;
+
         return true;
     }
 
