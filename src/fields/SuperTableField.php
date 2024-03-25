@@ -20,6 +20,11 @@ class SuperTableField extends Matrix
         return '@verbb/supertable/icon-mask.svg';
     }
 
+    /**
+     * @var string Content table name
+     * @deeprecated in 4.0.0
+     */
+    public string $contentTable = '';
 
     // Public Methods
     // =========================================================================
@@ -41,6 +46,10 @@ class SuperTableField extends Matrix
         if (array_key_exists('maxRows', $config)) {
             $config['maxEntries'] = ArrayHelper::remove($config, 'maxRows');
         }
+
+        // We need to keep the contentTable value around, as it's needed for the v4 (Craft 5) upgrade.
+        // (Explicitly set it here because Matrix::__construct() just unsets it.)
+        $this->contentTable = ArrayHelper::remove($config, 'contentTable') ?? '';
 
         parent::__construct($config);
     }
