@@ -22,7 +22,7 @@ class SuperTableField extends Matrix
 
     /**
      * @var string Content table name
-     * @deeprecated in 4.0.0
+     * @deprecated in 4.0.0
      */
     public string $contentTable = '';
 
