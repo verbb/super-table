@@ -20,6 +20,7 @@ use craft\models\FieldLayout;
 use craft\services\ProjectConfig;
 
 use yii\console\Exception;
+use yii\db\Exception as DbException;
 use yii\helpers\Inflector;
 
 class m240115_000000_craft5 extends BaseContentRefactorMigration
@@ -231,7 +232,16 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
 
         if (!empty($typeIdMap)) {
             // disable FK checks for all of this
-            $this->db->createCommand()->checkIntegrity(false)->execute();
+            try {
+                $this->db->transaction(function () {
+                    $this->db->createCommand()->checkIntegrity(false)->execute();
+                });
+                $disabledFkChecks = true;
+            } catch (DbException) {
+                // the DB user probably didn't have permission
+                // see https://github.com/craftcms/cms/issues/15063#issuecomment-2194059768
+                $disabledFkChecks = false;
+            };
 
             // entrify the Super Table blocks
             $typeIdSql = 'CASE';
@@ -281,7 +291,9 @@ SQL,
                 updateTimestamp: false,
             );
 
-            $this->db->createCommand()->checkIntegrity(true)->execute();
+            if ($disabledFkChecks) {
+                $this->db->createCommand()->checkIntegrity(true)->execute();
+            }
         }
 
         // drop the old Super Table tables
