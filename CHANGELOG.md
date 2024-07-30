@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.2 - 2024-07-31
+
+### Fixed
+- Fix FK checks when migrating block data. (thanks @boboldehampsink).
+
 ## 4.0.1 - 2024-06-18
 
 ### Fixed
