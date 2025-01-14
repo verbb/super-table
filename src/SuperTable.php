@@ -1,10 +1,12 @@
 <?php
 namespace verbb\supertable;
 
+use craft\services\Gc;
 use verbb\supertable\base\PluginTrait;
 use verbb\supertable\elements\SuperTableBlockElement;
 use verbb\supertable\fields\SuperTableField;
 use verbb\supertable\helpers\ProjectConfigData;
+use verbb\supertable\records\SuperTableBlock;
 use verbb\supertable\services\Service;
 use verbb\supertable\variables\SuperTableVariable;
 use verbb\supertable\migrations\Install;
@@ -64,6 +66,7 @@ class SuperTable extends Plugin
         $this->_registerElementTypes();
         $this->_registerIntegrations();
         $this->_registerProjectConfigEventListeners();
+        $this->_registerGarbageCollection();
 
         if (Craft::$app->getRequest()->getIsCpRequest()) {
             $this->_registerCpRoutes();
@@ -174,6 +177,19 @@ class SuperTable extends Plugin
                 ],
                 'helpSummary' => 'Re-saves Super Table blocks.',
             ];
+        });
+    }
+
+    /**
+     * Register the things that need to be garbage collected
+     */
+    private function _registerGarbageCollection(): void
+    {
+        Event::on(Gc::class, Gc::EVENT_RUN, function(Event $event) {
+            // Delete partial elements
+            /** @var Gc $gc */
+            $gc = $event->sender;
+            $gc->deletePartialElements(SuperTableBlockElement::class, SuperTableBlock::tableName(), 'id');
         });
     }
 
