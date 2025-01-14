@@ -194,12 +194,11 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
             }
 
             // update the field config
-            $fieldConfig['settings'] += [
-                'maxEntries' => ArrayHelper::remove($fieldConfig['settings'], 'maxBlocks'),
-                'minEntries' => ArrayHelper::remove($fieldConfig['settings'], 'minBlocks'),
-                'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $fieldEntryTypes),
-                'viewMode' => Matrix::VIEW_MODE_BLOCKS,
-            ];
+            $fieldConfig['settings']['maxEntries'] = ArrayHelper::remove($fieldConfig['settings'], 'maxBlocks');
+            $fieldConfig['settings']['minEntries'] = ArrayHelper::remove($fieldConfig['settings'], 'minBlocks');
+            $fieldConfig['settings']['entryTypes'] = array_map(fn(EntryType $entryType) => $entryType->uid, $fieldEntryTypes);
+            $fieldConfig['settings']['viewMode'] = 'blocks';
+
             unset($fieldConfig['settings']['contentTable']);
 
             $muteEvents = $projectConfig->muteEvents;
