@@ -1,6 +1,8 @@
 <?php
 namespace verbb\supertable\console\controllers;
 
+use verbb\supertable\migrations\m240115_000000_craft5;
+
 use Craft;
 use craft\console\Controller;
 use craft\db\Query;
@@ -39,6 +41,21 @@ class MigrateController extends Controller
                 $this->stdout("Migrated Super Table field #" . $field->id . ' (' . $field->handle . ") to Matrix.\n", Console::FG_GREEN);
             }
         }
+
+        $this->stdout("Done.\n", Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Runs the Super Table > Matrix migration. DO NOT run this unless you know what you're doing.
+     *
+     * @return int
+     */
+    public function actionForceFieldMigration(): int
+    {
+        $migration = new m240115_000000_craft5();
+        $migration->safeUp();
 
         $this->stdout("Done.\n", Console::FG_GREEN);
 
