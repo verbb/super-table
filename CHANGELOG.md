@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.3 - 2025-02-05
+
+### Added
+- Add `force-field-migration` console command to force the Craft 5 migration on-demand.
+
+### Fixed
+- Fix migrated Super Table blocks View Mode not being set to “Inline-editable blocks”.
+
 ## 4.0.2 - 2024-07-31
 
 ### Fixed
