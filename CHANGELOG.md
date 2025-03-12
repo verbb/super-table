@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.4 - 2025-03-12
+
+### Added
+- Add cache for converted block types to entry types for other plugins to use in migrations.
+
 ## 4.0.3 - 2025-02-05
 
 ### Added
