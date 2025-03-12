@@ -229,6 +229,9 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
             }
         }
 
+        // Store the blockType vs entryType ID map for other plugins to make use of in migrations.
+        Craft::$app->getCache()->set('superTableBlockTypeMap', $typeIdMap);
+
         if (!empty($typeIdMap)) {
             // disable FK checks for all of this
             try {
