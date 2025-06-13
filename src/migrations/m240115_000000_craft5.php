@@ -194,9 +194,17 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
             }
 
             // update the field config
-            $fieldConfig['settings']['maxEntries'] = ArrayHelper::remove($fieldConfig['settings'], 'maxBlocks');
-            $fieldConfig['settings']['minEntries'] = ArrayHelper::remove($fieldConfig['settings'], 'minBlocks');
             $fieldConfig['settings']['entryTypes'] = array_map(fn(EntryType $entryType) => $entryType->uid, $fieldEntryTypes);
+
+            // If this field is a static field, override and set min and max rows to 1 to preserve this behaviour in Craft 5
+            if (isset($fieldConfig['settings']['staticField']) && $fieldConfig['settings']['staticField']) {
+                $fieldConfig['settings']['minRows'] = 1;
+                $fieldConfig['settings']['maxRows'] = 1;
+            } else {
+                $fieldConfig['settings']['maxEntries'] = ArrayHelper::remove($fieldConfig['settings'], 'maxBlocks');
+                $fieldConfig['settings']['minEntries'] = ArrayHelper::remove($fieldConfig['settings'], 'minBlocks');
+            }
+
             $fieldConfig['settings']['viewMode'] = 'blocks';
 
             unset($fieldConfig['settings']['contentTable']);
