@@ -24,6 +24,7 @@
 - Disable FK checks when migrating Matrix block data. (thanks @brandonkelly).
 
 ## 4.0.0 - 2024-05-20
+
 > {note} Super Table has now reached its end-of-life. Read more in the [announcement](https://verbb.io/blog/so-long-super-table).
 
 ### Added
@@ -32,6 +33,32 @@
 ### Changed
 - Now requires PHP `8.2.0+`.
 - Now requires Craft `5.0.0+`.
+
+## 3.0.16 - 2025-07-18
+
+### Changed
+- Fix garbage collection.
+
+## 3.0.15 - 2024-09-13
+
+### Fixed
+- Fix an error when duplicating Super Table blocks.
+
+## 3.0.14 - 2024-04-29
+
+### Changed
+- Update English translations.
+- Update `validateBlocks()` to deal with eager-loaded and cached blocks.
+
+## 3.0.13 - 2024-04-10
+
+### Added
+- Add prune orphaned blocks utils command.
+- Add `beforeElementDeleteForSite` to block element.
+- Add `--field`, `--owner-id`, and `--type` resave options.
+
+### Fixed
+- Fix an error when running content table migrations.
 
 ## 3.0.12 - 2023-10-05
 
@@ -519,7 +546,7 @@
 ## 2.1.18 - 2019-04-24
 
 ### Fixed
-- Fix nested Matrix fields in Matrix layout not being properly instantiated. 
+- Fix nested Matrix fields in Matrix layout not being properly instantiated.
 
 ## 2.1.17 - 2019-04-08
 
@@ -783,7 +810,6 @@
 - Fix issue when viewing an entry revision where a field may have been deleted.
 - Fix Eager Loading (thanks @mostlyserious).
 - Fixes for schematic integration with a supertable nested in a matrix field (thanks @bvangennep).
-
 
 ## 2.0.7 - 2018-05-08
 
