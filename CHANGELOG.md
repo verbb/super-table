@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.16 - 2025-07-18
+
+### Changed
+- Fix garbage collection.
+
 ## 3.0.15 - 2024-09-13
 
 ### Fixed
@@ -771,7 +776,6 @@
 - Fix issue when viewing an entry revision where a field may have been deleted.
 - Fix Eager Loading (thanks @mostlyserious).
 - Fixes for schematic integration with a supertable nested in a matrix field (thanks @bvangennep).
-
 
 ## 2.0.7 - 2018-05-08
 
