@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.5 - 2025-07-18
+
+### Changed
+- Preserve static field behaviour.
+
+### Fixed
+- Fix garbage collection.
+
 ## 4.0.4 - 2025-03-12
 
 ### Added
