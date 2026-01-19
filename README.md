@@ -1,4 +1,4 @@
-<p align="center"><img src="https://verbb.imgix.net/plugins/super-table/super-table-icon.svg" width="100" height="100" alt="Super Table icon"></p>
+<p align="center"><img src="https://assets.verbb.io/plugins/super-table/super-table-icon.svg" width="100" height="100" alt="Super Table icon"></p>
 <h1 align="center">Super Table for Craft CMS</h1>
 
 > [!NOTE]
