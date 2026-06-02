@@ -4,6 +4,7 @@ namespace verbb\supertable\migrations;
 use verbb\supertable\fields\SuperTableField;
 
 use Craft;
+use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\db\Migration;
@@ -18,6 +19,7 @@ use craft\migrations\BaseContentRefactorMigration;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\services\ProjectConfig;
+use craft\validators\HandleValidator;
 
 use yii\console\Exception;
 use yii\db\Exception as DbException;
@@ -25,6 +27,22 @@ use yii\helpers\Inflector;
 
 class m240115_000000_craft5 extends BaseContentRefactorMigration
 {
+    // Constants
+    // =========================================================================
+
+    private const VIZY_FIELD_CLASS = 'verbb\\vizy\\fields\\VizyField';
+    
+    private const ADDITIONAL_RESERVED_HANDLES = [
+        'classHandle',
+        'content',
+        'key',
+        'rawContent',
+        'section',
+        'type',
+        'value',
+    ];
+
+
     // Public Methods
     // =========================================================================
 
@@ -96,15 +114,15 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
         $entryTypeHandles = [];
         foreach ($projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES) ?? [] as $entryTypeConfig) {
             $entryTypeNames[$entryTypeConfig['name']] = true;
-            $entryTypeHandles[$entryTypeConfig['handle']] = true;
+            $entryTypeHandles[strtolower($entryTypeConfig['handle'])] = true;
         }
 
         // Index global field names and handles
         $fieldNames = [];
-        $fieldHandles = [];
+        $fieldHandles = $this->reservedFieldHandles();
         foreach ($projectConfig->get(ProjectConfig::PATH_FIELDS) ?? [] as $fieldConfig) {
             $fieldNames[$fieldConfig['name']] = true;
-            $fieldHandles[$fieldConfig['handle']] = true;
+            $fieldHandles[strtolower($fieldConfig['handle'])] = true;
         }
 
         // Get all the block type configs, grouped by field
@@ -369,12 +387,24 @@ SQL,
         do {
             $test = $handle . ($i !== 1 ? $i : '');
 
-            if (!isset($handles[$test])) {
-                $handles[$test] = true;
+            if (!isset($handles[strtolower($test)])) {
+                $handles[strtolower($test)] = true;
                 return $test;
             }
 
             $i++;
         } while (true);
     }
+
+    private function reservedFieldHandles(): array
+    {
+        $reservedHandles = array_merge(
+            HandleValidator::$baseReservedWords,
+            defined(Field::class . '::RESERVED_HANDLES') ? Field::RESERVED_HANDLES : [],
+            self::ADDITIONAL_RESERVED_HANDLES,
+        );
+
+        return array_fill_keys(array_map('strtolower', $reservedHandles), true);
+    }
+
 }
