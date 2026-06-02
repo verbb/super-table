@@ -5,6 +5,7 @@ use verbb\supertable\fields\SuperTableField;
 
 use Craft;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\db\Migration;
@@ -12,6 +13,8 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
@@ -21,6 +24,7 @@ use craft\models\FieldLayout;
 use craft\services\ProjectConfig;
 use craft\validators\HandleValidator;
 
+use yii\base\InvalidArgumentException;
 use yii\console\Exception;
 use yii\db\Exception as DbException;
 use yii\helpers\Inflector;
@@ -244,6 +248,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
         // save the new entry types
         $entriesServices = Craft::$app->getEntries();
         $typeIdMap = [];
+        $typeHandleMap = [];
 
         $oldIds = (new Query())
             ->select(['uid', 'id'])
@@ -254,11 +259,14 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
             $entriesServices->saveEntryType($entryType, false);
             if (isset($oldIds[$entryType->uid])) {
                 $typeIdMap[$oldIds[$entryType->uid]] = $entryType->id;
+                $typeHandleMap[$oldIds[$entryType->uid]] = $entryType->handle;
             }
         }
 
         // Store the blockType vs entryType ID map for other plugins to make use of in migrations.
         Craft::$app->getCache()->set('superTableBlockTypeMap', $typeIdMap);
+
+        $this->migrateVizyContent($indexedSuperTableFieldConfigs, $typeHandleMap);
 
         if (!empty($typeIdMap)) {
             // disable FK checks for all of this
@@ -407,4 +415,127 @@ SQL,
         return array_fill_keys(array_map('strtolower', $reservedHandles), true);
     }
 
+    private function migrateVizyContent(array $superTableFieldConfigs, array $typeHandleMap): void
+    {
+        if (empty($superTableFieldConfigs) || empty($typeHandleMap) || !class_exists(self::VIZY_FIELD_CLASS)) {
+            return;
+        }
+
+        $vizyFields = (new Query())
+            ->select(['uid', 'settings'])
+            ->from(Table::FIELDS)
+            ->where(['type' => self::VIZY_FIELD_CLASS])
+            ->all();
+
+        foreach ($vizyFields as $vizyField) {
+            $settings = Json::decode($vizyField['settings']) ?? [];
+
+            foreach (($settings['fieldData'] ?? []) as $data) {
+                foreach (($data['blockTypes'] ?? []) as $blockType) {
+                    foreach (($blockType['layoutConfig']['tabs'] ?? []) as $tab) {
+                        foreach (($tab['elements'] ?? []) as $element) {
+                            $fieldUid = $element['fieldUid'] ?? null;
+
+                            if ($fieldUid && isset($superTableFieldConfigs[$fieldUid])) {
+                                $this->migrateVizyFieldContent($vizyField['uid'], $blockType, $superTableFieldConfigs[$fieldUid], $typeHandleMap);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function migrateVizyFieldContent(string $vizyFieldUid, array $blockType, array $superTableFieldConfig, array $typeHandleMap): void
+    {
+        $vizyField = Craft::$app->getFields()->getFieldByUid($vizyFieldUid);
+
+        if (!$vizyField instanceof FieldInterface) {
+            return;
+        }
+
+        $blockTypeId = $blockType['id'] ?? null;
+        $superTableFieldHandle = $superTableFieldConfig['handle'] ?? null;
+
+        if (!$blockTypeId || !$superTableFieldHandle) {
+            return;
+        }
+
+        foreach ($this->findFieldUsages($vizyField) as $fieldLayoutUid) {
+            $sql = Craft::$app->getDb()->getQueryBuilder()->jsonExtract('content', [$fieldLayoutUid]);
+
+            $rows = (new Query())
+                ->select(['content', 'id'])
+                ->from(Table::ELEMENTS_SITES)
+                ->where([
+                    'and',
+                    ['not', ['content' => null]],
+                    $sql . ' IS NOT NULL',
+                ])
+                ->all();
+
+            foreach ($rows as $row) {
+                $elementContent = Json::decode($row['content']) ?? [];
+                $fieldContent = Json::decode($elementContent[$fieldLayoutUid] ?? '') ?? [];
+                $modifiedContent = false;
+                $blockPaths = [];
+
+                foreach (ArrayHelper::flatten($fieldContent) as $flatKey => $flatContent) {
+                    if (str_contains($flatKey, 'content.fields.' . $superTableFieldHandle)) {
+                        $blockPaths[] = substr($flatKey, 0, (strrpos($flatKey, 'content.fields') - 1));
+                    }
+                }
+
+                foreach (array_unique($blockPaths) as $blockPath) {
+                    $values = ArrayHelper::getValue($fieldContent, $blockPath, []);
+
+                    if (($values['type'] ?? null) !== $blockTypeId) {
+                        continue;
+                    }
+
+                    $superTableBlocks = $values['content']['fields'][$superTableFieldHandle] ?? [];
+
+                    foreach ($superTableBlocks as $superTableBlockKey => $superTableBlock) {
+                        $superTableBlockTypeId = $superTableBlock['type'] ?? null;
+
+                        if (is_numeric($superTableBlockTypeId) && isset($typeHandleMap[$superTableBlockTypeId])) {
+                            $modifiedContent = true;
+                            $superTableBlocks[$superTableBlockKey]['type'] = $typeHandleMap[$superTableBlockTypeId];
+                            $superTableBlocks[$superTableBlockKey]['enabled'] = true;
+                            $superTableBlocks[$superTableBlockKey]['collapsed'] = false;
+                        }
+                    }
+
+                    $values['content']['fields'][$superTableFieldHandle] = $superTableBlocks;
+                    ArrayHelper::setValue($fieldContent, $blockPath, $values);
+                }
+
+                if ($modifiedContent) {
+                    $elementContent[$fieldLayoutUid] = Json::encode($fieldContent);
+
+                    $this->update(Table::ELEMENTS_SITES, ['content' => Json::encode($elementContent)], ['id' => $row['id']], updateTimestamp: false);
+                }
+            }
+        }
+    }
+
+    private function findFieldUsages(FieldInterface $field): array
+    {
+        $uids = [];
+
+        foreach (Craft::$app->getFields()->getAllLayouts() as $layout) {
+            try {
+                $fieldLayoutField = $layout->getField(fn(BaseField $layoutField) => (
+                    $layoutField instanceof CustomField && $layoutField->getFieldUid() === $field->uid
+                ));
+
+                if ($fieldLayoutField) {
+                    $uids[] = $fieldLayoutField->uid;
+                }
+            } catch (InvalidArgumentException) {
+            }
+        }
+
+        return $uids;
+    }
 }
