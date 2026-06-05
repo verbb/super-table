@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.0.6 - 2026-06-05
+
+### Changed
+- Migrate Super Table content nested inside Vizy fields.
+- Avoid reserved handles when migrating nested Super Table fields.
+
+### Fixed
+- Fix static Super Table field limits during Craft 5 migration.
+
 ## 4.0.5 - 2025-07-18
 
 ### Changed
