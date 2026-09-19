@@ -1,0 +1,11 @@
+{
+    "name": "@verbb/super-table-craft4-screenshots",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "screenshots": "verbb-craft-screenshots"
+    },
+    "devDependencies": {
+        "@verbb/craft-screenshots": "^1.0.0"
+    }
+}
