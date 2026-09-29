@@ -1,6 +1,6 @@
 {
     "name": "verbb/super-table",
-    "description": "Super-charge your content builders and create nested Matrix fields.",
+    "description": "A Craft CMS migration plugin for converting Super Table fields and content to native Matrix.",
     "type": "craft-plugin",
     "version": "4.0.6",
     "keywords": [
@@ -37,7 +37,6 @@
     "extra": {
         "name": "Super Table",
         "handle": "super-table",
-        "description": "Super-charge your Craft workflow with Super Table. Use it to group fields together or build complex Matrix-in-Matrix solutions.",
         "documentationUrl": "https://github.com/verbb/super-table",
         "changelogUrl": "https://raw.githubusercontent.com/verbb/super-table/craft-5/CHANGELOG.md",
         "class": "verbb\\supertable\\SuperTable"
