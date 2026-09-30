@@ -13,7 +13,7 @@ Each Super Table field can use a Table, Row or Matrix layout. Pick the presentat
 
 Looking just like a native Table field, this layout lets you add rows of content in familiar columns. Unlike Craft’s plain-text Table columns, Super Table can use Assets, Dropdowns, Entries and third-party fields. It works best with a focused set of columns.
 
-![A populated Super Table field using its table layout in Craft 4.](../screenshots/output/feature-tour/table-layout.png)
+![A populated Super Table field using its table layout in Craft 4.](../screenshots/table-layout.png)
 <!-- feature-media-end -->
 
 <!-- feature-media media-size="large" media-shadow="false" -->
@@ -21,7 +21,7 @@ Looking just like a native Table field, this layout lets you add rows of content
 
 Similar to Matrix, Row layout shows each field with its label, arranged inline where space allows. It is concise and space-efficient, especially when Super Table is used inside a Matrix field.
 
-![A populated Super Table field using its row layout in Craft 4.](../screenshots/output/feature-tour/row-layout.png)
+![A populated Super Table field using its row layout in Craft 4.](../screenshots/row-layout.png)
 <!-- feature-media-end -->
 
 <!-- feature-media media-size="large" media-shadow="false" -->
@@ -29,7 +29,7 @@ Similar to Matrix, Row layout shows each field with its label, arranged inline w
 
 Static fields provide a non-repeatable group of fields. They are useful when related values belong together but editors should only complete the group once.
 
-![A static Super Table field grouping related settings in Craft 4.](../screenshots/output/feature-tour/static-layout.png)
+![A static Super Table field grouping related settings in Craft 4.](../screenshots/static-layout.png)
 <!-- feature-media-end -->
 
 <!-- feature-section media-size="large" media-shadow="false" -->
@@ -37,5 +37,5 @@ Static fields provide a non-repeatable group of fields. They are useful when rel
 
 Use Super Table inside Matrix to give each component its own repeatable content. Editors get structured nested fields without giving up the flexibility of a component-based page builder.
 
-![A Matrix block containing a nested Super Table field in Craft 4.](../screenshots/output/feature-tour/matrix-layout.png)
+![A Matrix block containing a nested Super Table field in Craft 4.](../screenshots/matrix-layout.png)
 <!-- feature-section-end -->
