@@ -1,5 +1,4 @@
 <?php
-
 namespace verbb\supertable\console\controllers\utils;
 
 use Craft;

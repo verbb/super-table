@@ -35,7 +35,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
     // =========================================================================
 
     private const VIZY_FIELD_CLASS = 'verbb\\vizy\\fields\\VizyField';
-    
+
     private const ADDITIONAL_RESERVED_HANDLES = [
         'classHandle',
         'content',
@@ -92,14 +92,14 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
             if (!isset($indexedSuperTableFieldConfigs[$blockTypeConfig['field']])) {
                 continue;
             }
-            
+
             if (!isset($blockTypeData[$blockTypeUid])) {
                 throw new Exception("Super Table block type $blockTypeUid is out of sync.");
             }
-            
+
             $blockTypeDatum = $blockTypeData[$blockTypeUid];
             $fieldLayout = $fieldsService->getLayoutById($blockTypeDatum['fieldLayoutId']);
-            
+
             $this->updateElements(
                 (new Query())->from('{{%supertableblocks}}')->where(['typeId' => $blockTypeDatum['id']]),
                 $fieldLayout,
@@ -116,6 +116,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
         // Index entry type names and handles
         $entryTypeNames = [];
         $entryTypeHandles = [];
+
         foreach ($projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES) ?? [] as $entryTypeConfig) {
             $entryTypeNames[$entryTypeConfig['name']] = true;
             $entryTypeHandles[strtolower($entryTypeConfig['handle'])] = true;
@@ -124,6 +125,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
         // Index global field names and handles
         $fieldNames = [];
         $fieldHandles = $this->reservedFieldHandles();
+
         foreach ($projectConfig->get(ProjectConfig::PATH_FIELDS) ?? [] as $fieldConfig) {
             $fieldNames[$fieldConfig['name']] = true;
             $fieldHandles[strtolower($fieldConfig['handle'])] = true;
@@ -131,6 +133,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
 
         // Get all the block type configs, grouped by field
         $blockTypeConfigsByField = [];
+
         foreach ($projectConfig->get('superTableBlockTypes') ?? [] as $uid => $config) {
             $blockTypeConfigsByField[$config['field']][$uid] = $config;
         }
@@ -257,6 +260,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
 
         foreach ($newEntryTypes as $entryType) {
             $entriesServices->saveEntryType($entryType, false);
+
             if (isset($oldIds[$entryType->uid])) {
                 $typeIdMap[$oldIds[$entryType->uid]] = $entryType->id;
                 $typeHandleMap[$oldIds[$entryType->uid]] = $entryType->handle;
@@ -271,7 +275,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
         if (!empty($typeIdMap)) {
             // disable FK checks for all of this
             try {
-                $this->db->transaction(function () {
+                $this->db->transaction(function() {
                     $this->db->createCommand()->checkIntegrity(false)->execute();
                 });
                 $disabledFkChecks = true;
@@ -283,6 +287,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
 
             // entrify the Super Table blocks
             $typeIdSql = 'CASE';
+
             foreach ($typeIdMap as $oldId => $newId) {
                 $typeIdSql .= " WHEN [[typeId]] = $oldId THEN $newId";
             }
