@@ -283,7 +283,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
                 // the DB user probably didn't have permission
                 // see https://github.com/craftcms/cms/issues/15063#issuecomment-2194059768
                 $disabledFkChecks = false;
-            };
+            }
 
             // entrify the Super Table blocks
             $typeIdSql = 'CASE';
