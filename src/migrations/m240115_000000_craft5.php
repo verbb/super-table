@@ -16,7 +16,6 @@ use craft\elements\User;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Matrix;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\migrations\BaseContentRefactorMigration;
 use craft\models\EntryType;
@@ -162,7 +161,7 @@ class m240115_000000_craft5 extends BaseContentRefactorMigration
                     'titleFormat' => null,
                 ]);
 
-                $fieldLayoutUid = ArrayHelper::firstKey($blockTypeConfig['fieldLayouts'] ?? []);
+                $fieldLayoutUid = array_key_first($blockTypeConfig['fieldLayouts'] ?? []);
                 $fieldLayout = $fieldLayoutUid ? $fieldsService->getLayoutByUid($fieldLayoutUid) : new FieldLayout();
                 $fieldLayout->type = Entry::class;
                 $entryType->setFieldLayout($fieldLayout);

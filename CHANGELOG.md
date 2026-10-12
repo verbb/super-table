@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Updated Craft API usage to avoid deprecated calls.
+
 ## 4.0.6 - 2026-06-05
 
 ### Changed
