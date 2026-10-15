@@ -16,6 +16,7 @@ use craft\elements\User;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\migrations\BaseContentRefactorMigration;
 use craft\models\EntryType;
