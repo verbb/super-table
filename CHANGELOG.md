@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.0.8 - 2026-10-16
 
 ### Fixed
 - Fix an error when running the Craft 5 migration. ([#587](https://github.com/verbb/super-table/issues/587))
