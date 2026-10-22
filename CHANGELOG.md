@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.0.9 - 2026-10-23
 
 ### Fixed
 - Fix static Super Table field limits being lost when converting to Matrix fields. ([#588](https://github.com/verbb/super-table/issues/588))
