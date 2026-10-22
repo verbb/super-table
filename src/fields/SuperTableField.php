@@ -36,15 +36,22 @@ class SuperTableField extends Matrix
         unset($config['changedFieldIndicator']);
         unset($config['columns']);
         unset($config['fieldLayout']);
-        unset($config['selectionLabel']);
         unset($config['placeholderKey']);
 
+        // Prefer settings already converted by the Craft 5 upgrade over legacy values.
         if (array_key_exists('minRows', $config)) {
-            $config['minEntries'] = ArrayHelper::remove($config, 'minRows');
+            $minRows = ArrayHelper::remove($config, 'minRows');
+            $config['minEntries'] = $config['minEntries'] ?? $minRows;
         }
 
         if (array_key_exists('maxRows', $config)) {
-            $config['maxEntries'] = ArrayHelper::remove($config, 'maxRows');
+            $maxRows = ArrayHelper::remove($config, 'maxRows');
+            $config['maxEntries'] = $config['maxEntries'] ?? $maxRows;
+        }
+
+        if (array_key_exists('selectionLabel', $config)) {
+            $selectionLabel = ArrayHelper::remove($config, 'selectionLabel');
+            $config['createButtonLabel'] = $config['createButtonLabel'] ?? $selectionLabel;
         }
 
         // We need to keep the contentTable value around, as it's needed for the v4 (Craft 5) upgrade.
