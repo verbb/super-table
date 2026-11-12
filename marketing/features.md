@@ -1,9 +1,9 @@
 <!-- feature-intro -->
-A powerful field type for adding extra flexibility to your content — Super Table is a super-charged extension, and a mix between Craft’s Table and Matrix fields. Use it as a content builder, or together with Matrix for flexible page and component layouts.
+A powerful field type for adding extra flexibility to your content. Super Table is a mix between Craft’s Table and Matrix fields. Use it as a content builder, or together with Matrix for flexible page and component layouts.
 <!-- feature-intro-end -->
 
 <!-- feature-section -->
-## Three layouts for ultimate flexibility
+## Choose from three field layouts
 
 Each Super Table field can use a Table, Row or Matrix layout. Pick the presentation that best suits the fields and the space available in your entry layout.
 <!-- feature-section-end -->
